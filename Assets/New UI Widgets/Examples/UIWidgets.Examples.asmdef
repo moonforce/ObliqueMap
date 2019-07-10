@@ -1,0 +1,11 @@
+{
+    "name": "UIWidgets.Examples",
+    "references": [
+        "UIWidgets",
+        "Unity.TextMeshPro"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}

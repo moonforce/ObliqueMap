@@ -1,0 +1,165 @@
+﻿namespace UIWidgets.WidgetGeneration
+{
+	using System.Collections.Generic;
+	using UIWidgets;
+	using UIWidgets.Styles;
+	using UnityEngine;
+
+	/// <summary>
+	/// Base class for the test script for the DataItem.
+	/// </summary>
+	/// <typeparam name="T">Type of the test item.</typeparam>
+	public abstract class TestBase<T> : MonoBehaviour
+	{
+		/// <summary>
+		/// Generate item for specified index.
+		/// </summary>
+		/// <param name="index">Index.</param>
+		/// <returns>Item.</returns>
+		protected abstract T GenerateItem(int index);
+
+		/// <summary>
+		/// Generate item for specified index with specified name.
+		/// </summary>
+		/// <param name="name">Name.</param>
+		/// <param name="index">Index.</param>
+		/// <returns>Item.</returns>
+		protected abstract T GenerateItem(string name, int index);
+
+		/// <summary>
+		/// Sprites.
+		/// </summary>
+		[SerializeField]
+		public List<Sprite> Sprites;
+
+		/// <summary>
+		/// Textures.
+		/// </summary>
+		[SerializeField]
+		public List<Texture2D> Textures;
+
+		/// <summary>
+		/// Root canvas.
+		/// </summary>
+		[SerializeField]
+		public GameObject RootCanvas;
+
+		/// <summary>
+		/// Default style.
+		/// </summary>
+		[SerializeField]
+		public Style StyleDefault;
+
+		/// <summary>
+		/// Blue style.
+		/// </summary>
+		[SerializeField]
+		public Style StyleBlue;
+
+		/// <summary>
+		/// Is items can be generated?
+		/// </summary>
+		protected virtual bool CanGenerateItems
+		{
+			get
+			{
+				return true;
+			}
+		}
+
+		/// <summary>
+		/// Set default style.
+		/// </summary>
+		public void SetDefaultStyle()
+		{
+			StyleDefault.ApplyTo(RootCanvas);
+		}
+
+		/// <summary>
+		/// Set blue style.
+		/// </summary>
+		public void SetBlueStyle()
+		{
+			StyleBlue.ApplyTo(RootCanvas);
+		}
+
+		/// <summary>
+		/// Get random sprite.
+		/// </summary>
+		/// <returns>Sprite.</returns>
+		protected Sprite GetSprite()
+		{
+			if (Sprites.Count == 0)
+			{
+				return null;
+			}
+
+			return Sprites[Random.Range(0, Sprites.Count - 1)];
+		}
+
+		/// <summary>
+		/// Get random texture.
+		/// </summary>
+		/// <returns>Texture.</returns>
+		protected Texture2D GetTexture()
+		{
+			if (Textures.Count == 0)
+			{
+				return null;
+			}
+
+			return Textures[Random.Range(0, Textures.Count - 1)];
+		}
+
+		/// <summary>
+		/// Generate items list.
+		/// </summary>
+		/// <param name="count">Items count.</param>
+		/// <returns>List.</returns>
+		protected ObservableList<T> GenerateList(int count)
+		{
+			if (!CanGenerateItems)
+			{
+				return new ObservableList<T>();
+			}
+
+			return Utilites.CreateList<T>(count, GenerateItem);
+		}
+
+		/// <summary>
+		/// Generate nodes.
+		/// </summary>
+		/// <param name="config">List of nodex count per level.</param>
+		/// <param name="namePrefix">Name prefix.</param>
+		/// <param name="start">Start index in the config.</param>
+		/// <returns>Nodex.</returns>
+		protected ObservableList<TreeNode<T>> GenerateNodes(List<int> config, string namePrefix = "Node ", int start = 0)
+		{
+			if (!CanGenerateItems)
+			{
+				return new ObservableList<TreeNode<T>>();
+			}
+
+			return Utilites.CreateList<TreeNode<T>>(config[start], i =>
+			{
+				var item_name = namePrefix + i;
+				var item = GenerateItem(name, i);
+
+				var nodes = config.Count > (start + 1)
+					? GenerateNodes(config, item_name + " - ", start + 1)
+					: null;
+
+				return new TreeNode<T>(item, nodes, true);
+			});
+		}
+
+		/// <summary>
+		/// Get random color.
+		/// </summary>
+		/// <returns>Color.</returns>
+		protected static Color RandomColor()
+		{
+			return new Color(Random.value, Random.value, Random.value, Random.value);
+		}
+	}
+}
