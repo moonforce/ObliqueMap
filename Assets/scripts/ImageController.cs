@@ -43,10 +43,10 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
             Vector3 localScale = m_RT.localScale;
             float scaleFactor = Input.GetAxis("Mouse ScrollWheel") * m_AdjustOnZooming * localScale.x;
             Vector3 scale = new Vector3(localScale.x + scaleFactor, localScale.y + scaleFactor, 1);
-            scale.x = (scale.x > m_MaxScale) ? m_MaxScale : scale.x;
-            scale.y = (scale.y > m_MaxScale) ? m_MaxScale : scale.y;
-            scale.x = (scale.x < m_MinScale) ? m_MinScale : scale.x;
-            scale.y = (scale.y < m_MinScale) ? m_MinScale : scale.y;
+            //scale.x = (scale.x > m_MaxScale) ? m_MaxScale : scale.x;
+            //scale.y = (scale.y > m_MaxScale) ? m_MaxScale : scale.y;
+            //scale.x = (scale.x < m_MinScale) ? m_MinScale : scale.x;
+            //scale.y = (scale.y < m_MinScale) ? m_MinScale : scale.y;
 
             Vector3 delta = m_GlobalMousePos - m_RT.position;
             Vector3 pos = new Vector3(delta.x * (scale.x - localScale.x) / localScale.x, delta.y * (scale.y - localScale.y) / localScale.y, 0);
