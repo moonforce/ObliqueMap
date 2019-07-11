@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections.Generic;
 using System.IO;
 using System;
@@ -9,9 +10,17 @@ public class ImageGallery : Singleton<ImageGallery>
 
     public Transform ImagesParent { get; set; }
 
+    public Scrollbar HorizontalScrollbar { get; set; }
+
     void Start()
     {
         ImagesParent = transform.Find("ScrollView/Viewport/Content");
+        HorizontalScrollbar = transform.Find("ScrollView/Scrollbar Horizontal").GetComponent<Scrollbar>();
+    }
+
+    public void ResetScrollbar()
+    {
+        HorizontalScrollbar.value = 0;
     }
 
     public void AddImage(ImageInfo imageInfo, List<Tuple<int, int>> lineIndexList)

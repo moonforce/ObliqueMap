@@ -65,7 +65,7 @@ public class CameraHandler
         m_DistCoeffs.fromArray(distCoeffsList); 
     }
 
-    public List<ImageInfo> ProjectPoints(Dictionary<int, Vector3> point3Ds)
+    public List<ImageInfo> ProjectPoints(Dictionary<int, Vector3> point3Ds, Vector3 faceNormal)
     {
         List<ImageInfo> imageInfos = new List<ImageInfo>();
         List<Point3> cvPoint3Ds = new List<Point3>();
@@ -77,6 +77,7 @@ public class CameraHandler
         Utils.setDebugMode(true);
         foreach (var image in Images)
         {
+            image.DirectionDot = Vector3.Dot(faceNormal, image.Direction);
             image.Index_UVs.Clear();
             MatOfPoint3f cvMatPoint3Ds = new MatOfPoint3f();
             cvMatPoint3Ds.fromList(cvPoint3Ds);

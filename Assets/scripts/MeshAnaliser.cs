@@ -1,12 +1,8 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine.Networking;
-using Vectrosity;
-using System.Linq;
-using System;
+using OpenCVForUnity.CoreModule;
 using System.IO;
+using System.Linq;
 
 public class MeshAnaliser : Singleton<MeshAnaliser>
 {
@@ -76,10 +72,14 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
                     foreach (int index in indecies)
                     {
                         if (!subMeshVertices.ContainsKey(index))
+                        {
+                            //注意y/z的互换
                             subMeshVertices.Add(index, new Vector3(allVertices[index].x + 0, allVertices[index].z + 0, allVertices[index].y));
+                        }
                     }
-                    //Dictionary<int, Vector3> indexImageInfo = indecies.Zip(subMeshVertices, (k, v) => new { k, v }).ToDictionary(x => x.k, x => x.v);
-                    List<ImageInfo> imageInfos = ProjectCtrl.Instance.ProjectPoints(subMeshVertices);
+                    Vector3 faceNormal = new Vector3(ClickedMesh.normals[indecies[0]].x, ClickedMesh.normals[indecies[0]].y, ClickedMesh.normals[indecies[0]].z);
+                    List<ImageInfo> imageInfos = ProjectCtrl.Instance.ProjectPoints(subMeshVertices, faceNormal);
+                    imageInfos = imageInfos.OrderBy(it => it.DirectionDot).ToList();
                     //因为路径不同，而加上下段代码
                     for (int i = imageInfos.Count - 1; i >= 0; i--)
                     {
@@ -96,6 +96,7 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
                     if (imageInfos.Count > 0)
                     {
                         Utills.DestroyAllChildren(ImageGallery.Instance.ImagesParent);
+                        ImageGallery.Instance.ResetScrollbar();
                         foreach (var imageInfo in imageInfos)
                         {
                             ImageGallery.Instance.AddImage(imageInfo, subMeshInfo.LineIndexLists[ClickedSubMeshIndex]);

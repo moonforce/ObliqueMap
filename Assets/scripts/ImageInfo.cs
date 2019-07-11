@@ -24,7 +24,8 @@ public class ImageInfo
     public Mat RotationVector { get; set; } = new Mat(3, 1, CvType.CV_32F);
     public Mat TranslationVector { get; set; } = new Mat(3, 1, CvType.CV_32F);
     public FileInfo File { get; set; }
-
+    public float DirectionDot { get; set; }
+    public Vector3 Direction { get; set; }
     public ImageInfo(FileInfo fileInfo, double omega, double phi, double kappa, double x, double y, double z)
     {
         File = fileInfo;
@@ -50,5 +51,8 @@ public class ImageInfo
             );
         TranslationVector = -R * C;
         Calib3d.Rodrigues(R, RotationVector);
+
+        Quaternion QuaternionDirection = Quaternion.AngleAxis((float)(omega), Vector3.right) * Quaternion.AngleAxis((float)(phi), Vector3.forward) * Quaternion.AngleAxis((float)(kappa + 0), Vector3.up);
+        Direction = (QuaternionDirection * Vector3.down).normalized;
     }
 }

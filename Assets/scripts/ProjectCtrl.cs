@@ -220,12 +220,12 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         MessageBoxCtrl.Instance.Show("解析Smart3D空三数据成功");
     }
 
-    public List<ImageInfo> ProjectPoints(Dictionary<int, Vector3> points)
+    public List<ImageInfo> ProjectPoints(Dictionary<int, Vector3> points, Vector3 faceNormal)
     {
         List<ImageInfo> imageInfos = new List<ImageInfo>();
         foreach(var cameraHandler in CameraHandlers)
         {
-            imageInfos.AddRange(cameraHandler.Value.ProjectPoints(points));
+            imageInfos.AddRange(cameraHandler.Value.ProjectPoints(points, faceNormal));
         }
         return imageInfos;
     }
