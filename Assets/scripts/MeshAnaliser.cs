@@ -101,6 +101,7 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
                         {
                             ImageGallery.Instance.AddImage(imageInfo, subMeshInfo.LineIndexLists[ClickedSubMeshIndex]);
                         }
+                        ImageGallery.Instance.GetComponent<AutoResizeImageGallerySize>().UpdateLayout();
                     }
                 }
             }
