@@ -7,14 +7,14 @@ public class TextureHandler : Singleton<TextureHandler>
     protected TextureHandler() { }
 
     public ImageController MainImageController { get; set; }
-    private Texture2D m_TextureDownloaded = null;   
+    public Texture2D TextureDownloaded { get; set; } = null;
 
     [SerializeField]
     private float m_PointRadius = 5f;
 
     private List<UvLine> m_UvLines = new List<UvLine>();
     private List<UvPoint> m_UvPoints = new List<UvPoint>();
-    private UvBox m_UvBox;    
+    private UvBox m_UvBox;
     private Dictionary<int, Vector2> m_UniqueIndexUv = new Dictionary<int, Vector2>();
 
     void Start()
@@ -40,7 +40,7 @@ public class TextureHandler : Singleton<TextureHandler>
             //}
         }
     }
-    
+
     public void ResetContent()
     {
         Utills.DestroyAllChildren(transform);
@@ -73,8 +73,8 @@ public class TextureHandler : Singleton<TextureHandler>
 
     private void SetTexture(Texture2D texture)
     {
-        m_TextureDownloaded = texture;
-        MainImageController.setImageTexture(m_TextureDownloaded);
+        TextureDownloaded = texture;
+        MainImageController.setImageTexture(TextureDownloaded);
         CreateLines();
         CreatePointsAndAABB();
     }
@@ -104,7 +104,7 @@ public class TextureHandler : Singleton<TextureHandler>
         m_UvBox.transform.SetParent(MainImageController.transform);
         m_UvBox.transform.localPosition = Vector3.zero;
         m_UvBox.transform.localScale = Vector3.one;
-        
+
         Vector2 textureRectSize = MainImageController.Texture.rectTransform.sizeDelta;
         foreach (var indexUv in m_UniqueIndexUv)
         {
@@ -123,7 +123,7 @@ public class TextureHandler : Singleton<TextureHandler>
             m_UvBox.AABB.MinY = Mathf.Min(m_UvBox.AABB.MinY, indexUv.Value.y);
             m_UvBox.AABB.MaxY = Mathf.Max(m_UvBox.AABB.MaxY, indexUv.Value.y);
         }
-        m_UvBox.SetPosition(textureRectSize, new Vector2(m_TextureDownloaded.width, m_TextureDownloaded.height));
+        m_UvBox.SetPosition();
         m_UvBox.gameObject.SetActive(true);
     }
 
@@ -176,6 +176,6 @@ public class TextureHandler : Singleton<TextureHandler>
         foreach (var key in keys)
         {
             m_UniqueIndexUv[key] = m_UniqueIndexUv[key] + deltaMousePos;
-        }            
+        }
     }
 }
