@@ -8,7 +8,7 @@ using Vectrosity;
 
 public class UvBox : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
-    private Vector3 m_LastMousePos;    
+    private Vector3 m_LastMousePos;
     [SerializeField]
     private int m_MaterialExpandPixels = 3;
 
@@ -41,6 +41,11 @@ public class UvBox : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHan
     //When using a mouse the pointerId returns -1, -2, or -3. These are the left, right and center mouse buttons respectively.
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (eventData.pointerId == -3)
+        {
+            ImageController.Instance.OnBeginDrag(eventData);
+            return;
+        }
         if (eventData.pointerId != -1 || CanvasCtrl.Instance.IsUvLineDragging)
             return;
         RectTransformUtility.ScreenPointToWorldPointInRectangle(m_RT, eventData.position, eventData.pressEventCamera, out m_LastMousePos);
@@ -50,6 +55,11 @@ public class UvBox : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHan
     //拖拽过程中触发
     public void OnDrag(PointerEventData eventData)
     {
+        if (eventData.pointerId == -3)
+        {
+            ImageController.Instance.OnDrag(eventData);
+            return;
+        }
         if (eventData.pointerId != -1 || CanvasCtrl.Instance.IsUvLineDragging)
             return;
         SetDraggedPosition(eventData);
@@ -58,6 +68,11 @@ public class UvBox : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHan
     //结束拖拽触发
     public void OnEndDrag(PointerEventData eventData)
     {
+        if (eventData.pointerId == -3)
+        {
+            ImageController.Instance.OnEndDrag(eventData);
+            return;
+        }
         if (eventData.pointerId != -1 || CanvasCtrl.Instance.IsUvLineDragging)
             return;
         SetDraggedPosition(eventData);
