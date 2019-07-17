@@ -5822,7 +5822,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef63cf95318b17d4db0f25c105ac1c76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_LineWidth: 0.25
   m_PointRadius: 0.5
 --- !u!1 &1196971382
 GameObject:
@@ -12819,8 +12818,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64d045a15e64fce47989715ba2940071, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_IsMainImageDragging: 0
-  m_IsGalleryDragging: 0
 --- !u!222 &2437812593886930864
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -14006,7 +14003,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -0.000027859527, y: -0.000035129317}
+  m_AnchoredPosition: {x: -0.000076293785, y: 0.00003051767}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &8916199124309357404
@@ -15145,7 +15142,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 8916199125688926565}
   m_HandleRect: {fileID: 8916199125688926566}
   m_Direction: 0
-  m_Value: 0
+  m_Value: 1
   m_Size: 0.99999976
   m_NumberOfSteps: 0
   m_OnValueChanged:

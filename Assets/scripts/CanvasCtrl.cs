@@ -9,12 +9,9 @@ using UnityEngine.UI;
 public class CanvasCtrl : Singleton<CanvasCtrl>
 {
     protected CanvasCtrl() { }
-    [SerializeField]
-    private bool m_IsMainImageDragging = false;
-    [SerializeField]
-    private bool m_IsGalleryDragging = false;
-    public bool IsMainImageDragging { get; set; }
-    public bool IsGalleryDragging { get; set; }
+    public bool IsMainImageDragging { get; set; } = false;
+    public bool IsGalleryDragging { get; set; } = false;
+    public bool IsUvLineDragging { get; set; } = false;
     public Canvas MainCanvas { get; set; }
 
     void Awake()

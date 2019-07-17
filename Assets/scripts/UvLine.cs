@@ -115,6 +115,7 @@ public class UvLine : MonoBehaviour
             if (colliderObject == m_EdgeCollider2D)
             {
                 m_IsDragging = true;
+                CanvasCtrl.Instance.IsUvLineDragging = true;
                 m_LastMousePosition = Input.mousePosition;
             }
         }
@@ -123,6 +124,7 @@ public class UvLine : MonoBehaviour
             if (m_IsDragging)
             {
                 m_IsDragging = false;
+                CanvasCtrl.Instance.IsUvLineDragging = false;
             }
         }
     }
@@ -140,7 +142,7 @@ public class UvLine : MonoBehaviour
         }
     }
 
-    public bool UpdateUvByRelative(int index, Vector2 delta) //某个索引发生相对移动，自身两个顶点移动，其他一个顶点移动
+    public bool UpdateUvByRelativeForGivenIndex(int index, Vector2 delta) //某个索引发生相对移动，自身两个顶点移动，其他一个顶点移动
     {
         bool changed = false;
         if (IndexTuple.Item1 == index)
@@ -154,6 +156,12 @@ public class UvLine : MonoBehaviour
             changed = true;
         }
         return changed;
+    }
+
+    public void UpdateUvByRelative(Vector2 delta) //某个索引发生相对移动，自身两个顶点移动，其他一个顶点移动
+    {
+        TheLine.points2[0] += delta;
+        TheLine.points2[1] += delta;
     }
 
     public bool UpdateUvByAbsolute(int index, Vector2 pos) //某个索引发生绝对移动，只可能移动一个顶点
