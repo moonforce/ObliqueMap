@@ -47,9 +47,8 @@ public class UvLine : MonoBehaviour
 
     public void UpdateUvTuple()
     {
-        Vector2 textureSize = ImageController.Instance.Texture.rectTransform.sizeDelta;
-        Vector2 uv1 = new Vector2(TheLine.points2[0].x / textureSize.x, TheLine.points2[0].y / textureSize.y);
-        Vector2 uv2 = new Vector2(TheLine.points2[1].x / textureSize.x, TheLine.points2[1].y / textureSize.y);
+        Vector2 uv1 = TextureHandler.Instance.ConvertToUv(TheLine.points2[0]);
+        Vector2 uv2 = TextureHandler.Instance.ConvertToUv(TheLine.points2[1]);
         UvTuple = new Tuple<Vector2, Vector2>(uv1, uv2);
     }
 
@@ -98,8 +97,8 @@ public class UvLine : MonoBehaviour
             {
                 Vector3 mousePosition = Input.mousePosition;
 
-                Vector3 delta = mousePosition - m_LastMousePosition;
-                Vector2 deltaVector2 = new Vector2(delta.x / transform.parent.lossyScale.x, delta.y / transform.parent.lossyScale.y);
+                Vector3 deltaMousePosition = mousePosition - m_LastMousePosition;
+                Vector2 deltaVector2 = TextureHandler.Instance.ConvertToRelativeScale(deltaMousePosition);
                 TextureHandler.Instance.UpdateUvByLine(IndexTuple, deltaVector2);
 
                 m_LastMousePosition = mousePosition;

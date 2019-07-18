@@ -11,7 +11,7 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
 
     //存储图片中心点与鼠标点击点的偏移量
     private Vector3 m_Offset;
-    private Vector3 m_GlobalMousePos;
+    private Vector3 m_GlobalMousePosition;
 
     //存储当前拖拽图片的RectTransform组件
     private RectTransform m_RT;
@@ -39,7 +39,7 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
     {
         if (Input.GetAxis("Mouse ScrollWheel") != 0 && RectTransformUtility.RectangleContainsScreenPoint(m_RT_Parent, Input.mousePosition) && m_HaveImage)
         {
-            RectTransformUtility.ScreenPointToWorldPointInRectangle(m_RT, Input.mousePosition, null, out m_GlobalMousePos);
+            RectTransformUtility.ScreenPointToWorldPointInRectangle(m_RT, Input.mousePosition, null, out m_GlobalMousePosition);
             Vector3 localScale = m_RT.localScale;
             float scaleFactor = Input.GetAxis("Mouse ScrollWheel") * m_AdjustOnZooming * localScale.x;
             Vector3 scale = new Vector3(localScale.x + scaleFactor, localScale.y + scaleFactor, 1);
@@ -48,7 +48,7 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
             //scale.x = (scale.x < m_MinScale) ? m_MinScale : scale.x;
             //scale.y = (scale.y < m_MinScale) ? m_MinScale : scale.y;
 
-            Vector3 delta = m_GlobalMousePos - m_RT.position;
+            Vector3 delta = m_GlobalMousePosition - m_RT.position;
             Vector3 pos = new Vector3(delta.x * (scale.x - localScale.x) / localScale.x, delta.y * (scale.y - localScale.y) / localScale.y, 0);
             m_RT.position -= pos;
 
@@ -108,10 +108,10 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
     private void SetDraggedPosition(PointerEventData eventData)
     {
         //UI屏幕坐标转换为世界坐标
-        if (RectTransformUtility.ScreenPointToWorldPointInRectangle(m_RT, eventData.position, eventData.pressEventCamera, out m_GlobalMousePos))
+        if (RectTransformUtility.ScreenPointToWorldPointInRectangle(m_RT, eventData.position, eventData.pressEventCamera, out m_GlobalMousePosition))
         {
             //设置位置及偏移量
-            m_RT.position = m_GlobalMousePos + m_Offset;
+            m_RT.position = m_GlobalMousePosition + m_Offset;
         }
     }
 

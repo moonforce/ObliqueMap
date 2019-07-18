@@ -8,14 +8,14 @@ using Vectrosity;
 
 public class UvBox : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
-    private Vector3 m_LastMousePos;
+    private Vector3 m_LastMousePosiotion;
     [SerializeField]
     private int m_MaterialExpandPixels = 3;
 
     //存储当前拖拽图片的RectTransform组件
     private RectTransform m_RT;
-
-    public AABB AABB { get; set; } = new AABB();
+    
+    public UV_AABB AABB = new UV_AABB();
 
     void Awake()
     {
@@ -23,10 +23,22 @@ public class UvBox : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHan
         m_RT = gameObject.GetComponent<RectTransform>();
     }
 
+    void Start()
+    {
+
+    }
+
     public void Refresh()
     {
-        gameObject.SetActive(false);
         AABB.Reset();
+    }
+
+    public void UpdateAABB(Vector2 uv)
+    {
+        AABB.MinX = Mathf.Min(AABB.MinX, uv.x);
+        AABB.MaxX = Mathf.Max(AABB.MaxX, uv.x);
+        AABB.MinY = Mathf.Min(AABB.MinY, uv.y);
+        AABB.MaxY = Mathf.Max(AABB.MaxY, uv.y);
     }
 
     public void SetPosition()
@@ -48,7 +60,7 @@ public class UvBox : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHan
         }
         if (eventData.pointerId != -1 || CanvasCtrl.Instance.IsUvLineDragging)
             return;
-        RectTransformUtility.ScreenPointToWorldPointInRectangle(m_RT, eventData.position, eventData.pressEventCamera, out m_LastMousePos);
+        RectTransformUtility.ScreenPointToWorldPointInRectangle(m_RT, eventData.position, eventData.pressEventCamera, out m_LastMousePosiotion);
         SetDraggedPosition(eventData);
     }
 
@@ -85,14 +97,14 @@ public class UvBox : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHan
     private void SetDraggedPosition(PointerEventData eventData)
     {
         //UI屏幕坐标转换为世界坐标
-        Vector3 globalMousePos;
-        if (RectTransformUtility.ScreenPointToWorldPointInRectangle(m_RT, eventData.position, eventData.pressEventCamera, out globalMousePos))
+        Vector3 globalMousePosition;
+        if (RectTransformUtility.ScreenPointToWorldPointInRectangle(m_RT, eventData.position, eventData.pressEventCamera, out globalMousePosition))
         {
             //设置位置及偏移量
-            Vector3 deltaMousePos = globalMousePos - m_LastMousePos;
-            m_LastMousePos = globalMousePos;
-            m_RT.position = deltaMousePos + m_RT.position;
-            Vector2 deltaVector2 = new Vector2(deltaMousePos.x / transform.parent.lossyScale.x, deltaMousePos.y / transform.parent.lossyScale.y);
+            Vector3 deltaMousePosition = globalMousePosition - m_LastMousePosiotion;
+            m_LastMousePosiotion = globalMousePosition;
+            m_RT.position = deltaMousePosition + m_RT.position;
+            Vector2 deltaVector2 = TextureHandler.Instance.ConvertToRelativeScale(deltaMousePosition);
             TextureHandler.Instance.UpdateUvByBox(deltaVector2);
         }
     }

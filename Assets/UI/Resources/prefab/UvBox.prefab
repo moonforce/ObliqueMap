@@ -88,3 +88,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_MaterialExpandPixels: 5
+  AABB:
+    MinX: 1
+    MaxX: 0
+    MinY: 1
+    MaxY: 0

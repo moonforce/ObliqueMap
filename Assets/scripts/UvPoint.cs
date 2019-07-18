@@ -21,10 +21,10 @@ public class UvPoint : MonoBehaviour, IDragHandler, IPointerExitHandler, IPointe
 
     public void OnDrag(PointerEventData eventData)
     {
-        Vector3 globalMousePos;
-        if (RectTransformUtility.ScreenPointToWorldPointInRectangle(m_RT, eventData.position, eventData.pressEventCamera, out globalMousePos))
+        Vector3 globalMousePosition;
+        if (m_IsDragging && RectTransformUtility.ScreenPointToWorldPointInRectangle(m_RT, eventData.position, eventData.pressEventCamera, out globalMousePosition))
         {
-            m_RT.position = globalMousePos;
+            m_RT.position = globalMousePosition;
             TextureHandler.Instance.UpdateUvByPoint(Index, m_RT.anchoredPosition);
         }     
     }
