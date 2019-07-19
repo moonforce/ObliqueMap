@@ -113,8 +113,6 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
                 int thumb_height = (int)(m_thumb_width / (float)image.Width * image.Height + 0.5f);
                 Image thumb = image.GetThumbnailImage(m_thumb_width, thumb_height, null, IntPtr.Zero);
                 thumb.Save(thumb_name);
-                //Texture2D texture = Utills.Image2Texture(thumb);
-                //texture.name = thumb_name;
             }
             ProgressbarCtrl.Instance.SetProgressbar((int)((i + 1) * 100f / fileCount + 0.5f));
             yield return null;
