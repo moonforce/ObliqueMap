@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class TextureHandler : Singleton<TextureHandler>
 {
@@ -11,14 +12,24 @@ public class TextureHandler : Singleton<TextureHandler>
     [SerializeField]
     private float m_PointRadius = 5f;
 
+    [SerializeField]
+    private float m_FocusScale = 1.3f;
+
     private List<UvLine> m_UvLines = new List<UvLine>();
     private List<UvPoint> m_UvPoints = new List<UvPoint>();
     private UvBox m_UvBox;
     private Dictionary<int, Vector2> m_UniqueIndexUv = new Dictionary<int, Vector2>();
 
+    //ImageController中的变量在TextureHandler中也保存一份索引，减少与ImageController的耦合
+    private RectTransform m_RT;
+    private RectTransform m_RT_Parent;
+    private Image m_Texture;
+
     void Start()
     {
-        
+        m_RT = gameObject.GetComponent<RectTransform>();
+        m_RT_Parent = transform.parent.GetComponent<RectTransform>();
+        m_Texture = GetComponent<Image>();
     }
 
     private void Update()
@@ -56,7 +67,7 @@ public class TextureHandler : Singleton<TextureHandler>
             GameObject line = Instantiate(Resources.Load<GameObject>("prefab/UvLine"));
             UvLine uvLine = line.GetComponent<UvLine>();
             uvLine.TheLine.SetCanvas(CanvasCtrl.Instance.MainCanvas);
-            line.transform.SetParent(ImageController.Instance.Texture.transform);
+            line.transform.SetParent(transform);
             //line.transform.SetSiblingIndex(0);
             line.transform.localPosition = Vector3.zero;
             line.transform.localScale = Vector3.one;
@@ -77,6 +88,7 @@ public class TextureHandler : Singleton<TextureHandler>
         ImageController.Instance.setImageTexture(TextureDownloaded);
         CreateLines();
         CreatePointsAndAABB();
+        FocusAABB();
     }
 
     private void SetMaterialTexture(Texture2D texture)
@@ -87,7 +99,7 @@ public class TextureHandler : Singleton<TextureHandler>
 
     private void CreateLines()
     {
-        Vector2 textureSize = ImageController.Instance.Texture.rectTransform.sizeDelta;
+        Vector2 textureSize = m_Texture.rectTransform.sizeDelta;
         foreach (UvLine uvLine in m_UvLines)
         {
             uvLine.gameObject.SetActive(true);
@@ -100,18 +112,18 @@ public class TextureHandler : Singleton<TextureHandler>
         GameObject uvBox = Instantiate(Resources.Load<GameObject>("prefab/UvBox"));
         m_UvBox = uvBox.GetComponent<UvBox>();
         m_UvBox.gameObject.SetActive(false);
-        m_UvBox.transform.SetParent(ImageController.Instance.transform);
+        m_UvBox.transform.SetParent(transform);
         m_UvBox.transform.SetSiblingIndex(0);        
         m_UvBox.transform.localPosition = Vector3.zero;
         m_UvBox.transform.localScale = Vector3.one;
 
-        Vector2 textureRectSize = ImageController.Instance.Texture.rectTransform.sizeDelta;
+        Vector2 textureRectSize = m_Texture.rectTransform.sizeDelta;
         foreach (var indexUv in m_UniqueIndexUv)
         {
             GameObject point = Instantiate(Resources.Load<GameObject>("prefab/UvPoint"));
             RectTransform point_RT = point.GetComponent<RectTransform>();
             UvPoint uvPoint = point.GetComponent<UvPoint>();
-            point_RT.SetParent(ImageController.Instance.transform);
+            point_RT.SetParent(transform);
             point_RT.localPosition = Vector3.zero;
             point_RT.localScale = Vector3.one * m_PointRadius;
             point_RT.anchoredPosition = new Vector2(indexUv.Value.x * textureRectSize.x, (indexUv.Value.y * textureRectSize.y));
@@ -122,6 +134,17 @@ public class TextureHandler : Singleton<TextureHandler>
         }
         m_UvBox.SetPosition();
         m_UvBox.gameObject.SetActive(true);
+    }
+
+    private void FocusAABB()
+    {
+        float xUVspacing = m_UvBox.AABB.MaxX - m_UvBox.AABB.MinX;
+        float yUVspacing = m_UvBox.AABB.MaxY - m_UvBox.AABB.MinY;
+        Vector2 uvCenter = m_UvBox.AABB.Center;
+        float scale = 1 / (m_FocusScale * Mathf.Max(xUVspacing, yUVspacing));
+        m_RT.localScale = new Vector3(scale, scale, 1);
+        Vector2 realSzie = m_RT.sizeDelta * scale;
+        m_RT.anchoredPosition = new Vector2(realSzie.x * (0.5f - uvCenter.x), realSzie.y * (0.5f - uvCenter.y));
     }
 
     public void UpdateUvByPoint(int index, Vector2 mousePos)
@@ -193,7 +216,7 @@ public class TextureHandler : Singleton<TextureHandler>
 
     public Vector2 ConvertToUv(Vector2 rectPos)
     {
-        return new Vector2(rectPos.x / ImageController.Instance.Texture.rectTransform.sizeDelta.x, rectPos.y / ImageController.Instance.Texture.rectTransform.sizeDelta.y);
+        return new Vector2(rectPos.x / m_Texture.rectTransform.sizeDelta.x, rectPos.y / m_Texture.rectTransform.sizeDelta.y);
     }
 
     public Vector2 ConvertToRelativeScale(Vector2 deltaVector2)

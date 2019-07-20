@@ -29,7 +29,6 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
 
     void Start()
     {
-        //初始化
         m_RT = gameObject.GetComponent<RectTransform>();
         m_RT_Parent = transform.parent.GetComponent<RectTransform>();
         Texture = GetComponent<Image>();
@@ -129,12 +128,11 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
         Texture.enabled = false;
         enabled = false;
         Texture.sprite = null;
+        m_HaveImage = false;
     }
 
     public void ConfigureContentView()
     {
-        GetComponent<Image>().color = Color.white;
-
         Rect viewportRect = m_RT_Parent.GetComponent<RectTransform>().rect;
         float viewportAspect = viewportRect.width / viewportRect.height;
 
