@@ -188,11 +188,12 @@ public static class Utills
     }
     #endregion
 
-    public static void TextureTile2ImageFile(Texture2D texture, int x, int y, int blockWidth, int blockHeight, string path, int quality = 80)
+    public static void TextureTile2ImageFile(Texture2D texture, out Texture2D tileTexture, int x, int y, int blockWidth, int blockHeight, string path, int quality = 80)
     {
         var colors = texture.GetPixels(x, y, blockWidth, blockHeight);
-        Texture2D output = new Texture2D(blockWidth, blockHeight);
-        output.SetPixels(colors);
-        File.WriteAllBytes(path, output.EncodeToJPG(quality));
+        tileTexture = new Texture2D(blockWidth, blockHeight);
+        tileTexture.SetPixels(colors);
+        tileTexture.Apply();
+        File.WriteAllBytes(path + ".jpg", tileTexture.EncodeToJPG(quality));
     }
 }

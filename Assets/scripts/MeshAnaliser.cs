@@ -12,8 +12,9 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
     Transform m_MainLight;
     Quaternion m_MainLightOrigonQuaternion;
 
-    private GameObject ClickedGameObject { get; set; }
-    private int ClickedSubMeshIndex { get; set; }
+    public SubMeshInfo ClickedSubMeshInfo { get; set; }
+    public GameObject ClickedGameObject { get; set; }
+    public int ClickedSubMeshIndex { get; set; }
     public Material ClickedMaterial { get; set; }
     public Mesh ClickedMesh { get; set; }
     public bool Editting { get; set; } = false;
@@ -65,8 +66,8 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
                         if (find)
                             break;
                     }
-                    SubMeshInfo subMeshInfo = ClickedGameObject.GetComponentInParent<SubMeshInfo>();
-                    List<int> indecies = subMeshInfo.FaceNewIndexLists[ClickedSubMeshIndex];
+                    ClickedSubMeshInfo = ClickedGameObject.GetComponentInParent<SubMeshInfo>();
+                    List<int> indecies = ClickedSubMeshInfo.FaceNewIndexLists[ClickedSubMeshIndex];
                     Vector3[] allVertices = ClickedMesh.vertices;
                     Dictionary<int, Vector3> subMeshVertices = new Dictionary<int, Vector3>();
                     foreach (int index in indecies)
@@ -99,7 +100,7 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
                         ImageGallery.Instance.ResetScrollbar();
                         foreach (var imageInfo in imageInfos)
                         {
-                            ImageGallery.Instance.AddImage(imageInfo, subMeshInfo.LineIndexLists[ClickedSubMeshIndex]);
+                            ImageGallery.Instance.AddImage(imageInfo, ClickedSubMeshInfo.LineIndexLists[ClickedSubMeshIndex]);
                         }
                         ImageGallery.Instance.GetComponent<AutoResizeImageGallerySize>().UpdateLayout();
                     }

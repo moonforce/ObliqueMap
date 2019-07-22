@@ -366,6 +366,7 @@ namespace AsImpL
 
             GameObject newObj = new GameObject(objName);
             SubMeshInfo subMeshInfo = ObjLoadManger.Instance.SubMeshInfoContainer.Find(objName).GetComponent<SubMeshInfo>();
+            subMeshInfo.FilePath = absolutePath;
             //SubMeshInfo subMeshInfo = gameObject.GetComponent<SubMeshInfo>();
             newObj.AddComponent(subMeshInfo);
             DestroyImmediate(subMeshInfo.gameObject);

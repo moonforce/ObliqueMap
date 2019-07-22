@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -36,18 +37,21 @@ public class TextureHandler : Singleton<TextureHandler>
     {
         if (Input.GetKeyDown(KeyCode.T))
         {
-            //if (MeshAnaliser.Instance.Editting && m_TextureDownloaded != null)
-            //{
-            //    SetMaterialTexture(m_TextureDownloaded);
-            //    Vector2[] uvCopy = MeshAnaliser.Instance.ClickedMesh.uv;
-            //    List<Vector2> uvs = m_UvLine.points2;
-            //    Vector2 textureSize = m_ImageController.Instance.Texture.rectTransform.sizeDelta;
-            //    for (int i = 0; i < m_UvPoints.Count; ++i)
-            //    {
-            //        uvCopy[m_UvPoints[i].GetComponent<UvPoint>().UvIndex] = new Vector2(uvs[i].x / textureSize.x, uvs[i].y / textureSize.y);
-            //    }
-            //    MeshAnaliser.Instance.ClickedMesh.uv = uvCopy;
-            //}
+            if (MeshAnaliser.Instance.Editting && TextureDownloaded != null)
+            {
+                Texture2D tileTexture;
+
+                Utills.TextureTile2ImageFile(TextureDownloaded,
+                    out tileTexture,
+                    (int)(m_UvBox.AABB.MinX * TextureDownloaded.width + 0.5f),
+                    (int)(m_UvBox.AABB.MinY * TextureDownloaded.height + 0.5f),
+                    (int)(m_UvBox.AABB.Spacing.x * TextureDownloaded.width + 0.5f),
+                    (int)(m_UvBox.AABB.Spacing.y * TextureDownloaded.height + 0.5f),
+                    Path.GetDirectoryName(MeshAnaliser.Instance.ClickedSubMeshInfo.FilePath) + '/' + Path.GetFileNameWithoutExtension(MeshAnaliser.Instance.ClickedSubMeshInfo.FilePath) + '_' + DateTime.Now.ToString("yyyyMMddHHmmss")
+                    );                
+                
+                SetMaterialTextureAndUv(tileTexture);                
+            }
         }
     }
 
@@ -91,10 +95,16 @@ public class TextureHandler : Singleton<TextureHandler>
         FocusAABB();
     }
 
-    private void SetMaterialTexture(Texture2D texture)
+    private void SetMaterialTextureAndUv(Texture2D texture)
     {
         MeshAnaliser.Instance.ClickedMaterial.mainTexture = texture;
         MeshAnaliser.Instance.ClickedMaterial.SetColor("_Color", new Color(1, 1, 1, 1));
+        Vector2[] uvCopy = MeshAnaliser.Instance.ClickedMesh.uv;
+        foreach (var pair in m_UniqueIndexUv)
+        {
+            uvCopy[pair.Key] = ConvertGlobalUvToLocalUv(pair.Value);
+        }
+        MeshAnaliser.Instance.ClickedMesh.uv = uvCopy;
     }
 
     private void CreateLines()
@@ -113,7 +123,7 @@ public class TextureHandler : Singleton<TextureHandler>
         m_UvBox = uvBox.GetComponent<UvBox>();
         m_UvBox.gameObject.SetActive(false);
         m_UvBox.transform.SetParent(transform);
-        m_UvBox.transform.SetSiblingIndex(0);        
+        m_UvBox.transform.SetSiblingIndex(0);
         m_UvBox.transform.localPosition = Vector3.zero;
         m_UvBox.transform.localScale = Vector3.one;
 
@@ -138,13 +148,10 @@ public class TextureHandler : Singleton<TextureHandler>
 
     private void FocusAABB()
     {
-        float xUVspacing = m_UvBox.AABB.MaxX - m_UvBox.AABB.MinX;
-        float yUVspacing = m_UvBox.AABB.MaxY - m_UvBox.AABB.MinY;
-        Vector2 uvCenter = m_UvBox.AABB.Center;
-        float scale = 1 / (m_FocusScale * Mathf.Max(xUVspacing, yUVspacing));
+        float scale = 1 / (m_FocusScale * Mathf.Max(m_UvBox.AABB.Spacing.x, m_UvBox.AABB.Spacing.y));
         m_RT.localScale = new Vector3(scale, scale, 1);
         Vector2 realSzie = m_RT.sizeDelta * scale;
-        m_RT.anchoredPosition = new Vector2(realSzie.x * (0.5f - uvCenter.x), realSzie.y * (0.5f - uvCenter.y));
+        m_RT.anchoredPosition = new Vector2(realSzie.x * (0.5f - m_UvBox.AABB.Center.x), realSzie.y * (0.5f - m_UvBox.AABB.Center.y));
     }
 
     public void UpdateUvByPoint(int index, Vector2 mousePos)
@@ -222,5 +229,11 @@ public class TextureHandler : Singleton<TextureHandler>
     public Vector2 ConvertToRelativeScale(Vector2 deltaVector2)
     {
         return new Vector2(deltaVector2.x / transform.lossyScale.x, deltaVector2.y / transform.lossyScale.y);
+    }
+
+    public Vector2 ConvertGlobalUvToLocalUv(Vector2 global)
+    {
+        Vector2 res = new Vector2((global.x - m_UvBox.AABB.MinX) / m_UvBox.AABB.Spacing.x, (global.y - m_UvBox.AABB.MinY) / m_UvBox.AABB.Spacing.y);
+        return res;
     }
 }

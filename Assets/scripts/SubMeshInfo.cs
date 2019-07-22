@@ -18,6 +18,7 @@ public class SubMeshInfo : MonoBehaviour
             Face.Add(v2);
         }
     }
+    public string FilePath { get; set; }
     //各submesh的三角形列表（存储原face字符串的各index），数量等于face数
     public List<FaceTriangleList> SubMeshLists { get; set; } = new List<FaceTriangleList>();
     //存储原face字符串（正数的），数量等于face数，即submesh数

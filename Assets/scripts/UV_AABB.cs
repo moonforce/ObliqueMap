@@ -19,6 +19,14 @@ public class UV_AABB
         }
     }
 
+    public Vector2 Spacing
+    {
+        get
+        {
+            return new Vector2(MaxX - MinX, MaxY - MinY);
+        }
+    }
+
     public void Reset()
     {
         MinX = 1f;
