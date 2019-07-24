@@ -56,7 +56,7 @@ public class ContextMenuHandler : MonoBehaviour
 
     void ImagePanelContextMenuCheckButtonState(Menu menu)
     {
-        // 0:PS中打开，TextureHandler存在图片、MeshAnalizer编辑中
+        // TextureHandler存在图片、MeshAnalizer编辑中
         MenuItemInfo[] items = menu.Items;
         if (ImageController.Instance.HaveImage && MeshAnaliser.Instance.Editting)
             items[0].Command = "Paste";
@@ -66,14 +66,17 @@ public class ContextMenuHandler : MonoBehaviour
 
     void ModelPanelContextMenuCheckButtonState(Menu menu)
     {
-        // 0:PS中打开，选中面包含图片
+        
         MenuItemInfo[] items = menu.Items;
         items[0].Command = "DisabledCmd";
         items[1].Command = "DisabledCmd";
+        items[2].Command = "DisabledCmd";
         int clickedSubmeshIndex = MeshAnaliser.Instance.GetClickedSubmeshIndex();
         string clickedImagePath = null;
+        // 选中某个面并且此面材质含图片
         if (clickedSubmeshIndex != -1)
         {
+            items[2].Command = "Output";
             clickedImagePath = ObliqueMapTreeView.CurrentGameObject.GetComponent<SubMeshInfo>().ImagePaths[clickedSubmeshIndex];
             if (!string.IsNullOrEmpty(clickedImagePath))
             {
@@ -121,6 +124,10 @@ public class ContextMenuHandler : MonoBehaviour
             string imagePath = argvs[1];
             int index = int.Parse(argvs[2]);
             StartCoroutine(DownloadTexture(imagePath, index));
+        }
+        else if (cmd == "Output")
+        {
+
         }
     }
 
