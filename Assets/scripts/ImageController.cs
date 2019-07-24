@@ -16,7 +16,8 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
     //存储当前拖拽图片的RectTransform组件
     private RectTransform m_RT;
     private RectTransform m_RT_Parent;
-    private bool m_HaveImage = false;
+
+    public bool HaveImage { get; set; } = false;
 
     [SerializeField]
     private float m_AdjustOnZooming = 2f;
@@ -36,7 +37,7 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
 
     void Update()
     {
-        if (Input.GetAxis("Mouse ScrollWheel") != 0 && RectTransformUtility.RectangleContainsScreenPoint(m_RT_Parent, Input.mousePosition) && m_HaveImage)
+        if (Input.GetAxis("Mouse ScrollWheel") != 0 && RectTransformUtility.RectangleContainsScreenPoint(m_RT_Parent, Input.mousePosition) && HaveImage)
         {
             RectTransformUtility.ScreenPointToWorldPointInRectangle(m_RT, Input.mousePosition, null, out m_GlobalMousePosition);
             Vector3 localScale = m_RT.localScale;
@@ -57,7 +58,7 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
 
     void OnGUI()
     {
-        if (RectTransformUtility.RectangleContainsScreenPoint(m_RT_Parent, Input.mousePosition) && m_HaveImage
+        if (RectTransformUtility.RectangleContainsScreenPoint(m_RT_Parent, Input.mousePosition) && HaveImage
             && Event.current.isMouse && Event.current.button == 1 && Event.current.clickCount == 2)
         {
             m_RT.anchoredPosition = Vector2.zero;
@@ -69,7 +70,7 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
     //When using a mouse the pointerId returns -1, -2, or -3. These are the left, right and center mouse buttons respectively.
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (!m_HaveImage || eventData.pointerId != -3)
+        if (!HaveImage || eventData.pointerId != -3)
             return;
         CanvasCtrl.Instance.IsMainImageDragging = true;
 
@@ -86,7 +87,7 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
     //拖拽过程中触发
     public void OnDrag(PointerEventData eventData)
     {
-        if (!m_HaveImage || eventData.pointerId != -3)
+        if (!HaveImage || eventData.pointerId != -3)
             return;
         SetDraggedPosition(eventData);
     }
@@ -94,7 +95,7 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
     //结束拖拽触发
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (!m_HaveImage || eventData.pointerId != -3)
+        if (!HaveImage || eventData.pointerId != -3)
             return;
         CanvasCtrl.Instance.IsMainImageDragging = false;
         SetDraggedPosition(eventData);
@@ -128,7 +129,7 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
         Texture.enabled = false;
         enabled = false;
         Texture.sprite = null;
-        m_HaveImage = false;
+        HaveImage = false;
     }
 
     public void ConfigureContentView()
@@ -149,6 +150,6 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
         }
         m_RT.anchoredPosition = Vector2.zero;
         m_RT.localScale = Vector3.one;
-        m_HaveImage = true;
+        HaveImage = true;
     }
 }

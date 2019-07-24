@@ -35,24 +35,23 @@ public class TextureHandler : Singleton<TextureHandler>
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            if (MeshAnaliser.Instance.Editting && TextureDownloaded != null)
-            {
-                Texture2D tileTexture;
+        
+    }
 
-                Utills.TextureTile2ImageFile(TextureDownloaded,
-                    out tileTexture,
-                    (int)(m_UvBox.AABB.MinX * TextureDownloaded.width + 0.5f),
-                    (int)(m_UvBox.AABB.MinY * TextureDownloaded.height + 0.5f),
-                    (int)(m_UvBox.AABB.Spacing.x * TextureDownloaded.width + 0.5f),
-                    (int)(m_UvBox.AABB.Spacing.y * TextureDownloaded.height + 0.5f),
-                    Path.GetDirectoryName(MeshAnaliser.Instance.ClickedSubMeshInfo.FilePath) + '/' + Path.GetFileNameWithoutExtension(MeshAnaliser.Instance.ClickedSubMeshInfo.FilePath) + '_' + DateTime.Now.ToString("yyyyMMddHHmmss")
-                    );                
-                
-                SetMaterialTextureAndUv(tileTexture);                
-            }
-        }
+    public void PasteTexture()
+    {
+        Texture2D tileTexture;
+
+        Utills.TextureTile2ImageFile(TextureDownloaded,
+            out tileTexture,
+            (int)(m_UvBox.AABB.MinX * TextureDownloaded.width + 0.5f),
+            (int)(m_UvBox.AABB.MinY * TextureDownloaded.height + 0.5f),
+            (int)(m_UvBox.AABB.Spacing.x * TextureDownloaded.width + 0.5f),
+            (int)(m_UvBox.AABB.Spacing.y * TextureDownloaded.height + 0.5f),
+            Path.GetDirectoryName(MeshAnaliser.Instance.ClickedSubMeshInfo.FilePath) + '/' + Path.GetFileNameWithoutExtension(MeshAnaliser.Instance.ClickedSubMeshInfo.FilePath) + '_' + DateTime.Now.ToString("yyyyMMddHHmmss")
+            );
+
+        SetMaterialTextureAndUv(tileTexture);
     }
 
     public void ResetContent()
