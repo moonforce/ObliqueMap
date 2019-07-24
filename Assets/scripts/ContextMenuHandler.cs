@@ -1,6 +1,10 @@
 ﻿using UnityEngine;
+using System.IO;
 using UnityEngine.EventSystems;
 using Battlehub.UIControls.MenuControl;
+using System.Diagnostics;
+using System.Collections;
+using UnityEngine.Networking;
 
 public class ContextMenuHandler : MonoBehaviour
 {
@@ -54,18 +58,29 @@ public class ContextMenuHandler : MonoBehaviour
     {
         // 0:PS中打开，TextureHandler存在图片、MeshAnalizer编辑中
         MenuItemInfo[] items = menu.Items;
-        if (!(ImageController.Instance.HaveImage && MeshAnaliser.Instance.Editting))
-            items[0].Command = "DisabledCmd";
-        else
+        if (ImageController.Instance.HaveImage && MeshAnaliser.Instance.Editting)
             items[0].Command = "Paste";
+        else
+            items[0].Command = "DisabledCmd";
     }
 
     void ModelPanelContextMenuCheckButtonState(Menu menu)
     {
-        // 0:PS中打开，TextureHandler存在图片、MeshAnalizer编辑中
+        // 0:PS中打开，选中面包含图片
         MenuItemInfo[] items = menu.Items;
         items[0].Command = "DisabledCmd";
         items[1].Command = "DisabledCmd";
+        int clickedSubmeshIndex = MeshAnaliser.Instance.GetClickedSubmeshIndex();
+        string clickedImagePath = null;
+        if (clickedSubmeshIndex != -1)
+        {
+            clickedImagePath = ObliqueMapTreeView.CurrentGameObject.GetComponent<SubMeshInfo>().ImagePaths[clickedSubmeshIndex];
+            if (!string.IsNullOrEmpty(clickedImagePath))
+            {
+                items[0].Command = "PS|" + clickedImagePath;
+                items[1].Command = "Refresh|" + clickedImagePath + '|' + clickedSubmeshIndex.ToString();
+            }            
+        }
     }
 
     public void OnValidateCmd(MenuItemValidationArgs args)
@@ -81,6 +96,47 @@ public class ContextMenuHandler : MonoBehaviour
         if (cmd == "Paste")
         {
             TextureHandler.Instance.PasteTexture();
+        }
+        else if (cmd.StartsWith("PS"))
+        {
+            string imagePath = cmd.Split('|')[1];
+            if (!File.Exists(SettingsPanelCtrl.Instance.PhotoshopPath))
+            {
+                MessageBoxCtrl.Instance.Show("PS路径不正确！");
+                return;
+            }
+            else if (!File.Exists(imagePath))
+            {
+                MessageBoxCtrl.Instance.Show("未找到该贴图文件！");
+                return;
+            }
+            Process process = new Process();
+            process.StartInfo.FileName = SettingsPanelCtrl.Instance.PhotoshopPath;
+            process.StartInfo.Arguments = cmd.Split('|')[1];
+            process.Start();
+        }
+        else if (cmd.StartsWith("Refresh"))
+        {
+            var argvs = cmd.Split('|');
+            string imagePath = argvs[1];
+            int index = int.Parse(argvs[2]);
+            StartCoroutine(DownloadTexture(imagePath, index));
+        }
+    }
+
+    public static IEnumerator DownloadTexture(string imagePath, int index)
+    {
+        using (UnityWebRequest www = UnityWebRequestTexture.GetTexture(imagePath))
+        {
+            yield return www.SendWebRequest();
+            if (www.isNetworkError)
+            {
+                UnityEngine.Debug.Log(www.error);
+            }
+            else
+            {
+                ObliqueMapTreeView.CurrentGameObject.GetComponentInChildren<MeshRenderer>().sharedMaterials[index].mainTexture = DownloadHandlerTexture.GetContent(www);
+            }
         }
     }
 }

@@ -48,6 +48,7 @@ namespace Battlehub.UIControls.MenuControl
         public Sprite Icon;
 
         public string Command;
+        public string Parameter;
         public MenuItemEvent Action;
         public MenuItemValidationEvent Validate;
     }

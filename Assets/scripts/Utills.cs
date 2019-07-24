@@ -194,6 +194,20 @@ public static class Utills
         tileTexture = new Texture2D(blockWidth, blockHeight);
         tileTexture.SetPixels(colors);
         tileTexture.Apply();
-        File.WriteAllBytes(path + ".jpg", tileTexture.EncodeToJPG(quality));
+        File.WriteAllBytes(path, tileTexture.EncodeToJPG(quality));
+    }
+
+    public static void EnableCanvasGroup(CanvasGroup canvasGroup)
+    {
+        canvasGroup.alpha = 1;
+        canvasGroup.interactable = true;
+        canvasGroup.blocksRaycasts = true;
+    }
+
+    public static void DisableCanvasGroup(CanvasGroup canvasGroup)
+    {
+        canvasGroup.alpha = 0;
+        canvasGroup.interactable = false;
+        canvasGroup.blocksRaycasts = false;
     }
 }

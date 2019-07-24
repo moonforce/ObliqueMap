@@ -35,22 +35,22 @@ public class TextureHandler : Singleton<TextureHandler>
 
     private void Update()
     {
-        
+
     }
 
     public void PasteTexture()
     {
         Texture2D tileTexture;
-
+        string tileTexturePath = Path.GetDirectoryName(MeshAnaliser.Instance.ClickedSubMeshInfo.FilePath) + '/' + Path.GetFileNameWithoutExtension(MeshAnaliser.Instance.ClickedSubMeshInfo.FilePath) + '_' + DateTime.Now.ToString("yyyyMMddHHmmss") + ".jpg";
         Utills.TextureTile2ImageFile(TextureDownloaded,
             out tileTexture,
             (int)(m_UvBox.AABB.MinX * TextureDownloaded.width + 0.5f),
             (int)(m_UvBox.AABB.MinY * TextureDownloaded.height + 0.5f),
             (int)(m_UvBox.AABB.Spacing.x * TextureDownloaded.width + 0.5f),
             (int)(m_UvBox.AABB.Spacing.y * TextureDownloaded.height + 0.5f),
-            Path.GetDirectoryName(MeshAnaliser.Instance.ClickedSubMeshInfo.FilePath) + '/' + Path.GetFileNameWithoutExtension(MeshAnaliser.Instance.ClickedSubMeshInfo.FilePath) + '_' + DateTime.Now.ToString("yyyyMMddHHmmss")
+            tileTexturePath
             );
-
+        MeshAnaliser.Instance.ClickedSubMeshInfo.ImagePaths[MeshAnaliser.Instance.ClickedSubMeshIndex] = tileTexturePath;
         SetMaterialTextureAndUv(tileTexture);
     }
 

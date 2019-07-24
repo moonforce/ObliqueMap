@@ -13,7 +13,6 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
     Quaternion m_MainLightOrigonQuaternion;
 
     public SubMeshInfo ClickedSubMeshInfo { get; set; }
-    public GameObject ClickedGameObject { get; set; }
     public int ClickedSubMeshIndex { get; set; }
     public Material ClickedMaterial { get; set; }
     public Mesh ClickedMesh { get; set; }
@@ -37,7 +36,6 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
                 {
                     Editting = true;
                     m_MainLight.rotation = Quaternion.LookRotation(-hit.normal) * Quaternion.Euler(45, 0, 45);
-                    ClickedGameObject = hit.transform.gameObject;
                     ClickedMesh = Utills.GetMeshOfGameobject(hit.transform.gameObject);
 
                     int[] hittedTriangle = new int[]
@@ -66,7 +64,7 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
                         if (find)
                             break;
                     }
-                    ClickedSubMeshInfo = ClickedGameObject.GetComponentInParent<SubMeshInfo>();
+                    ClickedSubMeshInfo = ObliqueMapTreeView.CurrentGameObject.GetComponent<SubMeshInfo>();
                     List<int> indecies = ClickedSubMeshInfo.FaceNewIndexLists[ClickedSubMeshIndex];
                     Vector3[] allVertices = ClickedMesh.vertices;
                     Dictionary<int, Vector3> subMeshVertices = new Dictionary<int, Vector3>();
@@ -107,7 +105,7 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
                 }
             }
         }
-        else if (ClickedGameObject && Editting
+        else if (Editting
             && m_MainCamera.pixelRect.Contains(Input.mousePosition)
             && Event.current.isMouse && Event.current.button == 1 && Event.current.clickCount == 2)
         {
@@ -122,7 +120,6 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
         if (ClickedMaterial)
             ClickedMaterial.SetColor("_Color", Color.white);
         ClickedMaterial = null;
-        ClickedGameObject = null;
         ClickedSubMeshIndex = -1;
         ClickedMesh = null;
         Utills.DestroyAllChildren(ImageGallery.Instance.ImagesParent);
@@ -134,7 +131,41 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
         //修改判断条件
         if (ClickedMaterial)
             ClickedMaterial.SetColor("_Color", Color.white);
-        ClickedMaterial = ClickedGameObject.GetComponent<MeshRenderer>().sharedMaterials[ClickedSubMeshIndex];
+        ClickedMaterial = ObliqueMapTreeView.CurrentGameObject.GetComponentInChildren<MeshRenderer>().sharedMaterials[ClickedSubMeshIndex];
         ClickedMaterial.SetColor("_Color", Color.red);
+    }
+
+    public int GetClickedSubmeshIndex()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(m_MainCamera.ScreenPointToRay(Input.mousePosition), out hit))
+        {
+            if (9 == hit.transform.gameObject.layer) //Model layer
+            {
+                Mesh clickedMesh = Utills.GetMeshOfGameobject(hit.transform.gameObject);
+
+                int[] hittedTriangle = new int[]
+                {
+                    clickedMesh.triangles[hit.triangleIndex * 3],
+                    clickedMesh.triangles[hit.triangleIndex * 3 + 1],
+                    clickedMesh.triangles[hit.triangleIndex * 3 + 2]
+                };
+
+                for (int i = 0; i < clickedMesh.subMeshCount; i++)
+                {
+                    int[] subMeshTris = clickedMesh.GetTriangles(i);
+                    for (int j = 0; j < subMeshTris.Length; j += 3)
+                    {
+                        if (subMeshTris[j] == hittedTriangle[0] &&
+                            subMeshTris[j + 1] == hittedTriangle[1] &&
+                            subMeshTris[j + 2] == hittedTriangle[2])
+                        {
+                            return i;
+                        }
+                    }
+                }
+            }
+        }
+        return -1;
     }
 }

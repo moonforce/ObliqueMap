@@ -29,6 +29,7 @@ public class SubMeshInfo : MonoBehaviour
     public List<List<Tuple<int, int>>> LineIndexLists { get; set; } = new List<List<Tuple<int, int>>>();
     //string为原face的位置/uv索引/法线，int为去重后的index，此index作为submesh的三角形顶点索引，以三角形列表形式传入mesh中
     public Dictionary<string, int> OrigonalFaceNewIndexDictionary { get; set; } = new Dictionary<string, int>();
+    public List<string> ImagePaths { get; set; } = new List<string>();
     //Y轴最小值
     public float MinY { get; set; } = float.MaxValue;
 
@@ -74,5 +75,6 @@ public class SubMeshInfo : MonoBehaviour
             }
             LineIndexLists.Add(lineIndexList);
         }
+        ImagePaths = new List<string>(new string[FaceNewIndexLists.Count]);
     }
 }
