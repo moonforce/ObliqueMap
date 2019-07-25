@@ -51,7 +51,7 @@ public class TextureHandler : Singleton<TextureHandler>
             tileTexturePath
             );
         MeshAnaliser.Instance.ClickedSubMeshInfo.ImagePaths[MeshAnaliser.Instance.ClickedSubMeshIndex] = tileTexturePath;
-        SetMaterialTextureAndUv(tileTexture);
+        SetMaterialTextureAndUv(tileTexture, Path.GetFileNameWithoutExtension(tileTexturePath));
     }
 
     public void ResetContent()
@@ -94,8 +94,9 @@ public class TextureHandler : Singleton<TextureHandler>
         FocusAABB();
     }
 
-    private void SetMaterialTextureAndUv(Texture2D texture)
+    private void SetMaterialTextureAndUv(Texture2D texture, string matName)
     {
+        MeshAnaliser.Instance.ClickedMaterial.name = matName;
         MeshAnaliser.Instance.ClickedMaterial.mainTexture = texture;
         MeshAnaliser.Instance.ClickedMaterial.SetColor("_Color", new Color(1, 1, 1, 1));
         Vector2[] uvCopy = MeshAnaliser.Instance.ClickedMesh.uv;
