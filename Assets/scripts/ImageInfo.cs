@@ -9,8 +9,7 @@ using System;
 
 public class ImageInfo
 {
-    static double DeltaX = -490000;
-    static double DeltaY = -3800000;
+   
 
     double m_Omega;//x
     double m_Phi;//y
@@ -32,8 +31,8 @@ public class ImageInfo
         m_Omega = (omega + 0) / 180.0 * Math.PI;
         m_Phi = (phi + 0) / 180.0 * Math.PI;
         m_Kappa = (kappa + 0) / 180.0 * Math.PI;
-        m_X = x + DeltaX;
-        m_Y = y + DeltaY;
+        m_X = x + SettingsPanelCtrl.Instance.DeltaX;
+        m_Y = y + SettingsPanelCtrl.Instance.DeltaY;
         m_Z = z;
         Mat R = new Mat(3, 3, CvType.CV_32F);
         Mat C = new Mat(3, 1, CvType.CV_32F);
