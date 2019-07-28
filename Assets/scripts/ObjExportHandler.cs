@@ -27,7 +27,7 @@ public class ObjExportHandler : MonoBehaviour
             StringBuilder sb = new StringBuilder();
             StringBuilder sbMaterials = new StringBuilder();
             sb.AppendLine(ProjectCtrl.Instance.CompleteUvCommentLine);
-            sb.AppendLine("mtllib " + baseFileName + ".mtl");
+            sb.AppendLine("mtllib " + baseFileName + "_new.mtl");
             sb.AppendLine("g " + baseFileName);
 
             MeshRenderer mr = mf.gameObject.GetComponent<MeshRenderer>();
@@ -78,9 +78,6 @@ public class ObjExportHandler : MonoBehaviour
                     case "vn":
                         sb.AppendLine(line);
                         break;
-                    //case "f":
-                        //sb.AppendLine(line);
-                        //break;
                 }
             }
 
@@ -109,62 +106,16 @@ public class ObjExportHandler : MonoBehaviour
                 sb.AppendLine("f " + newFace);
             }
             File.WriteAllText(exportFileInfo.Directory.FullName + "/" + baseFileName + "_new.obj", sb.ToString());
-            File.WriteAllText(exportFileInfo.Directory.FullName + "/" + baseFileName + ".mtl", sbMaterials.ToString());
+            File.WriteAllText(exportFileInfo.Directory.FullName + "/" + baseFileName + "_new.mtl", sbMaterials.ToString());
         }
-    }
-
-    private static string TryExportTexture(string propertyName, Material m)
-    {
-        if (m.HasProperty(propertyName))
-        {
-            Texture t = m.GetTexture(propertyName);
-            if (t != null)
-            {
-                return ExportTexture((Texture2D)t);
-            }
-        }
-        return "false";
-    }
-
-    private static string ExportTexture(Texture2D t)
-    {
-        return string.Empty;
-    }
-
-    private static string ConstructOBJString(int index)
-    {
-        string idxString = index.ToString();
-        return idxString + "/" + idxString + "/" + idxString;
     }
 
     private static string MaterialToString(Material m)
     {
         StringBuilder sb = new StringBuilder();
-
         sb.AppendLine("newmtl " + m.name);
-
-        //add properties
-        if (m.HasProperty("_Color"))
-        {
-            sb.AppendLine("Kd " + m.color.r.ToString() + " " + m.color.g.ToString() + " " + m.color.b.ToString());
-            if (m.color.a < 1.0f)
-            {
-                //use both implementations of OBJ transparency
-                sb.AppendLine("Tr " + (1f - m.color.a).ToString());
-                sb.AppendLine("d " + m.color.a.ToString());
-            }
-        }
-        if (m.HasProperty("_SpecColor"))
-        {
-            Color sc = m.GetColor("_SpecColor");
-            sb.AppendLine("Ks " + sc.r.ToString() + " " + sc.g.ToString() + " " + sc.b.ToString());
-        }
-        //diffuse
-        string exResult = TryExportTexture("_MainTex", m);
-        if (exResult != "false")
-        {
-            sb.AppendLine("map_Kd " + exResult);
-        }
+        sb.AppendLine("Kd 1 1 1");
+        sb.AppendLine("map_Kd " + m.name);
         sb.AppendLine("illum 2");
         return sb.ToString();
     }

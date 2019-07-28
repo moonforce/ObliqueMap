@@ -51,7 +51,7 @@ public class TextureHandler : Singleton<TextureHandler>
             tileTexturePath
             );
         MeshAnaliser.Instance.ClickedSubMeshInfo.ImagePaths[MeshAnaliser.Instance.ClickedSubMeshIndex] = tileTexturePath;
-        SetMaterialTextureAndUv(tileTexture, Path.GetFileNameWithoutExtension(tileTexturePath));
+        SetMaterialTextureAndUv(tileTexture, Path.GetFileName(tileTexturePath));
     }
 
     public void ResetContent()
