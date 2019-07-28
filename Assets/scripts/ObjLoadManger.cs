@@ -25,8 +25,8 @@ public class ObjLoadManger : Singleton<ObjLoadManger>
         ProgressbarCtrl.Instance.ProgressPlusPlus();
     }
 
-    public void ImportModelAsync(string objName, string filePath)
+    public void ImportModelAsync(string objName, string filePath, bool isWhiteModel = false)
     {
-        objImporter.ImportModelAsync(objName, filePath, transform, importOptions);
+        objImporter.ImportModelAsync(objName, filePath, transform, importOptions, isWhiteModel);
     }
 }

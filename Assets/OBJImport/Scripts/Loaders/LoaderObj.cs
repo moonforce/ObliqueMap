@@ -85,8 +85,10 @@ namespace AsImpL
         }
 
 
-        protected override IEnumerator LoadModelFile(string absolutePath)
+        protected override IEnumerator LoadModelFile(string absolutePath, bool isWhiteModel = false)
         {
+            if (isWhiteModel)
+                absolutePath = Path.GetDirectoryName(absolutePath) + "/CompleteUvModel/" + Path.GetFileName(absolutePath);
             string url = absolutePath.Contains("//") ? absolutePath : "file:///" + absolutePath;
             yield return LoadOrDownloadText(url);
 
@@ -99,7 +101,7 @@ namespace AsImpL
             }
             //Debug.LogFormat("Parsing geometry data in {0}...", www.url);
 
-            yield return ParseGeometryData(loadedText);
+            yield return ParseGeometryData(loadedText, isWhiteModel);
         }
 
 
@@ -249,10 +251,11 @@ namespace AsImpL
         /// </summary>
         /// <param name="objDataText">OBJ file text</param>
         /// <returns>Execution is splitted into steps to not freeze the caller method.</returns>
-        protected IEnumerator ParseGeometryData(string objDataText)
+        protected IEnumerator ParseGeometryData(string objDataText, bool isWhiteModel = false)
         {
             yield return null;
             SubMeshInfo subMeshInfo = ObjLoadManger.Instance.SubMeshInfoContainer.Find(ObjName).GetComponent<SubMeshInfo>();
+            subMeshInfo.IsCompleteUvModel = !isWhiteModel;
             //SubMeshInfo subMeshInfo = GetComponent<SubMeshInfo>();
 
             string[] lines = objDataText.Split("\n".ToCharArray());

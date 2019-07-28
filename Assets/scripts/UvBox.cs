@@ -45,8 +45,12 @@ public class UvBox : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHan
     {
         Vector2 textureRectSize = ImageController.Instance.Texture.rectTransform.sizeDelta;
         Vector2 textureSize = new Vector2(TextureHandler.Instance.TextureDownloaded.width, TextureHandler.Instance.TextureDownloaded.height);
-        m_RT.anchoredPosition = new Vector2((AABB.MinX - m_MaterialExpandPixels / textureSize.x) * textureRectSize.x, (AABB.MinY - m_MaterialExpandPixels / textureSize.y) * textureRectSize.y);
-        m_RT.sizeDelta = new Vector2((AABB.MaxX - AABB.MinX + m_MaterialExpandPixels * 2 / textureSize.x) * textureRectSize.x, (AABB.MaxY - AABB.MinY + m_MaterialExpandPixels * 2 / textureSize.y) * textureRectSize.y);
+        AABB.MinX -= m_MaterialExpandPixels / textureSize.x;
+        AABB.MinY -= m_MaterialExpandPixels / textureSize.y;
+        AABB.MaxX += m_MaterialExpandPixels / textureSize.x;
+        AABB.MaxY += m_MaterialExpandPixels / textureSize.y;
+        m_RT.anchoredPosition = new Vector2(AABB.MinX * textureRectSize.x, AABB.MinY * textureRectSize.y);
+        m_RT.sizeDelta = new Vector2((AABB.MaxX - AABB.MinX) * textureRectSize.x, (AABB.MaxY - AABB.MinY) * textureRectSize.y);
     }
 
     //开始拖拽触发

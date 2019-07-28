@@ -149,7 +149,7 @@ namespace AsImpL
         /// <param name="absolutePath">absolute file path</param>
         /// <param name="parentObj">Transform to which attach the loaded object (null=scene)</param>
         /// <returns>You can use StartCoroutine( loader.Load(...) )</returns>
-        public IEnumerator Load(string objName, string absolutePath, Transform parentObj)
+        public IEnumerator Load(string objName, string absolutePath, Transform parentObj, bool isWhiteModel = false)
         {
             ObjName = objName;
             string fileName = Path.GetFileName(absolutePath);
@@ -200,7 +200,7 @@ namespace AsImpL
             subMeshInfoGameObject.AddComponent<SubMeshInfo>();
             subMeshInfoGameObject.transform.SetParent(ObjLoadManger.Instance.SubMeshInfoContainer);
             //SubMeshInfo subMeshInfo = gameObject.AddComponent<SubMeshInfo>();
-            yield return LoadModelFile(absolutePath);
+            yield return LoadModelFile(absolutePath, isWhiteModel);
             loadStats.modelParseTime = Time.realtimeSinceStartup - lastTime;
 
             if (objLoadingProgress.error)
@@ -246,7 +246,7 @@ namespace AsImpL
         /// </summary>
         /// <param name="absolutePath">absolute file path</param>
         /// <remarks>This is called by Load() method</remarks>
-        protected abstract IEnumerator LoadModelFile(string absolutePath);
+        protected abstract IEnumerator LoadModelFile(string absolutePath, bool isWhiteModel);
 
         /// <summary>
         /// Load the material library from the given path.

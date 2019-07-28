@@ -19,6 +19,7 @@ public class SubMeshInfo : MonoBehaviour
         }
     }
     public string FilePath { get; set; }
+    public bool IsCompleteUvModel { get; set; }
     //各submesh的三角形列表（存储原face字符串的各index），数量等于face数
     public List<FaceTriangleList> SubMeshLists { get; set; } = new List<FaceTriangleList>();
     //存储原face字符串（正数的），数量等于face数，即submesh数
@@ -29,6 +30,7 @@ public class SubMeshInfo : MonoBehaviour
     public List<List<Tuple<int, int>>> LineIndexLists { get; set; } = new List<List<Tuple<int, int>>>();
     //string为原face的位置/uv索引/法线，int为去重后的index，此index作为submesh的三角形顶点索引，以三角形列表形式传入mesh中
     public Dictionary<string, int> OrigonalFaceNewIndexDictionary { get; set; } = new Dictionary<string, int>();
+    //贴图路径
     public List<string> ImagePaths { get; set; } = new List<string>();
     //Y轴最小值
     public float MinY { get; set; } = float.MaxValue;

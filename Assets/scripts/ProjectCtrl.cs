@@ -12,10 +12,15 @@ using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.Calib3dModule;
 using OpenCVForUnity.UnityUtils;
 using Point = OpenCVForUnity.CoreModule.Point;
+using UnityEngine.Networking;
+using System.Text;
 
 public class ProjectCtrl : Singleton<ProjectCtrl>
 {
     protected ProjectCtrl() { }
+
+    public string CompleteUvCommentLine { get; } = "# This Obj File Has Complete UVs";
+    public string EmptyUv { get; } = "vt 0 0 0";
 
     const int m_thumb_width = 240;
     public float ModelDeltaX { get; set; }
@@ -41,7 +46,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         if (Debug)
         {
             Invoke("testData", 1);
-        }        
+        }
     }
 
     void testData()
@@ -69,7 +74,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
             folderPath = FileBrowser.OpenSingleFolder("选择航拍影像文件夹");
             if (folderPath.Length == 0)
                 return;
-        }        
+        }
         string[] extensions = new[] { ".jpg", ".tif" };
         DirectoryInfo dinfo = new DirectoryInfo(folderPath);
         List<FileInfo> files = dinfo.EnumerateFiles().Where(f => extensions.Contains(f.Extension.ToLower())).ToList();
@@ -118,7 +123,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
             yield return null;
         }
         ProgressbarCtrl.Instance.Hide();
-    }    
+    }
 
     public void AddModels(string folderPath)
     {
@@ -155,14 +160,105 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         int fileCount = files.Count;
         for (int i = 0; i < fileCount; ++i)
         {
-            TreeViewItem item = new TreeViewItem(files[i].FullName);
-            item.LocalizedName = files[i].Name;
-            ModelsNode.Nodes.Add(new TreeNode<TreeViewItem>(item));
-            ObjLoadManger.Instance.ImportModelAsync(item.LocalizedName, item.Name);
-            //ProgressbarCtrl.Instance.SetProgressbar((int)((i + 1) * 100f / fileCount + 0.5f));
-            yield return null;
+            StreamReader sr = new StreamReader(files[i].FullName);
+            string firstLine = sr.ReadLine();
+
+            bool isCompleteUvModel = (firstLine == CompleteUvCommentLine);
+            bool createNewWhiteModel = true;
+            string loadFileName = files[i].FullName;
+            if (!isCompleteUvModel)
+            {
+                loadFileName = files[i].DirectoryName + "/CompleteUvModel/" + files[i].Name;
+                if (File.Exists(loadFileName))
+                    createNewWhiteModel = false;
+            }
+            if (isCompleteUvModel)
+            {
+                yield return LoadModelFile(files[i]);
+            }
+            else if (!createNewWhiteModel)
+            {
+                yield return LoadModelFile(files[i], true);
+            }
+            else
+            {
+                // 创建完整uv的白模，已经处理过的白模不会被再次加载
+                string directoryName = Path.GetDirectoryName(loadFileName);
+                if (!Directory.Exists(directoryName))
+                    Directory.CreateDirectory(directoryName);
+                string loadedText = File.ReadAllText(files[i].FullName);
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine(CompleteUvCommentLine);
+                string[] lines = loadedText.Split("\n".ToCharArray());
+                char[] separators = new char[] { ' ', '\t' };
+                int numVerts = 0;
+                List<string> faceLines = new List<string>();
+                for (int j = 0; j < lines.Length; j++)
+                {
+                    string line = lines[j].Trim();
+                    if (line.Length > 0 && line[0] == '#')
+                    {
+                        // comment line
+                        continue;
+                    }
+                    string[] p = line.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+                    if (p.Length == 0)
+                    {
+                        // empty line
+                        continue;
+                    }
+
+                    switch (p[0])
+                    {
+                        case "v":
+                            sb.AppendLine(line);
+                            break;
+                        case "vn":
+                            sb.AppendLine(line);
+                            break;
+                        case "g":
+                            sb.AppendLine(line);
+                            break;
+                        case "f":
+                            {
+                                numVerts += p.Length - 1;
+                                faceLines.Add(line);
+                            }
+                            break;
+                    }
+                }
+                for (int j = 0; j < numVerts; ++j)
+                {
+                    sb.AppendLine(EmptyUv);
+                }
+                int uvIndex = 0;
+                foreach (string oldFace in faceLines)
+                {
+                    List<string> vertexes = oldFace.Split(separators, StringSplitOptions.RemoveEmptyEntries).ToList();
+                    vertexes.RemoveAt(0);
+                    string newFace = "f ";
+                    foreach (string vertex in vertexes)
+                    {
+                        string[] vertexElements = vertex.Split('/');
+                        newFace += vertexElements[0] + '/' + (uvIndex++ - numVerts).ToString() + '/' + vertexElements[2] + ' ';
+                    }
+                    sb.AppendLine(newFace);
+                }
+                File.WriteAllText(loadFileName, sb.ToString());
+                yield return LoadModelFile(files[i], true);
+            }
         }
         //ProgressbarCtrl.Instance.Hide();
+    }
+
+    IEnumerator LoadModelFile(FileInfo file, bool isWhiteModel = false)
+    {
+        TreeViewItem item = new TreeViewItem(file.FullName);
+        item.LocalizedName = file.Name;
+        ModelsNode.Nodes.Add(new TreeNode<TreeViewItem>(item));
+        ObjLoadManger.Instance.ImportModelAsync(item.LocalizedName, item.Name, isWhiteModel);
+        //ProgressbarCtrl.Instance.SetProgressbar((int)((i + 1) * 100f / fileCount + 0.5f));
+        yield return null;
     }
 
     public void AddScenery()
@@ -179,7 +275,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
             path = FileBrowser.OpenSingleFile("选择相机参数文件", null, "xml");
             if (path.Length == 0)
                 return;
-        }        
+        }
         CameraHandlers.Clear();
         XmlDocument xml = new XmlDocument();
         XmlReaderSettings set = new XmlReaderSettings();
@@ -221,7 +317,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
     public List<ImageInfo> ProjectPoints(Dictionary<int, Vector3> points, Vector3 faceNormal)
     {
         List<ImageInfo> imageInfos = new List<ImageInfo>();
-        foreach(var cameraHandler in CameraHandlers)
+        foreach (var cameraHandler in CameraHandlers)
         {
             imageInfos.AddRange(cameraHandler.Value.ProjectPoints(points, faceNormal));
         }

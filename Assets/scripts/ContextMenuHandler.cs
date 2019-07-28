@@ -127,7 +127,7 @@ public class ContextMenuHandler : MonoBehaviour
         }
         else if (cmd == "Output")
         {
-
+            ObjExportHandler.Export(ObliqueMapTreeView.CurrentGameObject.GetComponentsInChildren<MeshFilter>(), null);
         }
     }
 
