@@ -9,8 +9,6 @@ using System;
 
 public class ImageInfo
 {
-   
-
     double m_Omega;//x
     double m_Phi;//y
     double m_Kappa;//z

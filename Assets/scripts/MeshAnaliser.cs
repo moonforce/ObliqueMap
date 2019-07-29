@@ -79,17 +79,19 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
                     Vector3 faceNormal = new Vector3(ClickedMesh.normals[indecies[0]].x, ClickedMesh.normals[indecies[0]].y, ClickedMesh.normals[indecies[0]].z);
                     List<ImageInfo> imageInfos = ProjectCtrl.Instance.ProjectPoints(subMeshVertices, faceNormal);
                     imageInfos = imageInfos.OrderBy(it => it.DirectionDot).ToList();
-                    //因为路径不同，而加上下段代码
+                    
                     for (int i = imageInfos.Count - 1; i >= 0; i--)
                     {
-                        string path = ProjectCtrl.Instance.ObliqueImages.Find(o => Path.GetFileName(o) == imageInfos[i].File.Name);
-                        if (path == null)
+                        //路径不同
+                        //string path = ProjectCtrl.Instance.ObliqueImages.Find(o => Path.GetFileName(o) == imageInfos[i].File.Name);
+                        //if (path == null)
+                        //    imageInfos.Remove(imageInfos[i]);
+                        //else
+                        //    imageInfos[i].File = new FileInfo(path);
+                        //路径相同
+                        if (!ProjectCtrl.Instance.ObliqueImages.Contains(imageInfos[i].File.FullName))
                         {
                             imageInfos.Remove(imageInfos[i]);
-                        }
-                        else
-                        {
-                            imageInfos[i].File = new FileInfo(path);
                         }
                     }
                     if (imageInfos.Count > 0)
