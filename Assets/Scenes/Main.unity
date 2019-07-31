@@ -2829,6 +2829,78 @@ MonoBehaviour:
           m_CallState: 2
       m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - Path: Replace
+    Text: "\u590D\u4F4D"
+    Icon: {fileID: 0}
+    Command: Replace
+    Action:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 3841991172556181991}
+          m_MethodName: OnCmd
+          m_Mode: 0
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Validate:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 3841991172556181991}
+          m_MethodName: OnValidateCmd
+          m_Mode: 0
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - Path: Cancel
+    Text: "\u53D6\u6D88\u7F16\u8F91"
+    Icon: {fileID: 0}
+    Command: Cancel
+    Action:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 3841991172556181991}
+          m_MethodName: OnCmd
+          m_Mode: 0
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Validate:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 3841991172556181991}
+          m_MethodName: OnValidateCmd
+          m_Mode: 0
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   - Path: Output
     Text: "\u8F93\u51FA\u6A21\u578B"
     Icon: {fileID: 0}
@@ -17081,6 +17153,42 @@ MonoBehaviour:
           m_CallState: 2
       m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - Path: FullImage
+    Text: "\u67E5\u770B\u5168\u56FE"
+    Icon: {fileID: 0}
+    Command: FullImage
+    Action:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 3841991172556181991}
+          m_MethodName: OnCmd
+          m_Mode: 0
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemEvent, Assembly-CSharp,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Validate:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 3841991172556181991}
+          m_MethodName: OnValidateCmd
+          m_Mode: 0
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+      m_TypeName: Battlehub.UIControls.MenuControl.MenuItemValidationEvent, Assembly-CSharp,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_menuItemPrefab: {fileID: 5003966482220294978, guid: 75005561761fa9c48bc4c0bbbbd4c7f8,
     type: 3}
   m_anchor: {fileID: 0}
@@ -17547,7 +17655,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.000061035156, y: -0.000061035156}
+  m_AnchoredPosition: {x: -0.000045776367, y: -0.000061035156}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &8916199124309357404
@@ -18687,7 +18795,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 8916199125688926566}
   m_Direction: 0
   m_Value: 1
-  m_Size: 0.9999999
+  m_Size: 0.9999997
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:

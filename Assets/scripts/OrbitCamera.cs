@@ -3,8 +3,10 @@ using System.Collections;
 using UnityEngine.EventSystems;
 using UIWidgets;
 
-public class OrbitCamera : MonoBehaviour
+public class OrbitCamera : Singleton<OrbitCamera>
 {
+    protected OrbitCamera() { }
+
     public bool isRotating = false;
 
     public GameObject grid;
@@ -132,13 +134,17 @@ public class OrbitCamera : MonoBehaviour
                 target.transform.position = currentPosition;
             }
         }
-
         //右键恢复原位
-        if (target && GetComponent<Camera>().pixelRect.Contains(Input.mousePosition)
-            && Event.current.isMouse && Event.current.button == 1 && Event.current.clickCount == 2)
-        {
-            target.localPosition = Vector3.zero;
-        }
+        //if (target && GetComponent<Camera>().pixelRect.Contains(Input.mousePosition)
+        //    && Event.current.isMouse && Event.current.button == 1 && Event.current.clickCount == 2)
+        //{
+        //    target.localPosition = Vector3.zero;
+        //}
+    }
+
+    public void Replace()
+    {
+        target.localPosition = Vector3.zero;
     }
 
     public static float ClampAngle(float angle, float min, float max)

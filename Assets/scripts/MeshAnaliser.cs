@@ -107,12 +107,12 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
                 }
             }
         }
-        else if (Editting
-            && m_MainCamera.pixelRect.Contains(Input.mousePosition)
-            && Event.current.isMouse && Event.current.button == 1 && Event.current.clickCount == 2)
-        {
-            ResetChoice();
-        }
+        //else if (Editting
+        //    && m_MainCamera.pixelRect.Contains(Input.mousePosition)
+        //    && Event.current.isMouse && Event.current.button == 1 && Event.current.clickCount == 2)
+        //{
+        //    ResetChoice();
+        //}
     }
 
     public void ResetChoice()

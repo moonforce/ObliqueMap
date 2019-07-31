@@ -56,12 +56,17 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
 
     void OnGUI()
     {
-        if (RectTransformUtility.RectangleContainsScreenPoint(m_RT_Parent, Input.mousePosition) && HaveImage
-            && Event.current.isMouse && Event.current.button == 1 && Event.current.clickCount == 2)
-        {
-            m_RT.anchoredPosition = Vector2.zero;
-            m_RT.localScale = Vector3.one;
-        }
+        //if (RectTransformUtility.RectangleContainsScreenPoint(m_RT_Parent, Input.mousePosition) && HaveImage
+        //    && Event.current.isMouse && Event.current.button == 1 && Event.current.clickCount == 2)
+        //{
+            
+        //}
+    }
+
+    public void ViewFullImage()
+    {
+        m_RT.anchoredPosition = Vector2.zero;
+        m_RT.localScale = Vector3.one;
     }
 
     //开始拖拽触发
@@ -125,6 +130,7 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
     {
         Texture.enabled = false;
         enabled = false;
+        Destroy(Texture.texture);
         Texture.texture = null;
         HaveImage = false;
     }

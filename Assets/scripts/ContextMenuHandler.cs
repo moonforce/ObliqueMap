@@ -59,30 +59,40 @@ public class ContextMenuHandler : MonoBehaviour
         // TextureHandler存在图片、MeshAnalizer编辑中
         MenuItemInfo[] items = menu.Items;
         if (ImageController.Instance.HaveImage && MeshAnaliser.Instance.Editting)
+        {
             items[0].Command = "Paste";
+            items[1].Command = "FullImage";
+        }
         else
+        {
             items[0].Command = "DisabledCmd";
+            items[1].Command = "DisabledCmd";
+        }
     }
 
     void ModelPanelContextMenuCheckButtonState(Menu menu)
     {
-        
         MenuItemInfo[] items = menu.Items;
-        items[0].Command = "DisabledCmd";
-        items[1].Command = "DisabledCmd";
-        items[2].Command = "DisabledCmd";
+        foreach (var item in items)
+        {
+            item.Command = "DisabledCmd";
+        }            
+        if (ObliqueMapTreeView.CurrentGameObject)
+        {
+            items[2].Command = "Replace";
+            items[3].Command = "Cancel";
+            items[4].Command = "Output";
+        }            
         int clickedSubmeshIndex = MeshAnaliser.Instance.GetClickedSubmeshIndex();
-        string clickedImagePath = null;
         // 选中某个面并且此面材质含图片
         if (clickedSubmeshIndex != -1)
-        {
-            items[2].Command = "Output";
-            clickedImagePath = ObliqueMapTreeView.CurrentGameObject.GetComponent<SubMeshInfo>().ImagePaths[clickedSubmeshIndex];
+        {            
+            string clickedImagePath = ObliqueMapTreeView.CurrentGameObject.GetComponent<SubMeshInfo>().ImagePaths[clickedSubmeshIndex];
             if (!string.IsNullOrEmpty(clickedImagePath))
             {
                 items[0].Command = "PS|" + clickedImagePath;
                 items[1].Command = "Refresh|" + clickedImagePath + '|' + clickedSubmeshIndex.ToString();
-            }            
+            }
         }
     }
 
@@ -99,6 +109,10 @@ public class ContextMenuHandler : MonoBehaviour
         if (cmd == "Paste")
         {
             TextureHandler.Instance.PasteTexture();
+        }
+        else if (cmd == "FullImage")
+        {
+            ImageController.Instance.ViewFullImage();
         }
         else if (cmd.StartsWith("PS"))
         {
@@ -128,6 +142,15 @@ public class ContextMenuHandler : MonoBehaviour
         else if (cmd == "Output")
         {
             ObjExportHandler.Export(ObliqueMapTreeView.CurrentGameObject.GetComponentsInChildren<MeshFilter>(), null);
+        }
+        else if (cmd == "Cancel")
+        {
+            MeshAnaliser.Instance.ResetChoice();
+            OrbitCamera.Instance.Replace();
+        }
+        else if (cmd == "Replace")
+        {
+            OrbitCamera.Instance.Replace();
         }
     }
 
