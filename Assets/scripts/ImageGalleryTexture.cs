@@ -10,13 +10,13 @@ using UnityEngine.Networking;
 
 public class ImageGalleryTexture : MonoBehaviour, IPointerClickHandler
 {
-    public Image Texture { get; set; }
+    public RawImage Texture { get; set; }
     private List<UvLine> m_UvLines = new List<UvLine>();
     private Dictionary<int, Vector2> m_UniqueIndexUv = new Dictionary<int, Vector2>();
 
     void Start()
     {
-        Texture = GetComponent<Image>();
+        Texture = GetComponent<RawImage>();
     }
 
     public void InitContent(string imageUrl, List<Tuple<int, int>> lineIndexList, Dictionary<int, Vector2> index_UVs)
@@ -53,8 +53,7 @@ public class ImageGalleryTexture : MonoBehaviour, IPointerClickHandler
 
     private void SetTexture(Texture2D texture)
     {
-        Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-        Texture.sprite = sprite;
+        Texture.texture = texture;
         CreateUv();
     }
 

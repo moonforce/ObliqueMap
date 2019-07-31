@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.EventSystems;
-using UnityEngine.Networking;
 using UnityEngine.UI;
 
 //UI图片拖拽功能类
@@ -26,13 +24,13 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
     [SerializeField]
     private  float m_MinScale = 0.8f;
 
-    public Image Texture { get; set; }
+    public RawImage Texture { get; set; }
 
     void Start()
     {
         m_RT = gameObject.GetComponent<RectTransform>();
         m_RT_Parent = transform.parent.GetComponent<RectTransform>();
-        Texture = GetComponent<Image>();
+        Texture = GetComponent<RawImage>();
     }
 
     void Update()
@@ -117,10 +115,9 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
 
     public void setImageTexture(Texture2D texture)
     {
-        Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+        Texture.texture = texture;
         Texture.enabled = true;
-        enabled = true;
-        Texture.sprite = sprite;
+        enabled = true;        
         ConfigureContentView();
     }
 
@@ -128,7 +125,7 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
     {
         Texture.enabled = false;
         enabled = false;
-        Texture.sprite = null;
+        Texture.texture = null;
         HaveImage = false;
     }
 
@@ -136,9 +133,7 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
     {
         Rect viewportRect = m_RT_Parent.GetComponent<RectTransform>().rect;
         float viewportAspect = viewportRect.width / viewportRect.height;
-
-        Rect spriteRect = Texture.sprite.rect;
-        float spriteAspect = spriteRect.width / spriteRect.height;
+        float spriteAspect = (float)Texture.texture.width / Texture.texture.height;
 
         if (viewportAspect > spriteAspect)
         {

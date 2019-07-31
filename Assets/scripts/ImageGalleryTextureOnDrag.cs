@@ -110,7 +110,7 @@ public class ImageGalleryTextureOnDrag : MonoBehaviour, IBeginDragHandler, IDrag
         ImageGalleryTexture imageGalleryTexture = m_DraggingTextureGameObject.GetComponent<ImageGalleryTexture>();
         m_DraggingTextureGameObject.transform.parent = CanvasCtrl.Instance.transform;
         m_DraggingTextureGameObject.transform.localScale = Vector3.one;
-        imageGalleryTexture.Texture.sprite = GetComponent<Image>().sprite;
+        imageGalleryTexture.Texture.texture = GetComponent<RawImage>().texture;
 
         return m_DraggingTextureGameObject;
     }

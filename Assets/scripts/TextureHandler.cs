@@ -24,13 +24,13 @@ public class TextureHandler : Singleton<TextureHandler>
     //ImageController中的变量在TextureHandler中也保存一份索引，减少与ImageController的耦合
     private RectTransform m_RT;
     private RectTransform m_RT_Parent;
-    private Image m_Texture;
+    private RawImage m_Texture;
 
     void Start()
     {
         m_RT = gameObject.GetComponent<RectTransform>();
         m_RT_Parent = transform.parent.GetComponent<RectTransform>();
-        m_Texture = GetComponent<Image>();
+        m_Texture = GetComponent<RawImage>();
     }
 
     private void Update()
