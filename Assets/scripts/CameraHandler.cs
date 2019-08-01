@@ -82,6 +82,7 @@ public class CameraHandler
             MatOfPoint3f cvMatPoint3Ds = new MatOfPoint3f();
             cvMatPoint3Ds.fromList(cvPoint3Ds);
             MatOfPoint2f cvMatPoint2Ds = new MatOfPoint2f();
+            image.GiveTranslationVectorDelta();
             Calib3d.projectPoints(cvMatPoint3Ds, image.RotationVector, image.TranslationVector, m_CameraMatrix, m_DistCoeffs, cvMatPoint2Ds);
             List<Point> cvPoint2Ds = cvMatPoint2Ds.toList();
             bool notInThisImage = false;
