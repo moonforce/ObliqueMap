@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 
 public class CanvasCtrl : Singleton<CanvasCtrl>
@@ -21,6 +23,14 @@ public class CanvasCtrl : Singleton<CanvasCtrl>
 
     void Start()
     {
+        
+    }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            
+        }
     }
 }

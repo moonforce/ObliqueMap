@@ -75,7 +75,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
             if (folderPath.Length == 0)
                 return;
         }
-        string[] extensions = new[] { ".jpg", ".tif" };
+        string[] extensions = new[] { ".jpg" };
         DirectoryInfo dinfo = new DirectoryInfo(folderPath);
         List<FileInfo> files = dinfo.EnumerateFiles().Where(f => extensions.Contains(f.Extension.ToLower())).ToList();
         for (int i = files.Count - 1; i >= 0; i--)
