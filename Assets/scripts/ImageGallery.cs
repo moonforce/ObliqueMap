@@ -18,12 +18,24 @@ public class ImageGallery : Singleton<ImageGallery>
         HorizontalScrollbar = transform.Find("ScrollView/Scrollbar Horizontal").GetComponent<Scrollbar>();
     }
 
-    public void ResetScrollbar()
+    private void ResetScrollbar()
     {
         HorizontalScrollbar.value = 0;
     }
 
-    public void AddImage(ImageInfo imageInfo, List<Tuple<int, int>> lineIndexList)
+    public void ClearContents()
+    {
+        for (int i = 0; i < ImagesParent.childCount; ++i)
+        {
+            RawImage Texture = ImagesParent.GetChild(i).GetComponent<RawImage>();
+            Destroy(Texture.texture);
+            Texture.texture = null;
+            Destroy(ImagesParent.GetChild(i).gameObject);
+        }
+        ResetScrollbar();
+    }
+
+    public void AddImage(ImageInfo imageInfo, List<Tuple<int, int>> lineIndexList, int siblingIndex)
     {
         GameObject newImage = Instantiate(Resources.Load<GameObject>("prefab/ImageGalleryTexture"));
         FileInfo fileInfo = imageInfo.File;
@@ -32,6 +44,6 @@ public class ImageGallery : Singleton<ImageGallery>
         newImage.transform.localPosition = new Vector3(newImage.transform.localPosition.x, newImage.transform.localPosition.y, 0);
         newImage.transform.localScale = Vector3.one;
         string imageUrl = fileInfo.DirectoryName + "/thumb/" + fileInfo.Name;
-        newImage.GetComponent<ImageGalleryTexture>().InitContent(imageUrl, lineIndexList, imageInfo.Index_UVs);
+        newImage.GetComponent<ImageGalleryTexture>().InitContent(imageUrl, lineIndexList, imageInfo.Index_UVs, siblingIndex);
     }
 }

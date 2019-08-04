@@ -62,7 +62,7 @@ public class TextureHandler : Singleton<TextureHandler>
         ImageController.Instance.ResetContent();
     }
 
-    public void SendTexture(string imageUrl, List<UvLine> uvLines, Dictionary<int, Vector2> uniqueIndexUv)
+    public void ReceiveTexture(string imageUrl, List<UvLine> uvLines, Dictionary<int, Vector2> uniqueIndexUv)
     {
         ResetContent();
         foreach (UvLine galleryUvLine in uvLines)
@@ -82,7 +82,7 @@ public class TextureHandler : Singleton<TextureHandler>
             uvLine.gameObject.SetActive(false);
         }
         m_UniqueIndexUv = uniqueIndexUv;
-        StartCoroutine(DatabaseLoaderTexture_DDS.Load(ChangeExtensionToDDS(imageUrl), SetTexture));
+        StartCoroutine(DatabaseLoaderTexture_DDS.Load(Utills.ChangeExtensionToDDS(imageUrl), SetTexture));
     }
 
     private void SetTexture(Texture2D texture)
@@ -92,12 +92,7 @@ public class TextureHandler : Singleton<TextureHandler>
         CreateLines();
         CreatePointsAndAABB();
         FocusAABB();
-    }
-
-    private string ChangeExtensionToDDS(string originName)
-    {
-        return Path.GetDirectoryName(originName) + "\\" + Path.GetFileNameWithoutExtension(originName) + ".dds";
-    }
+    }    
 
     private void SetMaterialTextureAndUv(Texture2D texture, string matName)
     {

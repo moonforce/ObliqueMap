@@ -11,6 +11,7 @@ using UnityEngine.Networking;
 public class ImageGalleryTexture : MonoBehaviour, IPointerClickHandler
 {
     public RawImage Texture { get; set; }
+    public int SiblingIndexInGallery { get; set; }
     private List<UvLine> m_UvLines = new List<UvLine>();
     private Dictionary<int, Vector2> m_UniqueIndexUv = new Dictionary<int, Vector2>();
 
@@ -19,8 +20,9 @@ public class ImageGalleryTexture : MonoBehaviour, IPointerClickHandler
         Texture = GetComponent<RawImage>();
     }
 
-    public void InitContent(string imageUrl, List<Tuple<int, int>> lineIndexList, Dictionary<int, Vector2> index_UVs)
+    public void InitContent(string imageUrl, List<Tuple<int, int>> lineIndexList, Dictionary<int, Vector2> index_UVs, int siblingIndex)
     {
+        SiblingIndexInGallery = siblingIndex;
         foreach (Tuple<int, int> lineIndex in lineIndexList)
         {
             int index1 = lineIndex.Item1;
@@ -55,6 +57,10 @@ public class ImageGalleryTexture : MonoBehaviour, IPointerClickHandler
     {
         Texture.texture = texture;
         CreateUv();
+        if (SiblingIndexInGallery == 0)
+        {
+            SendTexture();
+        }
     }
 
     private void CreateUv()
@@ -78,7 +84,12 @@ public class ImageGalleryTexture : MonoBehaviour, IPointerClickHandler
     {
         if (eventData.clickCount == 2)
         {
-            TextureHandler.Instance.SendTexture(gameObject.name, m_UvLines, m_UniqueIndexUv);
+            SendTexture();
         }
+    }
+
+    private void SendTexture()
+    {
+        TextureHandler.Instance.ReceiveTexture(gameObject.name, m_UvLines, m_UniqueIndexUv);
     }
 }

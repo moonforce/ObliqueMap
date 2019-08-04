@@ -210,4 +210,9 @@ public static class Utills
         canvasGroup.interactable = false;
         canvasGroup.blocksRaycasts = false;
     }
+
+    public static string ChangeExtensionToDDS(string originName)
+    {
+        return Path.GetDirectoryName(originName) + "\\" + Path.GetFileNameWithoutExtension(originName) + ".dds";
+    }
 }

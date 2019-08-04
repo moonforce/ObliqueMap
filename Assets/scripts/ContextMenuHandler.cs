@@ -58,16 +58,18 @@ public class ContextMenuHandler : MonoBehaviour
     {
         // TextureHandler存在图片、MeshAnalizer编辑中
         MenuItemInfo[] items = menu.Items;
-        if (ImageController.Instance.HaveImage && MeshAnaliser.Instance.Editting)
+        foreach (var item in items)
+        {
+            item.Command = "DisabledCmd";
+        }
+        if (MeshAnaliser.Instance.Editting && ImageController.Instance.HaveImage)
         {
             items[0].Command = "Paste";
+        }
+        if (ImageController.Instance.HaveImage)
+        {            
             items[1].Command = "FullImage";
-        }
-        else
-        {
-            items[0].Command = "DisabledCmd";
-            items[1].Command = "DisabledCmd";
-        }
+        }        
     }
 
     void ModelPanelContextMenuCheckButtonState(Menu menu)

@@ -79,7 +79,7 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
                     Vector3 faceNormal = new Vector3(ClickedMesh.normals[indecies[0]].x, ClickedMesh.normals[indecies[0]].y, ClickedMesh.normals[indecies[0]].z);
                     List<ImageInfo> imageInfos = ProjectCtrl.Instance.ProjectPoints(subMeshVertices, faceNormal);
                     imageInfos = imageInfos.OrderBy(it => it.DirectionDot).ToList();
-                    
+
                     for (int i = imageInfos.Count - 1; i >= 0; i--)
                     {
                         //路径不同
@@ -94,16 +94,12 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
                             imageInfos.Remove(imageInfos[i]);
                         }
                     }
-                    if (imageInfos.Count > 0)
+                    ImageGallery.Instance.ClearContents();
+                    for (int i = 0; i < imageInfos.Count; ++i)
                     {
-                        Utills.DestroyAllChildren(ImageGallery.Instance.ImagesParent);
-                        ImageGallery.Instance.ResetScrollbar();
-                        foreach (var imageInfo in imageInfos)
-                        {
-                            ImageGallery.Instance.AddImage(imageInfo, ClickedSubMeshInfo.LineIndexLists[ClickedSubMeshIndex]);
-                        }
-                        ImageGallery.Instance.GetComponent<AutoResizeImageGallerySize>().UpdateLayout();
+                        ImageGallery.Instance.AddImage(imageInfos[i], ClickedSubMeshInfo.LineIndexLists[ClickedSubMeshIndex], i);
                     }
+                    ImageGallery.Instance.GetComponent<AutoResizeImageGallerySize>().UpdateLayout();
                 }
             }
         }
@@ -124,7 +120,7 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
         ClickedMaterial = null;
         ClickedSubMeshIndex = -1;
         ClickedMesh = null;
-        Utills.DestroyAllChildren(ImageGallery.Instance.ImagesParent);
+        ImageGallery.Instance.ClearContents();
         TextureHandler.Instance.ResetContent();
     }
 

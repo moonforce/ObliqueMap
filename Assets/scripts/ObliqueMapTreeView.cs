@@ -36,5 +36,20 @@ public class ObliqueMapTreeView : TreeView
             go.SetActive(true);
             CurrentGameObject = go;
         }
+        else if (node.Parent == ProjectCtrl.Instance.ObliqueImagesNode)
+        {
+            if (MeshAnaliser.Instance.Editting)
+            {
+                MeshAnaliser.Instance.ResetChoice();
+            }
+            string imageUrl = node.Item.Name;
+            ImageController.Instance.ResetContent();
+            StartCoroutine(DatabaseLoaderTexture_DDS.Load(Utills.ChangeExtensionToDDS(imageUrl), SetTexture));
+        }        
+    }
+
+    private void SetTexture(Texture2D texture)
+    {
+        ImageController.Instance.setImageTexture(texture);
     }
 }

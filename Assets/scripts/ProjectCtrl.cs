@@ -51,9 +51,9 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
 
     void testData()
     {
-        AddObliqueImages(@"F:\QZSY\倾斜贴图测试数据\jpg");
-        AddModels(@"F:\QZSY\倾斜贴图测试数据\obj");
-        ParseSmart3DXml(@"F:\QZSY\倾斜贴图测试数据\A7 -export.xml");
+        AddObliqueImages(@"E:\倾斜贴图测试数据\jpg");
+        AddModels(@"E:\倾斜贴图测试数据\obj");
+        ParseSmart3DXml(@"E:\倾斜贴图测试数据\A7 -export.xml");
     }
 
     void SetTreeNodes()
