@@ -22,7 +22,7 @@ public class DatabaseLoaderTexture_DDS : MonoBehaviour
 
     public static IEnumerator Load(string file, SetTexture setTexture)
     {
-        Texture2D texture = LoadDDS(file);
+        Texture2D texture = LoadDDS(file, true);
         if (texture == null)
             Debug.Log(error);
         else
