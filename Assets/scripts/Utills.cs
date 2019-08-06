@@ -193,8 +193,25 @@ public static class Utills
         var colors = texture.GetPixels(x, y, blockWidth, blockHeight);
         tileTexture = new Texture2D(blockWidth, blockHeight);
         tileTexture.SetPixels(colors);
+        tileTexture = FlipTexture(tileTexture);
         tileTexture.Apply();
         File.WriteAllBytes(path, tileTexture.EncodeToJPG(quality));
+    }
+
+    public static Texture2D FlipTexture(Texture2D original)
+    {
+        Texture2D flipped = new Texture2D(original.width, original.height);
+        int xN = original.width;
+        int yN = original.height;
+        for (int i = 0; i < xN; i++)
+        {
+            for (int j = 0; j < yN; j++)
+            {
+                flipped.SetPixel(i, yN - j - 1, original.GetPixel(i, j));
+            }
+        }
+        flipped.Apply();
+        return flipped;
     }
 
     public static void EnableCanvasGroup(CanvasGroup canvasGroup)

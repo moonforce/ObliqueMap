@@ -135,6 +135,15 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
         HaveImage = false;
     }
 
+    void OnDestroy()
+    {
+        if (HaveImage)
+        {
+            Destroy(Texture.texture);
+            Texture.texture = null;
+        }
+    }
+
     public void ConfigureContentView()
     {
         Rect viewportRect = m_RT_Parent.GetComponent<RectTransform>().rect;

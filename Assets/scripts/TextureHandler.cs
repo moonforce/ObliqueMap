@@ -233,7 +233,7 @@ public class TextureHandler : Singleton<TextureHandler>
 
     public Vector2 ConvertGlobalUvToLocalUv(Vector2 global)
     {
-        Vector2 res = new Vector2((global.x - m_UvBox.AABB.MinX) / m_UvBox.AABB.Spacing.x, (m_UvBox.AABB.MaxY - global.y) / m_UvBox.AABB.Spacing.y);
+        Vector2 res = new Vector2((global.x - m_UvBox.AABB.MinX) / m_UvBox.AABB.Spacing.x, (global.y - m_UvBox.AABB.MinY) / m_UvBox.AABB.Spacing.y);
         return res;
     }
 }
