@@ -12,10 +12,14 @@ public class SettingsPanelCtrl : Singleton<SettingsPanelCtrl>
     public string PhotoshopPath { get; set; }
     public float DeltaX = -490000.0f;
     public float DeltaY = -3800000.0f;
+    public float PointRadius = 1f;
+    public float LineWidth = 0.125f;
 
     private TMP_InputField m_PhotoshopInputField;
     private TMP_InputField m_DeltaX_InputField;
     private TMP_InputField m_DeltaY_InputField;
+    private TMP_InputField m_PointRadius_InputField;
+    private TMP_InputField m_LineWidth_InputField;
     private CanvasGroup m_CanvasGroup;
 
     void Start()
@@ -26,10 +30,14 @@ public class SettingsPanelCtrl : Singleton<SettingsPanelCtrl>
         m_PhotoshopInputField.onEndEdit.AddListener(PhotoshopInputFieldEndEidt);
         PhotoshopPath = m_PhotoshopInputField.text;
         transform.Find("Photoshop/SetButton").GetComponent<Button>().onClick.AddListener(SetPhotoshopPath);
-        m_DeltaX_InputField = transform.Find("Delta/InputField_X").GetComponent<TMP_InputField>();
+        m_DeltaX_InputField = transform.Find("Delta_PointLine/InputField_X").GetComponent<TMP_InputField>();
         m_DeltaX_InputField.onEndEdit.AddListener(DeltaXInputFieldEndEidt);
-        m_DeltaY_InputField = transform.Find("Delta/InputField_Y").GetComponent<TMP_InputField>();
+        m_DeltaY_InputField = transform.Find("Delta_PointLine/InputField_Y").GetComponent<TMP_InputField>();
         m_DeltaY_InputField.onEndEdit.AddListener(DeltaYInputFieldEndEidt);
+        m_PointRadius_InputField = transform.Find("Delta_PointLine/InputField_PointRadius").GetComponent<TMP_InputField>();
+        m_PointRadius_InputField.onEndEdit.AddListener(PointRadiusInputFieldEndEidt);
+        m_LineWidth_InputField = transform.Find("Delta_PointLine/InputField_LineWidth").GetComponent<TMP_InputField>();
+        m_LineWidth_InputField.onEndEdit.AddListener(LineWidthInputFieldEndEidt);
 
         CheckPlayerPrefs();
     }
@@ -42,6 +50,10 @@ public class SettingsPanelCtrl : Singleton<SettingsPanelCtrl>
         m_DeltaX_InputField.text = DeltaX.ToString();
         DeltaY = PlayerPrefs.GetFloat("DeltaY", 0);
         m_DeltaY_InputField.text = DeltaY.ToString();
+        PointRadius = PlayerPrefs.GetFloat("PointRadius", 0);
+        m_PointRadius_InputField.text = PointRadius.ToString();
+        LineWidth = PlayerPrefs.GetFloat("LineWidth", 0);
+        m_LineWidth_InputField.text = LineWidth.ToString();
     }
 
     void Close()
@@ -84,6 +96,32 @@ public class SettingsPanelCtrl : Singleton<SettingsPanelCtrl>
         if (float.TryParse(input, out DeltaY))
         {
             PlayerPrefs.SetFloat("DeltaY", DeltaY);
+        }
+    }
+
+    public void PointRadiusInputFieldEndEidt(string input)
+    {
+        if (float.TryParse(input, out PointRadius))
+        {
+            PlayerPrefs.SetFloat("PointRadius", PointRadius);
+        }
+        //更新已存在的UvPoint
+        foreach (var point in TextureHandler.Instance.UvPoints)
+        {
+            point.UpdatePointRadius(PointRadius);
+        }
+    }
+
+    public void LineWidthInputFieldEndEidt(string input)
+    {
+        if (float.TryParse(input, out LineWidth))
+        {
+            PlayerPrefs.SetFloat("LineWidth", LineWidth);
+        }
+        //更新已存在的UvLine
+        foreach (var line in TextureHandler.Instance.UvLines)
+        {
+            line.UpdateLineWidth(LineWidth);
         }
     }
 

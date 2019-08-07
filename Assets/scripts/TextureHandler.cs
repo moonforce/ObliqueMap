@@ -9,15 +9,14 @@ public class TextureHandler : Singleton<TextureHandler>
     protected TextureHandler() { }
 
     public Texture2D TextureDownloaded { get; set; } = null;
+    public List<UvLine> UvLines { get; set; } = new List<UvLine>();
+    public List<UvPoint> UvPoints { get; set; } = new List<UvPoint>();
 
     [SerializeField]
     private float m_PointRadius = 5f;
 
     [SerializeField]
     private float m_FocusScale = 1.3f;
-
-    private List<UvLine> m_UvLines = new List<UvLine>();
-    private List<UvPoint> m_UvPoints = new List<UvPoint>();
     private UvBox m_UvBox;
     private Dictionary<int, Vector2> m_UniqueIndexUv = new Dictionary<int, Vector2>();
 
@@ -57,8 +56,8 @@ public class TextureHandler : Singleton<TextureHandler>
     public void ResetContent()
     {
         Utills.DestroyAllChildren(transform);
-        m_UvLines.Clear();
-        m_UvPoints.Clear();
+        UvLines.Clear();
+        UvPoints.Clear();
         ImageController.Instance.ResetContent();
     }
 
@@ -78,7 +77,7 @@ public class TextureHandler : Singleton<TextureHandler>
             uvLine.IndexTuple = galleryUvLine.IndexTuple;
             //因为uv可能在编辑过程中更改，所以在此要使用uv字典的uv值，此时UvTuple的值已经不准确了
             uvLine.UvTuple = new Tuple<Vector2, Vector2>(uniqueIndexUv[galleryUvLine.IndexTuple.Item1], uniqueIndexUv[galleryUvLine.IndexTuple.Item2]);
-            m_UvLines.Add(uvLine);
+            UvLines.Add(uvLine);
             uvLine.gameObject.SetActive(false);
         }
         m_UniqueIndexUv = uniqueIndexUv;
@@ -110,10 +109,10 @@ public class TextureHandler : Singleton<TextureHandler>
     private void CreateLines()
     {
         Vector2 textureSize = m_Texture.rectTransform.sizeDelta;
-        foreach (UvLine uvLine in m_UvLines)
+        foreach (UvLine uvLine in UvLines)
         {
             uvLine.gameObject.SetActive(true);
-            uvLine.CreateOrUpdateLine(textureSize, true);
+            uvLine.CreateOrUpdateLine(textureSize, true, false);
         }
     }
 
@@ -137,8 +136,9 @@ public class TextureHandler : Singleton<TextureHandler>
             point_RT.localPosition = Vector3.zero;
             point_RT.localScale = Vector3.one * m_PointRadius;
             point_RT.anchoredPosition = new Vector2(indexUv.Value.x * textureRectSize.x, (indexUv.Value.y * textureRectSize.y));
+            point_RT.sizeDelta = new Vector2(SettingsPanelCtrl.Instance.PointRadius, SettingsPanelCtrl.Instance.PointRadius);
             uvPoint.Index = indexUv.Key;
-            m_UvPoints.Add(uvPoint);
+            UvPoints.Add(uvPoint);
 
             m_UvBox.UpdateAABB(indexUv.Value);
         }
@@ -156,7 +156,7 @@ public class TextureHandler : Singleton<TextureHandler>
 
     public void UpdateUvByPoint(int index, Vector2 mousePos)
     {
-        foreach (UvLine uvLine in m_UvLines)
+        foreach (UvLine uvLine in UvLines)
         {
             if (uvLine.UpdateUvByAbsolute(index, mousePos))
             {
@@ -170,7 +170,7 @@ public class TextureHandler : Singleton<TextureHandler>
 
     public void UpdateUvByLine(Tuple<int, int> indexTuple, Vector2 deltaMousePos)
     {
-        foreach (UvLine uvLine in m_UvLines)
+        foreach (UvLine uvLine in UvLines)
         {
             bool update1 = uvLine.UpdateUvByRelativeForGivenIndex(indexTuple.Item1, deltaMousePos);
             bool update2 = uvLine.UpdateUvByRelativeForGivenIndex(indexTuple.Item2, deltaMousePos);
@@ -179,7 +179,7 @@ public class TextureHandler : Singleton<TextureHandler>
                 uvLine.UpdateLineEverything();
             }
         }
-        foreach (UvPoint uvPoint in m_UvPoints)
+        foreach (UvPoint uvPoint in UvPoints)
         {
             if (uvPoint.Index == indexTuple.Item1 || uvPoint.Index == indexTuple.Item2)
             {
@@ -204,12 +204,12 @@ public class TextureHandler : Singleton<TextureHandler>
 
     public void UpdateUvByBox(Vector2 deltaMousePos)
     {
-        foreach (UvLine uvLine in m_UvLines)
+        foreach (UvLine uvLine in UvLines)
         {
             uvLine.UpdateUvByRelative(deltaMousePos);
             uvLine.UpdateLineEverything();
         }
-        foreach (UvPoint uvPoint in m_UvPoints)
+        foreach (UvPoint uvPoint in UvPoints)
         {
             uvPoint.UpdatePositionByRelative(deltaMousePos);
         }

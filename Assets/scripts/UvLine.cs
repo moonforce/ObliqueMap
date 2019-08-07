@@ -53,7 +53,7 @@ public class UvLine : MonoBehaviour
     }
 
     //gallery的line用到create和update，texture的line只用到了update
-    public void CreateOrUpdateLine(Vector2 cellSize, bool create = false)
+    public void CreateOrUpdateLine(Vector2 cellSize, bool create = false, bool isGallery = true)
     {
         Vector2 uv1 = UvTuple.Item1;
         Vector2 uv2 = UvTuple.Item2;
@@ -67,7 +67,10 @@ public class UvLine : MonoBehaviour
         }            
         if (create)
         {
-            TheLine.SetWidth(m_LineWidth);
+            if (isGallery)
+                TheLine.SetWidth(m_LineWidth);
+            else
+                TheLine.SetWidth(SettingsPanelCtrl.Instance.LineWidth);
         }
         TheLine.Draw();
         if (create)
@@ -186,5 +189,11 @@ public class UvLine : MonoBehaviour
         TheLine.Draw();
         UpdateColliderPoints();
         UpdateUvTuple();
+    }
+
+    public void UpdateLineWidth(float width)
+    {
+        TheLine.SetWidth(width);
+        TheLine.Draw();
     }
 }

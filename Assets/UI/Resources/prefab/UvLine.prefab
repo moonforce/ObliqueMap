@@ -208,7 +208,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_CanDrag: 1
-  m_LineNomalColor: {r: 0, g: 1, b: 0.07667947, a: 1}
-  m_LineHighlightColor: {r: 1, g: 0, b: 0, a: 1}
-  m_LineWidth: 0.25
+  m_LineNomalColor: {r: 0, g: 1, b: 0.07667947, a: 0.3764706}
+  m_LineHighlightColor: {r: 1, g: 0, b: 0, a: 0.3764706}
+  m_LineWidth: 0.125
   m_PointRadius: 0.5

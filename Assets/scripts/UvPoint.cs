@@ -11,6 +11,10 @@ public class UvPoint : MonoBehaviour, IDragHandler, IPointerExitHandler, IPointe
     RectTransform m_RT;
     UICircle m_Circle;
     bool m_IsDragging = false;
+    [SerializeField]
+    private Color m_PointNomalColor = Color.white;
+    [SerializeField]
+    private Color m_PointHighlightColor = Color.white;
     public int Index { get; set; }
 
     void Start()
@@ -37,22 +41,28 @@ public class UvPoint : MonoBehaviour, IDragHandler, IPointerExitHandler, IPointe
     public void OnPointerExit(PointerEventData eventData)
     {
         if (!m_IsDragging)
-            m_Circle.color = Color.yellow;
+            m_Circle.color = m_PointNomalColor;
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        m_Circle.color = Color.red;
+        m_Circle.color = m_PointHighlightColor;
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        m_IsDragging = true;
+        if (eventData.pointerId == -1)
+            m_IsDragging = true;
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
         m_IsDragging = false;
-        m_Circle.color = Color.yellow;
+        m_Circle.color = m_PointNomalColor;
+    }
+
+    public void UpdatePointRadius(float radius)
+    {
+        m_RT.sizeDelta = new Vector2(radius, radius);
     }
 }

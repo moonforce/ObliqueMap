@@ -37,7 +37,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 409, y: 409}
-  m_SizeDelta: {x: 2, y: 2}
+  m_SizeDelta: {x: 1, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6121638056260282838
 CanvasRenderer:
@@ -60,7 +60,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 0, a: 1}
+  m_Color: {r: 1, g: 1, b: 0, a: 0.3764706}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -74,7 +74,7 @@ MonoBehaviour:
   m_fillPercent: 100
   FixedToSegments: 0
   m_fill: 1
-  m_thickness: 0.5
+  m_thickness: 0
   m_segments: 36
 --- !u!114 &6121638056260282856
 MonoBehaviour:
@@ -88,6 +88,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 335958eb9001ffe47856422b8f530d7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_PointNomalColor: {r: 1, g: 1, b: 0, a: 0.5019608}
+  m_PointHighlightColor: {r: 1, g: 0, b: 0, a: 0.5019608}
 --- !u!58 &8910527585114666603
 CircleCollider2D:
   m_ObjectHideFlags: 0
