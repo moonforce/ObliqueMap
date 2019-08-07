@@ -83,16 +83,16 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
                     for (int i = imageInfos.Count - 1; i >= 0; i--)
                     {
                         //路径不同
-                        //string path = ProjectCtrl.Instance.ObliqueImages.Find(o => Path.GetFileName(o) == imageInfos[i].File.Name);
-                        //if (path == null)
-                        //    imageInfos.Remove(imageInfos[i]);
-                        //else
-                        //    imageInfos[i].File = new FileInfo(path);
-                        //路径相同
-                        if (!ProjectCtrl.Instance.ObliqueImages.Contains(imageInfos[i].File.FullName))
-                        {
+                        string path = ProjectCtrl.Instance.ObliqueImages.Find(o => Path.GetFileName(o) == imageInfos[i].File.Name);
+                        if (path == null)
                             imageInfos.Remove(imageInfos[i]);
-                        }
+                        else
+                            imageInfos[i].File = new FileInfo(path);
+                        //路径相同
+                        ////if (!ProjectCtrl.Instance.ObliqueImages.Contains(imageInfos[i].File.FullName))
+                        ////{
+                        ////    imageInfos.Remove(imageInfos[i]);
+                        ////}
                     }
                     ImageGallery.Instance.ClearContents();
                     for (int i = 0; i < imageInfos.Count; ++i)
