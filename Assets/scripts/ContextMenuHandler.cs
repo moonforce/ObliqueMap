@@ -90,7 +90,7 @@ public class ContextMenuHandler : MonoBehaviour
         if (clickedSubmeshIndex != -1)
         {            
             string clickedImagePath = ObliqueMapTreeView.CurrentGameObject.GetComponent<SubMeshInfo>().ImagePaths[clickedSubmeshIndex];
-            if (!string.IsNullOrEmpty(clickedImagePath))
+            if (!string.IsNullOrEmpty(clickedImagePath) && clickedImagePath != ObjExportHandler.DefaultMatName)
             {
                 items[0].Command = "PS|" + clickedImagePath;
                 items[1].Command = "Refresh|" + clickedImagePath + '|' + clickedSubmeshIndex.ToString();

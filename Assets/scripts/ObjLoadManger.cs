@@ -27,6 +27,6 @@ public class ObjLoadManger : Singleton<ObjLoadManger>
 
     public void ImportModelAsync(string objName, string filePath, bool isWhiteModel = false)
     {
-        objImporter.ImportModelAsync(objName, filePath, transform, importOptions, isWhiteModel);
+        objImporter.ImportModelAsync(objName, filePath, transform, importOptions);
     }
 }

@@ -85,10 +85,8 @@ namespace AsImpL
         }
 
 
-        protected override IEnumerator LoadModelFile(string absolutePath, bool isWhiteModel = false)
+        protected override IEnumerator LoadModelFile(string absolutePath)
         {
-            if (isWhiteModel)
-                absolutePath = Path.GetDirectoryName(absolutePath) + "/CompleteUvModel/" + Path.GetFileName(absolutePath);
             string url = absolutePath.Contains("//") ? absolutePath : "file:///" + absolutePath;
             yield return LoadOrDownloadText(url);
 
@@ -101,7 +99,7 @@ namespace AsImpL
             }
             //Debug.LogFormat("Parsing geometry data in {0}...", www.url);
 
-            yield return ParseGeometryData(loadedText, isWhiteModel);
+            yield return ParseGeometryData(loadedText);
         }
 
 
@@ -251,12 +249,9 @@ namespace AsImpL
         /// </summary>
         /// <param name="objDataText">OBJ file text</param>
         /// <returns>Execution is splitted into steps to not freeze the caller method.</returns>
-        protected IEnumerator ParseGeometryData(string objDataText, bool isWhiteModel = false)
+        protected IEnumerator ParseGeometryData(string objDataText)
         {
             yield return null;
-            SubMeshInfo subMeshInfo = ObjLoadManger.Instance.SubMeshInfoContainer.Find(ObjName).GetComponent<SubMeshInfo>();
-            subMeshInfo.IsCompleteUvModel = !isWhiteModel;
-            //SubMeshInfo subMeshInfo = GetComponent<SubMeshInfo>();
 
             string[] lines = objDataText.Split("\n".ToCharArray());
 
@@ -296,9 +291,7 @@ namespace AsImpL
                         dataSet.AddGroup(parameters);
                         break;
                     case "v":
-                        float z = ParseFloat(p[3]);
-                        subMeshInfo.MinY = Mathf.Min(subMeshInfo.MinY, z); //yz颠倒
-                        dataSet.AddVertex(ConvertVec3(ParseFloat(p[1]), ParseFloat(p[2]), z));
+                        dataSet.AddVertex(ConvertVec3(ParseFloat(p[1]), ParseFloat(p[2]), ParseFloat(p[3])));
                         if (p.Length >= 7)
                         {
                             // 7 for "v x y z r g b"
@@ -326,34 +319,30 @@ namespace AsImpL
                                 isFaceIndexPlus = (int.Parse(c[0]) >= 0);
                             }
                             GetFaceIndicesByOneFaceLine(face, p, isFaceIndexPlus);
-                            subMeshInfo.AddOrigonalFace(face);
                             if (numVerts == 3)
                             {
                                 dataSet.AddFaceIndices(face[0]);
                                 dataSet.AddFaceIndices(face[2]);
                                 dataSet.AddFaceIndices(face[1]);
-                                SubMeshInfo.FaceTriangleList newFace = new SubMeshInfo.FaceTriangleList();
-                                newFace.AddTriangle(face[0], face[2], face[1]);
-                                subMeshInfo.SubMeshLists.Add(newFace);
                             }
                             else
                             {
                                 // Triangulate the polygon
                                 // TODO: Texturing and lighting work better with a triangulation that maximizes triangles areas.
                                 // TODO: the following true must be replaced to a proper option (disabled by default) as soon as a proper triangulation method is implemented.
-                                Triangulator.Triangulate(dataSet, face, subMeshInfo);
+                                Triangulator.Triangulate(dataSet, face);
                                 // TODO: Maybe triangulation could be done in ObjectImporter instead.
                             }
                         }
                         break;
                     case "mtllib":
-                        if (!string.IsNullOrEmpty(parameters) && buildOptions.importMaterial)
+                        if (!string.IsNullOrEmpty(parameters))
                         {
                             mtlLib = parameters;
                         }
                         break;
                     case "usemtl":
-                        if (!string.IsNullOrEmpty(parameters) && buildOptions.importMaterial)
+                        if (!string.IsNullOrEmpty(parameters))
                         {
                             dataSet.AddMaterialName(DataSet.FixMaterialName(parameters));
                         }
@@ -361,7 +350,7 @@ namespace AsImpL
                 }
 
                 // update progress only sometimes
-                if (i % 100 == 0)
+                if (i % 7000 == 0)
                 {
                     objLoadingProgress.percentage = LOAD_PHASE_PERC * i / lines.Length;
                     yield return null;

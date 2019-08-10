@@ -14,10 +14,13 @@ using OpenCVForUnity.UnityUtils;
 using Point = OpenCVForUnity.CoreModule.Point;
 using UnityEngine.Networking;
 using System.Text;
+using ObjLoaderLY;
 
 public class ProjectCtrl : Singleton<ProjectCtrl>
 {
     protected ProjectCtrl() { }
+
+    public Transform ModelContainer;
 
     public string CompleteUvCommentLine { get; } = "# This Obj File Has Complete UVs";
     public string EmptyUv { get; } = "vt 0 0 0";
@@ -178,7 +181,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
             }
             else if (!createNewWhiteModel)
             {
-                yield return LoadModelFile(files[i], true);
+                yield return LoadModelFile(files[i], false);
             }
             else
             {
@@ -207,7 +210,6 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
                         // empty line
                         continue;
                     }
-
                     switch (p[0])
                     {
                         case "v":
@@ -245,19 +247,20 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
                     sb.AppendLine(newFace);
                 }
                 File.WriteAllText(loadFileName, sb.ToString());
-                yield return LoadModelFile(files[i], true);
+                yield return LoadModelFile(files[i], false);
             }
         }
         //ProgressbarCtrl.Instance.Hide();
     }
 
-    IEnumerator LoadModelFile(FileInfo file, bool isWhiteModel = false)
+    IEnumerator LoadModelFile(FileInfo file, bool isCompleteUvModel = true)
     {
         TreeViewItem item = new TreeViewItem(file.FullName);
         item.LocalizedName = file.Name;
         ModelsNode.Nodes.Add(new TreeNode<TreeViewItem>(item));
-        ObjLoadManger.Instance.ImportModelAsync(item.LocalizedName, item.Name, isWhiteModel);
-        //ProgressbarCtrl.Instance.SetProgressbar((int)((i + 1) * 100f / fileCount + 0.5f));
+        ObjImportHandler objImportHandler = new ObjImportHandler();
+        StartCoroutine(objImportHandler.Load(file.Name, file.FullName, ModelContainer, isCompleteUvModel));
+        //ObjLoadManger.Instance.ImportModelAsync(item.LocalizedName, item.Name, isWhiteModel);
         yield return null;
     }
 

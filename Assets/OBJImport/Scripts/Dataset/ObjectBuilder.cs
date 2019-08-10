@@ -67,7 +67,7 @@ namespace AsImpL
                 }
                 else
                 {
-                    //Debug.LogWarning("No material library defined. Using a default material.");
+                    Debug.LogWarning("No material library defined. Using a default material.");
                 }
                 Material defaultMaterial = new Material(Shader.Find(shaderName));
                 defaultMaterial.SetFloat("_Glossiness", 0);
@@ -443,7 +443,6 @@ namespace AsImpL
 
         private GameObject ImportSubObject(GameObject parentObj, DataSet.ObjectData objData, Dictionary<string, Material> mats)
         {
-            SubMeshInfo subMeshInfo = parentObj.GetComponent<SubMeshInfo>();
             bool conv2sided = buildOptions != null && buildOptions.convertToDoubleSided;
             GameObject go = new GameObject();
             go.name = objData.name;
@@ -483,7 +482,6 @@ namespace AsImpL
                     vcount++;
                 }
             }
-            subMeshInfo.ConvertFaceNewIndicies(vIdxCount);
 
             int arraySize = conv2sided ? vcount * 2 : vcount;
 
@@ -556,48 +554,17 @@ namespace AsImpL
             mesh.vertices = newVertices;
             if (objectHasUVs) mesh.uv = newUVs;
             if (objectHasNormals) mesh.normals = newNormals;
-            if (objectHasColors) mesh.colors32 = newColors;            
-            
-            int subMeshCount = subMeshInfo.SubMeshLists.Count;
-            mesh.subMeshCount = subMeshCount;
-            for (int subMeshIndex = 0; subMeshIndex < subMeshCount; ++subMeshIndex)
-            {
-                SubMeshInfo.FaceTriangleList faceTriangleList = subMeshInfo.SubMeshLists[subMeshIndex];
-                int indicesCount = faceTriangleList.Face.Count;
-                if (conv2sided)
-                    indicesCount *= 2;
-                int[] indices = new int[indicesCount];
-                if (conv2sided)
-                    indicesCount /= 2;
-                for (int s = 0; s < indicesCount; ++s)
-                {
-                    string key = DataSet.GetFaceIndicesKey(faceTriangleList.Face[s]);
-                    indices[s] = vIdxCount[key];
-                }
-                if (conv2sided)
-                {
-                    for (int s = 0; s < indicesCount; ++s)
-                    {
-                        indices[s + indicesCount] = vcount + indices[s / 3 * 3 + 2 - s % 3];
-                    }
-                }
-                mesh.SetTriangles(indices, subMeshIndex);
-            }
-
-            Renderer renderer = go.GetComponent<Renderer>();
-            Material[] materials = new Material[subMeshCount];
+            if (objectHasColors) mesh.colors32 = newColors;
 
             Material material;
+
             string matName = (objData.faceGroups[0].materialName != null) ? objData.faceGroups[0].materialName : "default";
+            Renderer renderer = go.GetComponent<Renderer>();
+
             if (mats.ContainsKey(matName))
             {
                 material = mats[matName];
-                for (int i = 0; i < materials.Length; ++i)
-                {
-                    Material newMat = Material.Instantiate(material);
-                    materials[i] = newMat;
-                }
-                renderer.sharedMaterials = materials;
+                renderer.sharedMaterial = material;
 #if UNITY_5_6_OR_NEWER
                 RendererExtensions.UpdateGIMaterials(renderer);
 #else
@@ -609,13 +576,7 @@ namespace AsImpL
                 if (mats.ContainsKey("default"))
                 {
                     material = mats["default"];
-                    for (int i = 0; i < materials.Length; ++i)
-                    {
-                        Material newMat = new Material(material.shader);
-                        newMat.CopyPropertiesFromMaterial(material);
-                        materials[i] = newMat;
-                    }
-                    renderer.sharedMaterials = materials;
+                    renderer.sharedMaterial = material;
                     Debug.LogWarning("Material: " + matName + " not found. Using the default material.");
                 }
                 else
@@ -623,6 +584,25 @@ namespace AsImpL
                     Debug.LogError("Material: " + matName + " not found.");
                 }
             }
+
+            int[] indices = new int[numIndices];
+
+            for (int s = 0; s < n; s++)
+            {
+                DataSet.FaceIndices fi = objData.faceGroups[0].faces[s];
+                string key = DataSet.GetFaceIndicesKey(fi);
+                indices[s] = vIdxCount[key];
+            }
+            if (conv2sided)
+            {
+                for (int s = 0; s < n; s++)
+                {
+                    indices[s + n] = vcount + indices[s / 3 * 3 + 2 - s % 3];
+                }
+            }
+
+            mesh.SetTriangles(indices, 0);
+
 
             if (!objectHasNormals)
             {

@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using AsImpL;
+using ObjLoaderLY;
 using System;
 
 public class SubMeshInfo : MonoBehaviour
@@ -9,9 +9,9 @@ public class SubMeshInfo : MonoBehaviour
     [System.Serializable]
     public class FaceTriangleList
     {
-        public List<DataSet.FaceIndices> Face { get; set; } = new List<DataSet.FaceIndices>();
+        public List<FaceIndices> Face { get; set; } = new List<FaceIndices>();
 
-        public void AddTriangle(DataSet.FaceIndices v0, DataSet.FaceIndices v1, DataSet.FaceIndices v2)
+        public void AddTriangle(FaceIndices v0, FaceIndices v1, FaceIndices v2)
         {
             Face.Add(v0);
             Face.Add(v1);
@@ -30,17 +30,17 @@ public class SubMeshInfo : MonoBehaviour
     public List<List<Tuple<int, int>>> LineIndexLists { get; set; } = new List<List<Tuple<int, int>>>();
     //string为原face的位置/uv索引/法线，int为去重后的index，此index作为submesh的三角形顶点索引，以三角形列表形式传入mesh中
     public Dictionary<string, int> OrigonalFaceNewIndexDictionary { get; set; } = new Dictionary<string, int>();
-    //贴图路径
-    public List<string> ImagePaths { get; set; } = new List<string>();
+    //贴图索引路径字典
+    public Dictionary<int, string> ImagePaths { get; set; } = new Dictionary<int, string>();
     //Y轴最小值
     public float MinY { get; set; } = float.MaxValue;
 
-    public void AddOrigonalFace(DataSet.FaceIndices[] faces)
+    public void AddOrigonalFace(FaceIndices[] faces)
     {
         List<string> origonalFace = new List<string>();
         foreach (var face in faces)
         {
-            origonalFace.Add(DataSet.GetFaceIndicesKey(face));
+            origonalFace.Add(DataSetLY.GetFaceIndicesKey(face));
         }
         OrigonalFacesLists.Add(origonalFace);
     }
@@ -77,6 +77,5 @@ public class SubMeshInfo : MonoBehaviour
             }
             LineIndexLists.Add(lineIndexList);
         }
-        ImagePaths = new List<string>(new string[FaceNewIndexLists.Count]);
     }
 }

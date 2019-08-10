@@ -28,8 +28,8 @@ public class ObliqueMapTreeView : TreeView
             if (CurrentGameObject)
                 CurrentGameObject.SetActive(false);
             MeshAnaliser.Instance.ResetChoice();
-            GameObject go = ObjLoadManger.Instance.transform.Find(node.Item.LocalizedName).gameObject;
-            Bounds bounds = go.transform.GetChild(0).GetComponent<MeshFilter>().sharedMesh.bounds;
+            GameObject go = ProjectCtrl.Instance.ModelContainer.Find(node.Item.LocalizedName).gameObject;
+            Bounds bounds = go.transform.GetComponent<MeshFilter>().sharedMesh.bounds;
             Vector3 center = bounds.center;
             Vector3 size = bounds.size;
             Camera.main.GetComponent<OrbitCamera>().SetTarget(go, center, size);

@@ -5,8 +5,11 @@ using System.Collections.Generic;
 using System.IO;
 using System;
 
-public class ObjExportHandler : MonoBehaviour
+public class ObjExportHandler
 {
+    public static string DefaultMatName = "default";
+    public static string ExportSuffix = "";
+
     public static void Export(MeshFilter[] sceneMeshes, string exportPath)
     {
         foreach (MeshFilter mf in sceneMeshes)
@@ -27,14 +30,15 @@ public class ObjExportHandler : MonoBehaviour
             StringBuilder sb = new StringBuilder();
             StringBuilder sbMaterials = new StringBuilder();
             sb.AppendLine(ProjectCtrl.Instance.CompleteUvCommentLine);
-            sb.AppendLine("mtllib " + baseFileName + "_new.mtl");
-            sb.AppendLine("g " + baseFileName);
+            sb.AppendLine("mtllib " + baseFileName + ExportSuffix + ".mtl");
 
             MeshRenderer mr = mf.gameObject.GetComponent<MeshRenderer>();
             Material[] mats = mr.sharedMaterials;
             for (int j = 0; j < mats.Length; j++)
             {
                 Material m = mats[j];
+                if (DefaultMatName == m.name)
+                    continue;
                 if (!materialCache.Contains(m.name))
                 {
                     materialCache.Add(m.name);
@@ -89,7 +93,8 @@ public class ObjExportHandler : MonoBehaviour
             for (int i = 0; i < mesh.subMeshCount; i++)
             {
                 string matName = mr.sharedMaterials[i].name;
-                sb.AppendLine("usemtl " + matName);
+                if (DefaultMatName != matName)
+                    sb.AppendLine("usemtl " + matName);
 
                 List<string> OrigonalFacesList = subMeshInfo.OrigonalFacesLists[i];
                 Dictionary<string, int> OrigonalFaceNewIndexDictionary = subMeshInfo.OrigonalFaceNewIndexDictionary;
@@ -105,8 +110,8 @@ public class ObjExportHandler : MonoBehaviour
                 }
                 sb.AppendLine("f " + newFace);
             }
-            File.WriteAllText(exportFileInfo.Directory.FullName + "/" + baseFileName + "_new.obj", sb.ToString());
-            File.WriteAllText(exportFileInfo.Directory.FullName + "/" + baseFileName + "_new.mtl", sbMaterials.ToString());
+            File.WriteAllText(exportFileInfo.Directory.FullName + "/" + baseFileName + ExportSuffix + ".obj", sb.ToString());
+            File.WriteAllText(exportFileInfo.Directory.FullName + "/" + baseFileName + ExportSuffix + ".mtl", sbMaterials.ToString());
         }
     }
 
@@ -114,9 +119,7 @@ public class ObjExportHandler : MonoBehaviour
     {
         StringBuilder sb = new StringBuilder();
         sb.AppendLine("newmtl " + m.name);
-        sb.AppendLine("Kd 1 1 1");
         sb.AppendLine("map_Kd " + m.name);
-        sb.AppendLine("illum 2");
         return sb.ToString();
     }
 }

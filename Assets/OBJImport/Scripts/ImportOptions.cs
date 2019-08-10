@@ -51,9 +51,6 @@ namespace AsImpL
         [Tooltip("Hide the loaded object during the loading process")]
         public bool hideWhileLoading = false;
 
-        [Tooltip("whether import material")]
-        public bool importMaterial = false;
-
         [Header("Local Transform for the imported game object")]
         [Tooltip("Position of the object")]
         public Vector3 localPosition = Vector3.zero;

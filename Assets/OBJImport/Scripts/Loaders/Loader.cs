@@ -57,8 +57,6 @@ namespace AsImpL
 
         private Texture2D loadedTexture = null;
 
-        protected string ObjName;//添加用于寻找SubMeshInfo物体的物体名称
-
         /// <summary>
         /// Load the file assuming its vertical axis is Z instead of Y 
         /// </summary>
@@ -149,9 +147,8 @@ namespace AsImpL
         /// <param name="absolutePath">absolute file path</param>
         /// <param name="parentObj">Transform to which attach the loaded object (null=scene)</param>
         /// <returns>You can use StartCoroutine( loader.Load(...) )</returns>
-        public IEnumerator Load(string objName, string absolutePath, Transform parentObj, bool isWhiteModel = false)
+        public IEnumerator Load(string objName, string absolutePath, Transform parentObj)
         {
-            ObjName = objName;
             string fileName = Path.GetFileName(absolutePath);
             string fileNameNoExt = Path.GetFileNameWithoutExtension(absolutePath);
             string name = objName;
@@ -195,12 +192,7 @@ namespace AsImpL
 
             float lastTime = Time.realtimeSinceStartup;
             float startTime = lastTime;
-            //解析模型
-            GameObject subMeshInfoGameObject = new GameObject(objName);
-            subMeshInfoGameObject.AddComponent<SubMeshInfo>();
-            subMeshInfoGameObject.transform.SetParent(ObjLoadManger.Instance.SubMeshInfoContainer);
-            //SubMeshInfo subMeshInfo = gameObject.AddComponent<SubMeshInfo>();
-            yield return LoadModelFile(absolutePath, isWhiteModel);
+            yield return LoadModelFile(absolutePath);
             loadStats.modelParseTime = Time.realtimeSinceStartup - lastTime;
 
             if (objLoadingProgress.error)
@@ -246,7 +238,7 @@ namespace AsImpL
         /// </summary>
         /// <param name="absolutePath">absolute file path</param>
         /// <remarks>This is called by Load() method</remarks>
-        protected abstract IEnumerator LoadModelFile(string absolutePath, bool isWhiteModel);
+        protected abstract IEnumerator LoadModelFile(string absolutePath);
 
         /// <summary>
         /// Load the material library from the given path.
@@ -365,12 +357,6 @@ namespace AsImpL
             objLoadingProgress.message = "Building scene objects...";
 
             GameObject newObj = new GameObject(objName);
-            SubMeshInfo subMeshInfo = ObjLoadManger.Instance.SubMeshInfoContainer.Find(objName).GetComponent<SubMeshInfo>();
-            subMeshInfo.FilePath = absolutePath;
-            //SubMeshInfo subMeshInfo = gameObject.GetComponent<SubMeshInfo>();
-            newObj.AddComponent(subMeshInfo);
-            DestroyImmediate(subMeshInfo.gameObject);
-            //DestroyImmediate(subMeshInfo);
             if (buildOptions.hideWhileLoading)
             {
                 newObj.SetActive(false);

@@ -378,7 +378,7 @@ namespace AsImpL
         /// <param name="filePath"></param>
         /// <param name="parentObj"></param>
         /// <param name="options"></param>
-        public void ImportModelAsync(string objName, string filePath, Transform parentObj, ImportOptions options, bool isWhiteModel = false)
+        public void ImportModelAsync(string objName, string filePath, Transform parentObj, ImportOptions options)
         {
             if (loaderList == null)
             {
@@ -407,7 +407,7 @@ namespace AsImpL
                 objName = Path.GetFileNameWithoutExtension(absolutePath);
             }
             allLoaded = false;
-            StartCoroutine(loader.Load(objName, absolutePath, parentObj, isWhiteModel));
+            StartCoroutine(loader.Load(objName, absolutePath, parentObj));
         }
 
 
