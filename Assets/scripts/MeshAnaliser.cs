@@ -8,6 +8,9 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
 {
     protected MeshAnaliser() { }
 
+    static Shader OutlineShader;
+    static Shader NormalShader;
+
     Camera m_MainCamera;
     Transform m_MainLight;
     Quaternion m_MainLightOrigonQuaternion;
@@ -23,6 +26,9 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
         m_MainCamera = Camera.main;
         m_MainLight = GameObject.Find("MainLight").transform;
         m_MainLightOrigonQuaternion = m_MainLight.rotation;
+
+        OutlineShader = Shader.Find("Outline/VerticsOutline_Always");
+        NormalShader = Shader.Find("Standard");
     }
 
     void OnGUI()
@@ -116,7 +122,9 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
         Editting = false;
         m_MainLight.rotation = m_MainLightOrigonQuaternion;
         if (ClickedMaterial)
-            ClickedMaterial.SetColor("_Color", Color.white);
+        {
+            SwitchShader(NormalShader);
+        }
         ClickedMaterial = null;
         ClickedSubMeshIndex = -1;
         ClickedMesh = null;
@@ -128,9 +136,11 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
     {
         //修改判断条件
         if (ClickedMaterial)
-            ClickedMaterial.SetColor("_Color", Color.white);
+        {
+            SwitchShader(NormalShader);
+        }
         ClickedMaterial = ObliqueMapTreeView.CurrentGameObject.GetComponentInChildren<MeshRenderer>().sharedMaterials[ClickedSubMeshIndex];
-        ClickedMaterial.SetColor("_Color", Color.red);
+        SwitchShader(OutlineShader);
     }
 
     public int GetClickedSubmeshIndex()
@@ -165,5 +175,10 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
             }
         }
         return -1;
+    }
+
+    private void SwitchShader(Shader targetShader)
+    {
+        ClickedMaterial.shader = targetShader;
     }
 }
