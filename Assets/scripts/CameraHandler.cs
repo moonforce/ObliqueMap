@@ -11,14 +11,7 @@ using System.Linq;
 
 public class CameraHandler
 {
-    string m_Name;
-    int m_Width;
-    int m_Height;
-    double m_FocalLength;
-    double m_SensorSize;
-    Point m_PrincipalPoint = new Point();
     MatOfDouble m_DistCoeffs = new MatOfDouble();
-    double m_AspectRatio = 1f;
     Mat m_CameraMatrix = Mat.eye(3, 3, CvType.CV_32F);
 
     static Dictionary<string, int> m_DistCoeffsIndecies = new Dictionary<string, int>
@@ -40,18 +33,27 @@ public class CameraHandler
     };
 
     public List<ImageInfo> Images { get; set; } = new List<ImageInfo>();
+    public string Name { get; set; }
+    public int Width { get; set; }
+    public int Height { get; set; }
+    public double FocalLength { get; set; }
+    public double OrigonalFocalLength { get; set; }
+    public double SensorSize { get; set; }
+    public Point PrincipalPoint { get; set; } = new Point();
+    public double AspectRatio { get; set; } = 1f;
+    public Dictionary<string, double> DistCoeffs { get; set; } = new Dictionary<string, double>();
 
     public CameraHandler(string name, int width, int height, double focalLength, double sensorSize, Point principalPoint, XmlNode distortionNode, double aspectRatio)
     {
-        m_Name = name;
-        m_Width = width;
-        m_Height = height;
-        m_FocalLength = focalLength;
-        m_SensorSize = sensorSize;
-        m_FocalLength = m_FocalLength * ((m_Width > m_Height) ? m_Width: m_Height) / sensorSize;
-        m_PrincipalPoint = principalPoint;
-        m_AspectRatio = aspectRatio;
-        m_CameraMatrix.put(0, 0, m_FocalLength, 0, m_PrincipalPoint.x, 0, m_FocalLength, m_PrincipalPoint.y, 0, 0, 1);
+        Name = name;
+        Width = width;
+        Height = height;
+        OrigonalFocalLength = focalLength;
+        SensorSize = sensorSize;
+        FocalLength = OrigonalFocalLength * ((Width > Height) ? Width: Height) / sensorSize;
+        PrincipalPoint = principalPoint;
+        AspectRatio = aspectRatio;
+        m_CameraMatrix.put(0, 0, FocalLength, 0, PrincipalPoint.x, 0, FocalLength, PrincipalPoint.y, 0, 0, 1);
 
         double[] distCoeffsList = new double[distortionNode.ChildNodes.Count];
         foreach (XmlNode distCoeff in distortionNode.ChildNodes)
@@ -60,6 +62,7 @@ public class CameraHandler
             if (m_DistCoeffsIndecies.TryGetValue(distCoeff.Name, out index))
             {
                 distCoeffsList[index] = double.Parse(distCoeff.InnerText);
+                DistCoeffs.Add(distCoeff.Name, distCoeffsList[index]);
             }
         }
         m_DistCoeffs.fromArray(distCoeffsList); 
@@ -88,8 +91,8 @@ public class CameraHandler
             bool notInThisImage = false;
             for (int i = 0; i < cvPoint2Ds.Count; ++i)
             {
-                float u = (float)cvPoint2Ds[i].x / m_Width;
-                float v = 1f - (float)cvPoint2Ds[i].y / m_Height;
+                float u = (float)cvPoint2Ds[i].x / Width;
+                float v = 1f - (float)cvPoint2Ds[i].y / Height;
                 if (u < 0 || u > 1 || v < 0 || v > 1)
                 {
                     notInThisImage = true;

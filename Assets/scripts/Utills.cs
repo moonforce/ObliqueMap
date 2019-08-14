@@ -232,4 +232,24 @@ public static class Utills
     {
         return Path.GetDirectoryName(originName) + "\\" + Path.GetFileNameWithoutExtension(originName) + ".dds";
     }
+
+    public static string DoubleToStringSignificantDigits(double a, int SignificantDigits)
+    {
+        string formaterG = 'G' + SignificantDigits.ToString("N0");
+        string strResult = a.ToString(formaterG);
+        int resultLength = SignificantDigits;
+        if (strResult.IndexOf('-') >= 0) resultLength++;
+        if (strResult.IndexOf('.') >= 0) resultLength++;
+        if (Math.Abs(a) < 1) resultLength++; //绝对值小于1，有一个整数0不算有效位
+        if (strResult.Length < resultLength)
+        {
+            if (strResult.IndexOf('.') < 0)
+            {
+                strResult += '.';
+                resultLength++;
+            }
+            strResult = strResult.PadRight(resultLength, '0');
+        }
+        return (strResult);
+    }
 }

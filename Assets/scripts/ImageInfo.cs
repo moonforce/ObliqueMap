@@ -9,13 +9,6 @@ using System;
 
 public class ImageInfo
 {
-    double m_Omega;//x
-    double m_Phi;//y
-    double m_Kappa;//z
-    double m_X;
-    double m_Y;
-    double m_Z;
-
     //新index,uv坐标
     public Dictionary<int, Vector2> Index_UVs { get; set; } = new Dictionary<int, Vector2>();    
     public Mat RotationVector { get; set; } = new Mat(3, 1, CvType.CV_32F);
@@ -25,25 +18,33 @@ public class ImageInfo
     public FileInfo File { get; set; }
     public float DirectionDot { get; set; }
     public Vector3 Direction { get; set; }
+
+    public double Omega { get; set; }
+    public double Phi { get; set; }
+    public double Kappa { get; set; }
+    public double X { get; set; }
+    public double Y { get; set; }
+    public double Z { get; set; }
+
     public ImageInfo(FileInfo fileInfo, double omega, double phi, double kappa, double x, double y, double z)
     {
         File = fileInfo;
-        m_Omega = (omega + 0) / 180.0 * Math.PI;
-        m_Phi = (phi + 0) / 180.0 * Math.PI;
-        m_Kappa = (kappa + 0) / 180.0 * Math.PI;
-        m_X = x;
-        m_Y = y;
-        m_Z = z;        
+        Omega = (omega + 0) / 180.0 * Math.PI;
+        Phi = (phi + 0) / 180.0 * Math.PI;
+        Kappa = (kappa + 0) / 180.0 * Math.PI;
+        X = x;
+        Y = y;
+        Z = z;        
         R.put(0, 0,
-            Math.Cos(m_Phi) * Math.Cos(m_Kappa),
-            Math.Cos(m_Omega) * Math.Sin(m_Kappa) + Math.Sin(m_Omega) * Math.Sin(m_Phi) * Math.Cos(m_Kappa),
-            Math.Sin(m_Omega) * Math.Sin(m_Kappa) - Math.Cos(m_Omega) * Math.Sin(m_Phi) * Math.Cos(m_Kappa),
-            -Math.Cos(m_Phi) * Math.Sin(m_Kappa),
-            Math.Cos(m_Omega) * Math.Cos(m_Kappa) - Math.Sin(m_Omega) * Math.Sin(m_Phi) * Math.Sin(m_Kappa),
-            Math.Sin(m_Omega) * Math.Cos(m_Kappa) + Math.Cos(m_Omega) * Math.Sin(m_Phi) * Math.Sin(m_Kappa),
-            Math.Sin(m_Phi),
-            -Math.Sin(m_Omega) * Math.Cos(m_Phi),
-            Math.Cos(m_Omega) * Math.Cos(m_Phi)
+            Math.Cos(Phi) * Math.Cos(Kappa),
+            Math.Cos(Omega) * Math.Sin(Kappa) + Math.Sin(Omega) * Math.Sin(Phi) * Math.Cos(Kappa),
+            Math.Sin(Omega) * Math.Sin(Kappa) - Math.Cos(Omega) * Math.Sin(Phi) * Math.Cos(Kappa),
+            -Math.Cos(Phi) * Math.Sin(Kappa),
+            Math.Cos(Omega) * Math.Cos(Kappa) - Math.Sin(Omega) * Math.Sin(Phi) * Math.Sin(Kappa),
+            Math.Sin(Omega) * Math.Cos(Kappa) + Math.Cos(Omega) * Math.Sin(Phi) * Math.Sin(Kappa),
+            Math.Sin(Phi),
+            -Math.Sin(Omega) * Math.Cos(Phi),
+            Math.Cos(Omega) * Math.Cos(Phi)
             );        
         Calib3d.Rodrigues(R, RotationVector);
 
@@ -53,9 +54,9 @@ public class ImageInfo
 
     public void GiveTranslationVectorDelta()
     {
-        double x = m_X + SettingsPanelCtrl.Instance.DeltaX;
-        double y = m_Y + SettingsPanelCtrl.Instance.DeltaY;
-        double z = m_Z;
+        double x = X + SettingsPanelCtrl.Instance.DeltaX;
+        double y = Y + SettingsPanelCtrl.Instance.DeltaY;
+        double z = Z;
         Mat C = new Mat(3, 1, CvType.CV_32F);
         C.put(0, 0, x, y, z);
         TranslationVector = -R * C;

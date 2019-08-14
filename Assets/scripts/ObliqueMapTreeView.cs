@@ -23,7 +23,7 @@ public class ObliqueMapTreeView : TreeView
     void DoubleClickListener(int index)
     {
         var node = DataSource[index].Node;        
-        if (node.Parent == ProjectCtrl.Instance.ModelsNode)
+        if (node.Parent == ProjectCtrl.Instance.ModelsTreeNode)
         {
             if (CurrentGameObject)
                 CurrentGameObject.SetActive(false);
@@ -36,7 +36,7 @@ public class ObliqueMapTreeView : TreeView
             go.SetActive(true);
             CurrentGameObject = go;
         }
-        else if (node.Parent == ProjectCtrl.Instance.ObliqueImagesNode)
+        else if (node.Parent == ProjectCtrl.Instance.ObliqueImagesTreeNode)
         {
             if (MeshAnaliser.Instance.Editting)
             {

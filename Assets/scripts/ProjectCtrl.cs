@@ -20,6 +20,9 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
 {
     protected ProjectCtrl() { }
 
+    string m_ProjectPath;
+    int DoubleSignificantDigits = 17;
+
     public Transform ModelContainer;
 
     public string CompleteUvCommentLine { get; } = "# This Obj File Has Complete UVs";
@@ -34,9 +37,10 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
     public Dictionary<string, CameraHandler> CameraHandlers { get; set; } = new Dictionary<string, CameraHandler>();
     public List<string> ObliqueImages { get; set; } = new List<string>();
     public List<string> Models { get; set; } = new List<string>();
-    public TreeNode<TreeViewItem> ObliqueImagesNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("航拍斜片"));
-    public TreeNode<TreeViewItem> ModelsNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("三维模型"));
-    public TreeNode<TreeViewItem> SceneryNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("地面模型"));
+    public List<string> Sceneries { get; set; } = new List<string>();
+    public TreeNode<TreeViewItem> ObliqueImagesTreeNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("航拍斜片"));
+    public TreeNode<TreeViewItem> ModelsTreeNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("三维模型"));
+    public TreeNode<TreeViewItem> SceneryTreeNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("地面模型"));
 
     public bool Debug = true;
 
@@ -62,12 +66,75 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
     void SetTreeNodes()
     {
         var nodes = new ObservableList<TreeNode<TreeViewItem>>();
-        nodes.Add(ObliqueImagesNode);
-        nodes.Add(ModelsNode);
-        nodes.Add(SceneryNode);
-        ObliqueImagesNode.Nodes = new ObservableList<TreeNode<TreeViewItem>>();
-        ModelsNode.Nodes = new ObservableList<TreeNode<TreeViewItem>>();
+        nodes.Add(ObliqueImagesTreeNode);
+        nodes.Add(ModelsTreeNode);
+        nodes.Add(SceneryTreeNode);
+        ObliqueImagesTreeNode.Nodes = new ObservableList<TreeNode<TreeViewItem>>();
+        ModelsTreeNode.Nodes = new ObservableList<TreeNode<TreeViewItem>>();
         m_Tree.Nodes = nodes;
+    }
+
+    public void CreateProject()
+    {
+        m_ProjectPath = FileBrowser.SaveFile("NewProject", "omp");
+        if (string.IsNullOrEmpty(m_ProjectPath))
+            MessageBoxCtrl.Instance.Show("创建工程失败，未选择路径");
+    }
+
+    public void SaveProject()
+    {
+        if (string.IsNullOrEmpty(m_ProjectPath))
+            return;
+        XmlDocument xmlDoc = new XmlDocument();
+        xmlDoc.AppendChild(xmlDoc.CreateXmlDeclaration("1.0", "utf-8", null));
+        xmlDoc.AppendChild(xmlDoc.CreateElement("Project"));
+        AddRootLeaf(xmlDoc, "ObliqueImages", "ObliqueImage", ObliqueImages);
+        AddRootLeaf(xmlDoc, "Models", "Model", Models);
+        AddRootLeaf(xmlDoc, "Sceneries", "Scenery", Sceneries);
+        var photogroupsNode = CreateNode(xmlDoc, xmlDoc.SelectSingleNode("Project"), "Photogroups");
+        foreach (var cameraHandler in CameraHandlers.Values)
+        {
+            var photogroupNode = CreateNode(xmlDoc, photogroupsNode, "Photogroup");
+            CreateNode(xmlDoc, photogroupNode, "Name", cameraHandler.Name);
+            var imageDimensionsNode = CreateNode(xmlDoc, photogroupNode, "ImageDimensions");
+            CreateNode(xmlDoc, photogroupNode, "FocalLength", Utills.DoubleToStringSignificantDigits(cameraHandler.OrigonalFocalLength, DoubleSignificantDigits));
+            CreateNode(xmlDoc, photogroupNode, "SensorSize", Utills.DoubleToStringSignificantDigits(cameraHandler.SensorSize, DoubleSignificantDigits));
+            var principalPointNode = CreateNode(xmlDoc, photogroupNode, "PrincipalPoint");
+            var distortionNode = CreateNode(xmlDoc, photogroupNode, "Distortion");
+            CreateNode(xmlDoc, photogroupNode, "AspectRatio", Utills.DoubleToStringSignificantDigits(cameraHandler.AspectRatio, DoubleSignificantDigits));
+            CreateNode(xmlDoc, imageDimensionsNode, "Width", cameraHandler.Width.ToString());
+            CreateNode(xmlDoc, imageDimensionsNode, "Height", cameraHandler.Height.ToString());            
+            CreateNode(xmlDoc, principalPointNode, "x", Utills.DoubleToStringSignificantDigits(cameraHandler.PrincipalPoint.x, DoubleSignificantDigits));
+            CreateNode(xmlDoc, principalPointNode, "y", Utills.DoubleToStringSignificantDigits(cameraHandler.PrincipalPoint.y, DoubleSignificantDigits));
+            foreach (var DistCoeff in cameraHandler.DistCoeffs)
+            {
+                CreateNode(xmlDoc, distortionNode, DistCoeff.Key, Utills.DoubleToStringSignificantDigits(DistCoeff.Value, DoubleSignificantDigits));
+            }
+            foreach (var image in cameraHandler.Images)
+            {
+                var photoNode = CreateNode(xmlDoc, photogroupNode, "Photo");
+                CreateNode(xmlDoc, photoNode, "ImagePath", image.File.FullName);
+                var poseNode = CreateNode(xmlDoc, photoNode, "Pose");
+                var rotationNode = CreateNode(xmlDoc, poseNode, "Rotation");
+                CreateNode(xmlDoc, rotationNode, "Omega", Utills.DoubleToStringSignificantDigits(image.Omega, DoubleSignificantDigits));
+                CreateNode(xmlDoc, rotationNode, "Phi", Utills.DoubleToStringSignificantDigits(image.Phi, DoubleSignificantDigits));
+                CreateNode(xmlDoc, rotationNode, "Kappa", Utills.DoubleToStringSignificantDigits(image.Kappa, DoubleSignificantDigits));
+                var centerNode = CreateNode(xmlDoc, poseNode, "Center");
+                CreateNode(xmlDoc, centerNode, "x", Utills.DoubleToStringSignificantDigits(image.X, DoubleSignificantDigits));
+                CreateNode(xmlDoc, centerNode, "y", Utills.DoubleToStringSignificantDigits(image.Y, DoubleSignificantDigits));
+                CreateNode(xmlDoc, centerNode, "z", Utills.DoubleToStringSignificantDigits(image.Z, DoubleSignificantDigits));
+            }
+        }
+        xmlDoc.Save(m_ProjectPath);
+    }
+
+    private void AddRootLeaf(XmlDocument xmlDoc, string rootName, string leafName, List<string> elements)
+    {
+        var rootNode = CreateNode(xmlDoc, xmlDoc.SelectSingleNode("Project"), rootName);
+        foreach (string element in elements)
+        {
+            CreateNode(xmlDoc, rootNode, leafName, element);
+        }
     }
 
     public void AddObliqueImages(string folderPath)
@@ -113,7 +180,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         {
             TreeViewItem item = new TreeViewItem(files[i].FullName);
             item.LocalizedName = files[i].Name;
-            ObliqueImagesNode.Nodes.Add(new TreeNode<TreeViewItem>(item));
+            ObliqueImagesTreeNode.Nodes.Add(new TreeNode<TreeViewItem>(item));
             string thumb_name = thumb_path + files[i].Name;
             if (!haveThumb || !File.Exists(thumb_name))
             {
@@ -257,7 +324,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
     {
         TreeViewItem item = new TreeViewItem(file.FullName);
         item.LocalizedName = file.Name;
-        ModelsNode.Nodes.Add(new TreeNode<TreeViewItem>(item));
+        ModelsTreeNode.Nodes.Add(new TreeNode<TreeViewItem>(item));
         ObjImportHandler objImportHandler = new ObjImportHandler();
         StartCoroutine(objImportHandler.Load(file.Name, file.FullName, ModelContainer, isCompleteUvModel));
         //ObjLoadManger.Instance.ImportModelAsync(item.LocalizedName, item.Name, isWhiteModel);
@@ -327,8 +394,12 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         return imageInfos;
     }
 
-    public void SaveProject()
+    public static XmlNode CreateNode(XmlDocument xmlDoc, XmlNode parentNode, string name, string value = null)
     {
-
-    }
+        XmlNode node = xmlDoc.CreateNode(XmlNodeType.Element, name, null);
+        if (value != null)
+            node.InnerText = value;
+        parentNode.AppendChild(node);
+        return node;
+    }    
 }
