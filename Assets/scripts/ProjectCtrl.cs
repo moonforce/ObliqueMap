@@ -8,11 +8,7 @@ using System.Linq;
 using System.Drawing;
 using System;
 using System.Xml;
-using OpenCVForUnity.CoreModule;
-using OpenCVForUnity.Calib3dModule;
-using OpenCVForUnity.UnityUtils;
 using Point = OpenCVForUnity.CoreModule.Point;
-using UnityEngine.Networking;
 using System.Text;
 using ObjLoaderLY;
 
@@ -42,25 +38,18 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
     public TreeNode<TreeViewItem> ModelsTreeNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("三维模型"));
     public TreeNode<TreeViewItem> SceneryTreeNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("地面模型"));
 
-    public bool Debug = true;
-
     void Start()
     {
         m_Tree = transform.GetComponentInChildren<TreeView>();
         m_Tree.Init();
         SetTreeNodes();
-
-        if (Debug)
-        {
-            Invoke("testData", 1);
-        }
     }
 
     void testData()
     {
-        AddObliqueImages(@"E:\倾斜贴图测试数据\jpg");
-        AddModels(@"E:\倾斜贴图测试数据\obj");
-        ParseSmart3DXml(@"E:\倾斜贴图测试数据\A7 -export.xml");
+        //AddObliqueImages(@"E:\倾斜贴图测试数据\jpg");
+        //AddModels(@"E:\倾斜贴图测试数据\obj");
+        //ParseSmart3DXml(@"E:\倾斜贴图测试数据\A7 -export.xml");
     }
 
     void SetTreeNodes()
@@ -71,20 +60,190 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         nodes.Add(SceneryTreeNode);
         ObliqueImagesTreeNode.Nodes = new ObservableList<TreeNode<TreeViewItem>>();
         ModelsTreeNode.Nodes = new ObservableList<TreeNode<TreeViewItem>>();
+        SceneryTreeNode.Nodes = new ObservableList<TreeNode<TreeViewItem>>();
         m_Tree.Nodes = nodes;
     }
 
-    public void CreateProject()
+    private void ClearProject()
     {
-        m_ProjectPath = FileBrowser.SaveFile("NewProject", "omp");
-        if (string.IsNullOrEmpty(m_ProjectPath))
-            MessageBoxCtrl.Instance.Show("创建工程失败，未选择路径");
+        CameraHandlers.Clear();
+        ObliqueImages.Clear();
+        Models.Clear();
+        Sceneries.Clear();
+        ObliqueImagesTreeNode.IsExpanded = false;
+        ObliqueImagesTreeNode.Nodes.Clear();
+        ModelsTreeNode.IsExpanded = false;
+        ModelsTreeNode.Nodes.Clear();
+        SceneryTreeNode.IsExpanded = false;
+        SceneryTreeNode.Nodes.Clear();
     }
 
-    public void SaveProject()
+    public void CreateProjectBtnClick()
+    {
+        if (!string.IsNullOrEmpty(m_ProjectPath))
+        {
+            MessageBoxCtrl.Instance.Show("是否保存当前工程？");
+            MessageBoxCtrl.Instance.EnsureHandle += EnsureCreateSave;
+            MessageBoxCtrl.Instance.CancelHandle += CancelCreateSave;
+        }
+        else
+        {
+            CreateProject();
+        }
+    }
+
+    private void CreateProject()
+    {
+        m_ProjectPath = FileBrowser.SaveFile("新建工程", null, "NewProject", "omp");
+        if (string.IsNullOrEmpty(m_ProjectPath))
+        {
+            MessageBoxCtrl.Instance.Show("创建工程失败，未选择路径");
+        }
+    }
+
+    public void EnsureCreateSave()
+    {
+        SaveProject();
+        ClearProject();
+        CreateProject();
+        MessageBoxCtrl.Instance.EnsureHandle -= EnsureCreateSave;
+        MessageBoxCtrl.Instance.CancelHandle -= CancelCreateSave;
+    }
+
+    public void CancelCreateSave()
+    {
+        ClearProject();
+        CreateProject();
+        MessageBoxCtrl.Instance.EnsureHandle -= EnsureCreateSave;
+        MessageBoxCtrl.Instance.CancelHandle -= CancelCreateSave;
+    }
+
+    public void OpenProjectBtnClick()
+    {
+        if (!string.IsNullOrEmpty(m_ProjectPath))
+        {
+            MessageBoxCtrl.Instance.Show("是否保存当前工程？");
+            MessageBoxCtrl.Instance.EnsureHandle += EnsureOpenSave;
+            MessageBoxCtrl.Instance.CancelHandle += CancelOpenSave;
+        }
+        else
+        {
+            OpenProject();
+        }
+    }
+
+    private void OpenProject()
+    {
+        m_ProjectPath = FileBrowser.OpenSingleFile("打开工程", null, "omp");
+        if (string.IsNullOrEmpty(m_ProjectPath))
+        {
+            MessageBoxCtrl.Instance.Show("打开工程失败，未选择路径");
+            return;
+        }
+        XmlDocument xml = new XmlDocument();
+        XmlReaderSettings set = new XmlReaderSettings();
+        set.IgnoreComments = true;
+        xml.Load(XmlReader.Create(m_ProjectPath, set));
+        XmlNodeList ObliqueImageNodes = xml.SelectSingleNode("//ObliqueImages").SelectNodes("ObliqueImage");
+        List<FileInfo> imageFileInfos = new List<FileInfo>();
+        foreach (XmlNode ObliqueImageNode in ObliqueImageNodes)
+        {
+            imageFileInfos.Add(new FileInfo(ObliqueImageNode.InnerText));
+        }        
+        if (imageFileInfos.Count > 0)
+        {
+            StartCoroutine(AddObliqueImages(imageFileInfos));
+        }            
+        XmlNodeList Models = xml.SelectSingleNode("//Models").SelectNodes("Model");
+        List<FileInfo> modelFileInfos = new List<FileInfo>();
+        foreach (XmlNode Model in Models)
+        {
+            modelFileInfos.Add(new FileInfo(Model.InnerText));
+        }
+        if (modelFileInfos.Count > 0)
+            StartCoroutine(AddModels(modelFileInfos, true));
+        ParsePhotogroups(xml, false);
+    }
+
+    public void EnsureOpenSave()
+    {
+        SaveProject();
+        ClearProject();
+        OpenProject();
+        MessageBoxCtrl.Instance.EnsureHandle -= EnsureOpenSave;
+        MessageBoxCtrl.Instance.CancelHandle -= CancelOpenSave;
+    }
+
+    public void CancelOpenSave()
+    {
+        ClearProject();
+        OpenProject();
+        MessageBoxCtrl.Instance.EnsureHandle -= EnsureOpenSave;
+        MessageBoxCtrl.Instance.CancelHandle -= CancelOpenSave;
+    }
+
+    public void CloseProjectBtnClick()
+    {
+        if (!string.IsNullOrEmpty(m_ProjectPath))
+        {
+            MessageBoxCtrl.Instance.Show("是否保存当前工程？");
+            MessageBoxCtrl.Instance.EnsureHandle += EnsureCloseSave;
+            MessageBoxCtrl.Instance.CancelHandle += CancelCloseSave;
+        }
+    }
+
+    private void CloseProject()
+    {
+        m_ProjectPath = FileBrowser.SaveFile("新建工程", null, "NewProject", "omp");
+        if (string.IsNullOrEmpty(m_ProjectPath))
+        {
+            MessageBoxCtrl.Instance.Show("创建工程失败，未选择路径");
+        }
+    }
+
+    public void EnsureCloseSave()
+    {
+        SaveProject();
+        ClearProject();
+        MessageBoxCtrl.Instance.EnsureHandle -= EnsureCloseSave;
+        MessageBoxCtrl.Instance.CancelHandle -= CancelCloseSave;
+    }
+
+    public void CancelCloseSave()
+    {
+        ClearProject();
+        MessageBoxCtrl.Instance.EnsureHandle -= EnsureCloseSave;
+        MessageBoxCtrl.Instance.CancelHandle -= CancelCloseSave;
+    }
+
+    public void SaveProjectBtnClick()
+    {
+        SaveProject();
+    }
+
+    public void SaveAsProjectBtnClick()
     {
         if (string.IsNullOrEmpty(m_ProjectPath))
+        {
+            MessageBoxCtrl.Instance.Show("另存工程失败，还未创建或打开");
             return;
+        }
+        m_ProjectPath = FileBrowser.SaveFile("工程另存为……", null, "NewProjectAlias", "omp");
+        if (string.IsNullOrEmpty(m_ProjectPath))
+        {
+            MessageBoxCtrl.Instance.Show("另存工程失败，未选择路径");
+            return;
+        }
+        SaveProject();
+    }
+
+    private void SaveProject()
+    {
+        if (string.IsNullOrEmpty(m_ProjectPath))
+        {
+            MessageBoxCtrl.Instance.Show("保存工程失败，还未创建或打开");
+            return;
+        }            
         XmlDocument xmlDoc = new XmlDocument();
         xmlDoc.AppendChild(xmlDoc.CreateXmlDeclaration("1.0", "utf-8", null));
         xmlDoc.AppendChild(xmlDoc.CreateElement("Project"));
@@ -103,7 +262,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
             var distortionNode = CreateNode(xmlDoc, photogroupNode, "Distortion");
             CreateNode(xmlDoc, photogroupNode, "AspectRatio", Utills.DoubleToStringSignificantDigits(cameraHandler.AspectRatio, DoubleSignificantDigits));
             CreateNode(xmlDoc, imageDimensionsNode, "Width", cameraHandler.Width.ToString());
-            CreateNode(xmlDoc, imageDimensionsNode, "Height", cameraHandler.Height.ToString());            
+            CreateNode(xmlDoc, imageDimensionsNode, "Height", cameraHandler.Height.ToString());
             CreateNode(xmlDoc, principalPointNode, "x", Utills.DoubleToStringSignificantDigits(cameraHandler.PrincipalPoint.x, DoubleSignificantDigits));
             CreateNode(xmlDoc, principalPointNode, "y", Utills.DoubleToStringSignificantDigits(cameraHandler.PrincipalPoint.y, DoubleSignificantDigits));
             foreach (var DistCoeff in cameraHandler.DistCoeffs)
@@ -137,187 +296,217 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         }
     }
 
-    public void AddObliqueImages(string folderPath)
+    public void AddObliqueImagesBtnClick()
     {
+        if (string.IsNullOrEmpty(m_ProjectPath))
+        {
+            MessageBoxCtrl.Instance.Show("请先创建或打开工程");
+            return;
+        }
+        string folderPath = FileBrowser.OpenSingleFolder("选择航拍影像文件夹");
         if (string.IsNullOrEmpty(folderPath))
         {
-            folderPath = FileBrowser.OpenSingleFolder("选择航拍影像文件夹");
-            if (folderPath.Length == 0)
-                return;
+            MessageBoxCtrl.Instance.Show("选择航拍影像文件夹失败，未选择路径");
+            return;
         }
         string[] extensions = new[] { ".jpg" };
         DirectoryInfo dinfo = new DirectoryInfo(folderPath);
-        List<FileInfo> files = dinfo.EnumerateFiles().Where(f => extensions.Contains(f.Extension.ToLower())).ToList();
-        for (int i = files.Count - 1; i >= 0; i--)
+        List<FileInfo> fileInfos = dinfo.EnumerateFiles().Where(f => extensions.Contains(f.Extension.ToLower())).ToList();
+        StartCoroutine(AddObliqueImages(fileInfos));
+    }
+
+    public IEnumerator AddObliqueImages(List<FileInfo> fileInfos, bool wait = false)
+    {
+        if (wait)
         {
-            if (ObliqueImages.Contains(files[i].FullName))
+            yield return new WaitForSeconds(1);
+        }
+        yield return new WaitUntil(ProgressbarCtrl.Instance.isFinished);
+        for (int i = fileInfos.Count - 1; i >= 0; i--)
+        {
+            if (ObliqueImages.Contains(fileInfos[i].FullName))
             {
-                files.Remove(files[i]);
+                fileInfos.Remove(fileInfos[i]);
             }
             else
             {
-                ObliqueImages.Add(files[i].FullName);
+                ObliqueImages.Add(fileInfos[i].FullName);
             }
         }
-        if (files.Count > 0)
+        ObliqueImages.Reverse();
+        ProgressbarCtrl.Instance.Show("正在创建倾斜影像缩略图……");
+        ProgressbarCtrl.Instance.ResetMaxCount(fileInfos.Count);
+
+        foreach (var file in fileInfos)
         {
-            string thumb_path = folderPath + "/thumb/";
-            bool haveThumb = true;
+            string thumb_path = file.DirectoryName + "/thumb/";
             if (!Directory.Exists(thumb_path))
             {
-                haveThumb = false;
                 Directory.CreateDirectory(thumb_path);
             }
-            ProgressbarCtrl.Instance.Show("正在创建倾斜影像缩略图……");
-            StartCoroutine(StartCreatingThumbs(thumb_path, haveThumb, files));
+            yield return StartCoroutine(StartCreatingThumbs(file));
         }
     }
 
-    IEnumerator StartCreatingThumbs(string thumb_path, bool haveThumb, List<FileInfo> files)
+    IEnumerator StartCreatingThumbs(FileInfo fileInfo)
     {
-        int fileCount = files.Count;
-        for (int i = 0; i < fileCount; ++i)
+        string thumb_path = fileInfo.DirectoryName + "/thumb/";
+        if (!Directory.Exists(thumb_path))
         {
-            TreeViewItem item = new TreeViewItem(files[i].FullName);
-            item.LocalizedName = files[i].Name;
-            ObliqueImagesTreeNode.Nodes.Add(new TreeNode<TreeViewItem>(item));
-            string thumb_name = thumb_path + files[i].Name;
-            if (!haveThumb || !File.Exists(thumb_name))
-            {
-                Image image = Image.FromFile(files[i].FullName);
-                int thumb_height = (int)(m_thumb_width / (float)image.Width * image.Height + 0.5f);
-                Image thumb = image.GetThumbnailImage(m_thumb_width, thumb_height, null, IntPtr.Zero);
-                thumb.Save(thumb_name);
-            }
-            ProgressbarCtrl.Instance.SetProgressbar((int)((i + 1) * 100f / fileCount + 0.5f));
-            yield return null;
+            Directory.CreateDirectory(thumb_path);
         }
-        ProgressbarCtrl.Instance.Hide();
+        TreeViewItem item = new TreeViewItem(fileInfo.FullName);
+        item.LocalizedName = fileInfo.Name;
+        ObliqueImagesTreeNode.Nodes.Add(new TreeNode<TreeViewItem>(item));
+        string thumb_name = thumb_path + fileInfo.Name;
+        if (!File.Exists(thumb_name))
+        {
+            Image image = Image.FromFile(fileInfo.FullName);
+            int thumb_height = (int)(m_thumb_width / (float)image.Width * image.Height + 0.5f);
+            Image thumb = image.GetThumbnailImage(m_thumb_width, thumb_height, null, IntPtr.Zero);
+            thumb.Save(thumb_name);
+        }
+        ProgressbarCtrl.Instance.ProgressPlusPlus();
+        yield return null;
     }
 
-    public void AddModels(string folderPath)
+    public void AddModelsBtnClick()
     {
-        if (string.IsNullOrEmpty(folderPath))
+        if (string.IsNullOrEmpty(m_ProjectPath))
         {
-            folderPath = FileBrowser.OpenSingleFolder("选择三维模型文件夹");
-            if (folderPath.Length == 0)
-                return;
+            MessageBoxCtrl.Instance.Show("请先创建或打开工程");
+            return;
         }
-        string[] extensions = new[] { ".obj" };
-        DirectoryInfo dinfo = new DirectoryInfo(folderPath);
-        List<FileInfo> files = dinfo.EnumerateFiles().Where(f => extensions.Contains(f.Extension.ToLower())).ToList();
-        for (int i = files.Count - 1; i >= 0; i--)
+        string[] modelFiles;
+        modelFiles = FileBrowser.OpenFiles("选择三维模型文件夹", null, "obj");
+        if (modelFiles.Length == 0)
         {
-            if (Models.Contains(files[i].FullName))
+            MessageBoxCtrl.Instance.Show("未选择模型文件");
+            return;
+        }
+        List<FileInfo> fileInfos = new List<FileInfo>();
+        foreach (string modelFile in modelFiles)
+        {
+            fileInfos.Add(new FileInfo(modelFile));
+        }
+        StartCoroutine(AddModels(fileInfos));
+    }
+
+    public IEnumerator AddModels(List<FileInfo> fileInfos, bool wait = false)
+    {
+        if (wait)
+        {
+            yield return new WaitForSeconds(1);
+        }
+        yield return new WaitUntil(ProgressbarCtrl.Instance.isFinished);
+        for (int i = fileInfos.Count - 1; i >= 0; i--)
+        {
+            if (Models.Contains(fileInfos[i].FullName))
             {
-                files.Remove(files[i]);
+                fileInfos.Remove(fileInfos[i]);
             }
             else
             {
-                Models.Add(files[i].FullName);
+                Models.Add(fileInfos[i].FullName);
             }
         }
-        if (files.Count > 0)
+        Models.Reverse();
+        ProgressbarCtrl.Instance.Show("正在解析三维模型……");
+        ProgressbarCtrl.Instance.ResetMaxCount(fileInfos.Count);
+        foreach (var fileInfo in fileInfos)
         {
-            ProgressbarCtrl.Instance.Show("正在解析三维模型……");
-            ProgressbarCtrl.Instance.ResetMaxCount(files.Count);
-            StartCoroutine(StartParsingModels(files));
+            yield return StartCoroutine(StartParsingModels(fileInfo));
         }
     }
 
-    IEnumerator StartParsingModels(List<FileInfo> files)
+    IEnumerator StartParsingModels(FileInfo fileInfo)
     {
-        int fileCount = files.Count;
-        for (int i = 0; i < fileCount; ++i)
-        {
-            StreamReader sr = new StreamReader(files[i].FullName);
-            string firstLine = sr.ReadLine();
+        StreamReader sr = new StreamReader(fileInfo.FullName);
+        string firstLine = sr.ReadLine();
 
-            bool isCompleteUvModel = (firstLine == CompleteUvCommentLine);
-            bool createNewWhiteModel = true;
-            string loadFileName = files[i].FullName;
-            if (!isCompleteUvModel)
-            {
-                loadFileName = files[i].DirectoryName + "/CompleteUvModel/" + files[i].Name;
-                if (File.Exists(loadFileName))
-                    createNewWhiteModel = false;
-            }
-            if (isCompleteUvModel)
-            {
-                yield return LoadModelFile(files[i]);
-            }
-            else if (!createNewWhiteModel)
-            {
-                yield return LoadModelFile(files[i], false);
-            }
-            else
-            {
-                // 创建完整uv的白模，已经处理过的白模不会被再次加载
-                string directoryName = Path.GetDirectoryName(loadFileName);
-                if (!Directory.Exists(directoryName))
-                    Directory.CreateDirectory(directoryName);
-                string loadedText = File.ReadAllText(files[i].FullName);
-                StringBuilder sb = new StringBuilder();
-                sb.AppendLine(CompleteUvCommentLine);
-                string[] lines = loadedText.Split("\n".ToCharArray());
-                char[] separators = new char[] { ' ', '\t' };
-                int numVerts = 0;
-                List<string> faceLines = new List<string>();
-                for (int j = 0; j < lines.Length; j++)
-                {
-                    string line = lines[j].Trim();
-                    if (line.Length > 0 && line[0] == '#')
-                    {
-                        // comment line
-                        continue;
-                    }
-                    string[] p = line.Split(separators, StringSplitOptions.RemoveEmptyEntries);
-                    if (p.Length == 0)
-                    {
-                        // empty line
-                        continue;
-                    }
-                    switch (p[0])
-                    {
-                        case "v":
-                            sb.AppendLine(line);
-                            break;
-                        case "vn":
-                            sb.AppendLine(line);
-                            break;
-                        case "g":
-                            sb.AppendLine(line);
-                            break;
-                        case "f":
-                            {
-                                numVerts += p.Length - 1;
-                                faceLines.Add(line);
-                            }
-                            break;
-                    }
-                }
-                for (int j = 0; j < numVerts; ++j)
-                {
-                    sb.AppendLine(EmptyUv);
-                }
-                int uvIndex = 0;
-                foreach (string oldFace in faceLines)
-                {
-                    List<string> vertexes = oldFace.Split(separators, StringSplitOptions.RemoveEmptyEntries).ToList();
-                    vertexes.RemoveAt(0);
-                    string newFace = "f ";
-                    foreach (string vertex in vertexes)
-                    {
-                        string[] vertexElements = vertex.Split('/');
-                        newFace += vertexElements[0] + '/' + (uvIndex++ - numVerts).ToString() + '/' + vertexElements[2] + ' ';
-                    }
-                    sb.AppendLine(newFace);
-                }
-                File.WriteAllText(loadFileName, sb.ToString());
-                yield return LoadModelFile(files[i], false);
-            }
+        bool isCompleteUvModel = (firstLine == CompleteUvCommentLine);
+        bool createNewWhiteModel = true;
+        string loadFileName = fileInfo.FullName;
+        if (!isCompleteUvModel)
+        {
+            loadFileName = fileInfo.DirectoryName + "/CompleteUvModel/" + fileInfo.Name;
+            if (File.Exists(loadFileName))
+                createNewWhiteModel = false;
         }
-        //ProgressbarCtrl.Instance.Hide();
+        if (isCompleteUvModel)
+        {
+            yield return LoadModelFile(fileInfo);
+        }
+        else if (!createNewWhiteModel)
+        {
+            yield return LoadModelFile(fileInfo, false);
+        }
+        else
+        {
+            // 创建完整uv的白模，已经处理过的白模不会被再次加载
+            string directoryName = Path.GetDirectoryName(loadFileName);
+            if (!Directory.Exists(directoryName))
+                Directory.CreateDirectory(directoryName);
+            string loadedText = File.ReadAllText(fileInfo.FullName);
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(CompleteUvCommentLine);
+            string[] lines = loadedText.Split("\n".ToCharArray());
+            char[] separators = new char[] { ' ', '\t' };
+            int numVerts = 0;
+            List<string> faceLines = new List<string>();
+            for (int j = 0; j < lines.Length; j++)
+            {
+                string line = lines[j].Trim();
+                if (line.Length > 0 && line[0] == '#')
+                {
+                    // comment line
+                    continue;
+                }
+                string[] p = line.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+                if (p.Length == 0)
+                {
+                    // empty line
+                    continue;
+                }
+                switch (p[0])
+                {
+                    case "v":
+                        sb.AppendLine(line);
+                        break;
+                    case "vn":
+                        sb.AppendLine(line);
+                        break;
+                    case "g":
+                        sb.AppendLine(line);
+                        break;
+                    case "f":
+                        {
+                            numVerts += p.Length - 1;
+                            faceLines.Add(line);
+                        }
+                        break;
+                }
+            }
+            for (int j = 0; j < numVerts; ++j)
+            {
+                sb.AppendLine(EmptyUv);
+            }
+            int uvIndex = 0;
+            foreach (string oldFace in faceLines)
+            {
+                List<string> vertexes = oldFace.Split(separators, StringSplitOptions.RemoveEmptyEntries).ToList();
+                vertexes.RemoveAt(0);
+                string newFace = "f ";
+                foreach (string vertex in vertexes)
+                {
+                    string[] vertexElements = vertex.Split('/');
+                    newFace += vertexElements[0] + '/' + (uvIndex++ - numVerts).ToString() + '/' + vertexElements[2] + ' ';
+                }
+                sb.AppendLine(newFace);
+            }
+            File.WriteAllText(loadFileName, sb.ToString());
+            yield return LoadModelFile(fileInfo, false);
+        }
     }
 
     IEnumerator LoadModelFile(FileInfo file, bool isCompleteUvModel = true)
@@ -327,30 +516,49 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         ModelsTreeNode.Nodes.Add(new TreeNode<TreeViewItem>(item));
         ObjImportHandler objImportHandler = new ObjImportHandler();
         StartCoroutine(objImportHandler.Load(file.Name, file.FullName, ModelContainer, isCompleteUvModel));
-        //ObjLoadManger.Instance.ImportModelAsync(item.LocalizedName, item.Name, isWhiteModel);
         yield return null;
     }
 
-    public void AddScenery()
+    public void AddSceneryBtnClick()
     {
+        if (string.IsNullOrEmpty(m_ProjectPath))
+        {
+            MessageBoxCtrl.Instance.Show("请先创建或打开工程");
+            return;
+        }
         string filePath = FileBrowser.OpenSingleFile();
         if (filePath.Length == 0)
             return;
     }
 
+    public void Quit()
+    {
+        Application.Quit();
+    }
+
     public void ParseSmart3DXml(string path)
     {
+        if (string.IsNullOrEmpty(m_ProjectPath))
+        {
+            MessageBoxCtrl.Instance.Show("请先创建或打开工程");
+            return;
+        }
         if (string.IsNullOrEmpty(path))
         {
             path = FileBrowser.OpenSingleFile("选择相机参数文件", null, "xml");
             if (path.Length == 0)
                 return;
-        }
-        CameraHandlers.Clear();
+        }        
         XmlDocument xml = new XmlDocument();
         XmlReaderSettings set = new XmlReaderSettings();
         set.IgnoreComments = true;
         xml.Load(XmlReader.Create(path, set));
+        ParsePhotogroups(xml);
+    }
+
+    private void ParsePhotogroups(XmlDocument xml, bool showMessage = true)
+    {
+        CameraHandlers.Clear();
         XmlNodeList photogroups = xml.SelectSingleNode("//Photogroups").SelectNodes("Photogroup");
         foreach (XmlNode photogroup in photogroups)
         {
@@ -381,7 +589,8 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
             }
             cameraHandler.Images.AddRange(imageInfos);
         }
-        MessageBoxCtrl.Instance.Show("解析Smart3D空三数据成功");
+        if (showMessage)
+            MessageBoxCtrl.Instance.Show("解析Smart3D空三数据成功");
     }
 
     public List<ImageInfo> ProjectPoints(Dictionary<int, Vector3> points, Vector3 faceNormal)
@@ -401,5 +610,5 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
             node.InnerText = value;
         parentNode.AppendChild(node);
         return node;
-    }    
+    }
 }

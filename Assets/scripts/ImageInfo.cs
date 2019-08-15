@@ -29,22 +29,25 @@ public class ImageInfo
     public ImageInfo(FileInfo fileInfo, double omega, double phi, double kappa, double x, double y, double z)
     {
         File = fileInfo;
-        Omega = (omega + 0) / 180.0 * Math.PI;
-        Phi = (phi + 0) / 180.0 * Math.PI;
-        Kappa = (kappa + 0) / 180.0 * Math.PI;
+        Omega = omega;
+        Phi = phi;
+        Kappa = kappa;
+        double OmegaRadian = (Omega + 0) / 180.0 * Math.PI;
+        double PhiRadian = (Phi + 0) / 180.0 * Math.PI;
+        double KappaRadian = (Kappa + 0) / 180.0 * Math.PI;
         X = x;
         Y = y;
         Z = z;        
         R.put(0, 0,
-            Math.Cos(Phi) * Math.Cos(Kappa),
-            Math.Cos(Omega) * Math.Sin(Kappa) + Math.Sin(Omega) * Math.Sin(Phi) * Math.Cos(Kappa),
-            Math.Sin(Omega) * Math.Sin(Kappa) - Math.Cos(Omega) * Math.Sin(Phi) * Math.Cos(Kappa),
-            -Math.Cos(Phi) * Math.Sin(Kappa),
-            Math.Cos(Omega) * Math.Cos(Kappa) - Math.Sin(Omega) * Math.Sin(Phi) * Math.Sin(Kappa),
-            Math.Sin(Omega) * Math.Cos(Kappa) + Math.Cos(Omega) * Math.Sin(Phi) * Math.Sin(Kappa),
-            Math.Sin(Phi),
-            -Math.Sin(Omega) * Math.Cos(Phi),
-            Math.Cos(Omega) * Math.Cos(Phi)
+            Math.Cos(PhiRadian) * Math.Cos(KappaRadian),
+            Math.Cos(OmegaRadian) * Math.Sin(KappaRadian) + Math.Sin(OmegaRadian) * Math.Sin(PhiRadian) * Math.Cos(KappaRadian),
+            Math.Sin(OmegaRadian) * Math.Sin(KappaRadian) - Math.Cos(OmegaRadian) * Math.Sin(PhiRadian) * Math.Cos(KappaRadian),
+            -Math.Cos(PhiRadian) * Math.Sin(KappaRadian),
+            Math.Cos(OmegaRadian) * Math.Cos(KappaRadian) - Math.Sin(OmegaRadian) * Math.Sin(PhiRadian) * Math.Sin(KappaRadian),
+            Math.Sin(OmegaRadian) * Math.Cos(KappaRadian) + Math.Cos(OmegaRadian) * Math.Sin(PhiRadian) * Math.Sin(KappaRadian),
+            Math.Sin(PhiRadian),
+            -Math.Sin(OmegaRadian) * Math.Cos(PhiRadian),
+            Math.Cos(OmegaRadian) * Math.Cos(PhiRadian)
             );        
         Calib3d.Rodrigues(R, RotationVector);
 

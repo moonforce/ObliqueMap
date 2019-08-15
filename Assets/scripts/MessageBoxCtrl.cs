@@ -13,12 +13,17 @@ public class MessageBoxCtrl : Singleton<MessageBoxCtrl>
     private OrbitCamera m_ModelViewScript;
     private Canvas m_MessageBoxCanvas;
 
+    public delegate void MessageBoxHandle();
+    public MessageBoxHandle EnsureHandle { get; set; }
+    public MessageBoxHandle CancelHandle { get; set; }
+
     void Start()
     {
         m_Title = transform.Find("Title").GetComponent<TextMeshProUGUI>();
         m_MainCanvasRaycaster = GameObject.Find("MainCanvas").GetComponent<GraphicRaycaster>();
         m_ModelViewScript = Camera.main.GetComponent<OrbitCamera>();
-        transform.Find("Yes").GetComponent<Button>().onClick.AddListener(Hide);
+        transform.Find("Yes").GetComponent<Button>().onClick.AddListener(Ensure);
+        transform.Find("No").GetComponent<Button>().onClick.AddListener(Cancel);
         m_MessageBoxCanvas = GetComponent<Canvas>();
         Hide();
     }
@@ -36,5 +41,17 @@ public class MessageBoxCtrl : Singleton<MessageBoxCtrl>
         m_MainCanvasRaycaster.enabled = true;
         m_ModelViewScript.enabled = true;
         m_MessageBoxCanvas.enabled = false;
+    }
+
+    public void Ensure()
+    {
+        Hide();
+        EnsureHandle?.Invoke();
+    }
+
+    public void Cancel()
+    {
+        Hide();
+        CancelHandle?.Invoke();
     }
 }

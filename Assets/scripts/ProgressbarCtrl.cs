@@ -9,8 +9,8 @@ public class ProgressbarCtrl : Singleton<ProgressbarCtrl>
 {
     protected ProgressbarCtrl() { }
 
-    private int m_MaxCount;
-    private int m_CurrentCount;
+    private int m_MaxCount = 100;
+    private int m_CurrentCount = 100;
     public ProgressbarDeterminate Progressbar { get; set; }
     private TextMeshProUGUI m_Title;
     private GraphicRaycaster m_MainCanvasRaycaster;
@@ -36,6 +36,11 @@ public class ProgressbarCtrl : Singleton<ProgressbarCtrl>
     {
         m_MaxCount = maxCount;
         m_CurrentCount = 0;
+    }
+
+    public bool isFinished()
+    {
+        return m_CurrentCount == m_MaxCount;        
     }
 
     public void ProgressPlusPlus()
