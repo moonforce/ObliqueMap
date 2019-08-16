@@ -11,20 +11,21 @@ using System.Xml;
 using Point = OpenCVForUnity.CoreModule.Point;
 using System.Text;
 using ObjLoaderLY;
+using TMPro;
 
 public class ProjectCtrl : Singleton<ProjectCtrl>
 {
-    protected ProjectCtrl() { }
-
-    string m_ProjectPath;
-    int DoubleSignificantDigits = 17;
-
-    public Transform ModelContainer;
-
     public string CompleteUvCommentLine { get; } = "# This Obj File Has Complete UVs";
     public string EmptyUv { get; } = "vt 0 0 0";
-
+    const int DoubleSignificantDigits = 17;
     const int m_thumb_width = 240;
+
+    protected ProjectCtrl() { }
+
+    public TextMeshProUGUI m_ProjectName;    
+
+    public Transform ModelContainer;
+    
     public float ModelDeltaX { get; set; }
     public float ModelDeltaY { get; set; }
 
@@ -37,12 +38,19 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
     public TreeNode<TreeViewItem> ObliqueImagesTreeNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("航拍斜片"));
     public TreeNode<TreeViewItem> ModelsTreeNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("三维模型"));
     public TreeNode<TreeViewItem> SceneryTreeNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("地面模型"));
+    public DataExchange<string> ProjectPath = new DataExchange<string>();
 
     void Start()
     {
         m_Tree = transform.GetComponentInChildren<TreeView>();
         m_Tree.Init();
         SetTreeNodes();
+        ProjectPath.OnDataChanged += SetProjectName;
+    }
+
+    void SetProjectName(string projectName)
+    {
+        m_ProjectName.text = projectName;
     }
 
     void testData()
@@ -80,7 +88,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
 
     public void CreateProjectBtnClick()
     {
-        if (!string.IsNullOrEmpty(m_ProjectPath))
+        if (!string.IsNullOrEmpty(ProjectPath.DataValue) && ProjectPath.DataValue.EndsWith("*"))
         {
             MessageBoxCtrl.Instance.Show("是否保存当前工程？");
             MessageBoxCtrl.Instance.EnsureHandle += EnsureCreateSave;
@@ -88,14 +96,15 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         }
         else
         {
+            ClearProject();
             CreateProject();
         }
     }
 
     private void CreateProject()
     {
-        m_ProjectPath = FileBrowser.SaveFile("新建工程", null, "NewProject", "omp");
-        if (string.IsNullOrEmpty(m_ProjectPath))
+        ProjectPath.DataValue = FileBrowser.SaveFile("新建工程", null, "NewProject", "omp");
+        if (string.IsNullOrEmpty(ProjectPath.DataValue))
         {
             MessageBoxCtrl.Instance.Show("创建工程失败，未选择路径");
         }
@@ -120,7 +129,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
 
     public void OpenProjectBtnClick()
     {
-        if (!string.IsNullOrEmpty(m_ProjectPath))
+        if (!string.IsNullOrEmpty(ProjectPath.DataValue) && ProjectPath.DataValue.EndsWith("*"))
         {
             MessageBoxCtrl.Instance.Show("是否保存当前工程？");
             MessageBoxCtrl.Instance.EnsureHandle += EnsureOpenSave;
@@ -128,14 +137,15 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         }
         else
         {
+            ClearProject();
             OpenProject();
         }
     }
 
     private void OpenProject()
     {
-        m_ProjectPath = FileBrowser.OpenSingleFile("打开工程", null, "omp");
-        if (string.IsNullOrEmpty(m_ProjectPath))
+        ProjectPath.DataValue = FileBrowser.OpenSingleFile("打开工程", null, "omp");
+        if (string.IsNullOrEmpty(ProjectPath.DataValue))
         {
             MessageBoxCtrl.Instance.Show("打开工程失败，未选择路径");
             return;
@@ -143,7 +153,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         XmlDocument xml = new XmlDocument();
         XmlReaderSettings set = new XmlReaderSettings();
         set.IgnoreComments = true;
-        xml.Load(XmlReader.Create(m_ProjectPath, set));
+        xml.Load(XmlReader.Create(ProjectPath.DataValue, set));
         XmlNodeList ObliqueImageNodes = xml.SelectSingleNode("//ObliqueImages").SelectNodes("ObliqueImage");
         List<FileInfo> imageFileInfos = new List<FileInfo>();
         foreach (XmlNode ObliqueImageNode in ObliqueImageNodes)
@@ -184,20 +194,17 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
 
     public void CloseProjectBtnClick()
     {
-        if (!string.IsNullOrEmpty(m_ProjectPath))
+        if (!string.IsNullOrEmpty(ProjectPath.DataValue) && ProjectPath.DataValue.EndsWith("*"))
         {
             MessageBoxCtrl.Instance.Show("是否保存当前工程？");
             MessageBoxCtrl.Instance.EnsureHandle += EnsureCloseSave;
             MessageBoxCtrl.Instance.CancelHandle += CancelCloseSave;
+            ProjectPath.DataValue = string.Empty;
         }
-    }
-
-    private void CloseProject()
-    {
-        m_ProjectPath = FileBrowser.SaveFile("新建工程", null, "NewProject", "omp");
-        if (string.IsNullOrEmpty(m_ProjectPath))
+        else
         {
-            MessageBoxCtrl.Instance.Show("创建工程失败，未选择路径");
+            ClearProject();
+            ProjectPath.DataValue = string.Empty;
         }
     }
 
@@ -223,13 +230,13 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
 
     public void SaveAsProjectBtnClick()
     {
-        if (string.IsNullOrEmpty(m_ProjectPath))
+        if (string.IsNullOrEmpty(ProjectPath.DataValue))
         {
             MessageBoxCtrl.Instance.Show("另存工程失败，还未创建或打开");
             return;
         }
-        m_ProjectPath = FileBrowser.SaveFile("工程另存为……", null, "NewProjectAlias", "omp");
-        if (string.IsNullOrEmpty(m_ProjectPath))
+        ProjectPath.DataValue = FileBrowser.SaveFile("工程另存为……", null, "NewProjectAlias", "omp");
+        if (string.IsNullOrEmpty(ProjectPath.DataValue))
         {
             MessageBoxCtrl.Instance.Show("另存工程失败，未选择路径");
             return;
@@ -239,7 +246,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
 
     private void SaveProject()
     {
-        if (string.IsNullOrEmpty(m_ProjectPath))
+        if (string.IsNullOrEmpty(ProjectPath.DataValue))
         {
             MessageBoxCtrl.Instance.Show("保存工程失败，还未创建或打开");
             return;
@@ -284,7 +291,11 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
                 CreateNode(xmlDoc, centerNode, "z", Utills.DoubleToStringSignificantDigits(image.Z, DoubleSignificantDigits));
             }
         }
-        xmlDoc.Save(m_ProjectPath);
+        if (ProjectPath.DataValue.EndsWith("*"))
+        {
+            ProjectPath.DataValue = ProjectPath.DataValue.TrimEnd('*');
+            xmlDoc.Save(ProjectPath.DataValue);
+        }
     }
 
     private void AddRootLeaf(XmlDocument xmlDoc, string rootName, string leafName, List<string> elements)
@@ -298,7 +309,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
 
     public void AddObliqueImagesBtnClick()
     {
-        if (string.IsNullOrEmpty(m_ProjectPath))
+        if (string.IsNullOrEmpty(ProjectPath.DataValue))
         {
             MessageBoxCtrl.Instance.Show("请先创建或打开工程");
             return;
@@ -312,7 +323,22 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         string[] extensions = new[] { ".jpg" };
         DirectoryInfo dinfo = new DirectoryInfo(folderPath);
         List<FileInfo> fileInfos = dinfo.EnumerateFiles().Where(f => extensions.Contains(f.Extension.ToLower())).ToList();
-        StartCoroutine(AddObliqueImages(fileInfos));
+        for (int i = fileInfos.Count - 1; i >= 0; i--)
+        {
+            if (ObliqueImages.Contains(fileInfos[i].FullName))
+            {
+                fileInfos.Remove(fileInfos[i]);
+            }
+        }
+        fileInfos.Reverse();
+        if (fileInfos.Count > 0)
+        {
+            if (!ProjectPath.DataValue.EndsWith("*"))
+            {
+                ProjectPath.DataValue += "*";
+            }               
+            StartCoroutine(AddObliqueImages(fileInfos));
+        }            
     }
 
     public IEnumerator AddObliqueImages(List<FileInfo> fileInfos, bool wait = false)
@@ -322,23 +348,13 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
             yield return new WaitForSeconds(1);
         }
         yield return new WaitUntil(ProgressbarCtrl.Instance.isFinished);
-        for (int i = fileInfos.Count - 1; i >= 0; i--)
-        {
-            if (ObliqueImages.Contains(fileInfos[i].FullName))
-            {
-                fileInfos.Remove(fileInfos[i]);
-            }
-            else
-            {
-                ObliqueImages.Add(fileInfos[i].FullName);
-            }
-        }
-        ObliqueImages.Reverse();
+        
         ProgressbarCtrl.Instance.Show("正在创建倾斜影像缩略图……");
         ProgressbarCtrl.Instance.ResetMaxCount(fileInfos.Count);
 
         foreach (var file in fileInfos)
         {
+            ObliqueImages.Add(file.FullName);
             string thumb_path = file.DirectoryName + "/thumb/";
             if (!Directory.Exists(thumb_path))
             {
@@ -372,7 +388,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
 
     public void AddModelsBtnClick()
     {
-        if (string.IsNullOrEmpty(m_ProjectPath))
+        if (string.IsNullOrEmpty(ProjectPath.DataValue))
         {
             MessageBoxCtrl.Instance.Show("请先创建或打开工程");
             return;
@@ -389,6 +405,21 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         {
             fileInfos.Add(new FileInfo(modelFile));
         }
+        for (int i = fileInfos.Count - 1; i >= 0; i--)
+        {
+            if (Models.Contains(fileInfos[i].FullName))
+            {
+                fileInfos.Remove(fileInfos[i]);
+            }
+        }
+        fileInfos.Reverse();
+        if (fileInfos.Count > 0)
+        {
+            if (!ProjectPath.DataValue.EndsWith("*"))
+            {
+                ProjectPath.DataValue += "*";
+            }
+        }
         StartCoroutine(AddModels(fileInfos));
     }
 
@@ -398,23 +429,13 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         {
             yield return new WaitForSeconds(1);
         }
-        yield return new WaitUntil(ProgressbarCtrl.Instance.isFinished);
-        for (int i = fileInfos.Count - 1; i >= 0; i--)
-        {
-            if (Models.Contains(fileInfos[i].FullName))
-            {
-                fileInfos.Remove(fileInfos[i]);
-            }
-            else
-            {
-                Models.Add(fileInfos[i].FullName);
-            }
-        }
-        Models.Reverse();
+        yield return new WaitUntil(ProgressbarCtrl.Instance.isFinished);        
         ProgressbarCtrl.Instance.Show("正在解析三维模型……");
         ProgressbarCtrl.Instance.ResetMaxCount(fileInfos.Count);
+
         foreach (var fileInfo in fileInfos)
         {
+            Models.Add(fileInfo.FullName);
             yield return StartCoroutine(StartParsingModels(fileInfo));
         }
     }
@@ -521,7 +542,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
 
     public void AddSceneryBtnClick()
     {
-        if (string.IsNullOrEmpty(m_ProjectPath))
+        if (string.IsNullOrEmpty(ProjectPath.DataValue))
         {
             MessageBoxCtrl.Instance.Show("请先创建或打开工程");
             return;
@@ -536,19 +557,23 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         Application.Quit();
     }
 
-    public void ParseSmart3DXml(string path)
+    public void ParseSmart3DXmlBtnClick()
     {
-        if (string.IsNullOrEmpty(m_ProjectPath))
+        if (string.IsNullOrEmpty(ProjectPath.DataValue))
         {
             MessageBoxCtrl.Instance.Show("请先创建或打开工程");
             return;
         }
+        string path = FileBrowser.OpenSingleFile("选择相机参数文件", null, "xml");
         if (string.IsNullOrEmpty(path))
         {
-            path = FileBrowser.OpenSingleFile("选择相机参数文件", null, "xml");
-            if (path.Length == 0)
-                return;
-        }        
+            MessageBoxCtrl.Instance.Show("未选择Smart3D空三数据文件");
+            return;
+        }               
+        if (!ProjectPath.DataValue.EndsWith("*"))
+        {
+            ProjectPath.DataValue += "*";
+        }
         XmlDocument xml = new XmlDocument();
         XmlReaderSettings set = new XmlReaderSettings();
         set.IgnoreComments = true;
