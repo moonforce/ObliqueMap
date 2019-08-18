@@ -71,7 +71,7 @@ public class ImageGalleryTextureOnDrag : MonoBehaviour, IBeginDragHandler, IDrag
                     ScrollRect.OnBeginDrag(eventData);
             }
         }
-        CanvasCtrl.Instance.IsGalleryDragging = true;
+        ProjectStage.Instance.IsGalleryDragging = true;
     }
 
     public void OnDrag(PointerEventData data)
@@ -108,7 +108,7 @@ public class ImageGalleryTextureOnDrag : MonoBehaviour, IBeginDragHandler, IDrag
     {
         m_DraggingTextureGameObject = Instantiate(Resources.Load<GameObject>("prefab/ImageGalleryTexture"));
         ImageGalleryTexture imageGalleryTexture = m_DraggingTextureGameObject.GetComponent<ImageGalleryTexture>();
-        m_DraggingTextureGameObject.transform.parent = CanvasCtrl.Instance.transform;
+        m_DraggingTextureGameObject.transform.parent = ProjectStage.Instance.transform;
         m_DraggingTextureGameObject.transform.localScale = Vector3.one;
         imageGalleryTexture.Texture.texture = GetComponent<RawImage>().texture;
 
@@ -133,6 +133,6 @@ public class ImageGalleryTextureOnDrag : MonoBehaviour, IBeginDragHandler, IDrag
                 ScrollRect.StopMovement();
             }
         }
-        CanvasCtrl.Instance.IsGalleryDragging = false;
+        ProjectStage.Instance.IsGalleryDragging = false;
     }
 }

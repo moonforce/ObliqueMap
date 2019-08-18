@@ -117,7 +117,7 @@ namespace ObjLoaderLY
                         }
                         break;
                     case "usemtl":
-                        if (!string.IsNullOrEmpty(parameters))
+                        if (!string.IsNullOrEmpty(parameters) && ObjExportHandler.DefaultMatName != parameters)
                         {
                             m_SubMeshInfo.ImagePaths.Add(faceCount, parameters);
                         }

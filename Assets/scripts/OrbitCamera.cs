@@ -82,7 +82,7 @@ public class OrbitCamera : Singleton<OrbitCamera>
     void OnGUI()
     {
         if (target && (GetComponent<Camera>().pixelRect.Contains(Input.mousePosition) || (!GetComponent<Camera>().pixelRect.Contains(Input.mousePosition) && isRotating))
-            && !CanvasCtrl.Instance.IsMainImageDragging && !CanvasCtrl.Instance.IsGalleryDragging)
+            && !ProjectStage.Instance.IsMainImageDragging && !ProjectStage.Instance.IsGalleryDragging)
         {
             foreach (var splitter in splitters)
                 if (splitter.processDrag)

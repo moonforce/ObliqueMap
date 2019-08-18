@@ -75,7 +75,7 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
     {
         if (!HaveImage || eventData.pointerId != -3)
             return;
-        CanvasCtrl.Instance.IsMainImageDragging = true;
+        ProjectStage.Instance.IsMainImageDragging = true;
 
         // 存储点击时的鼠标坐标
         Vector3 tWorldPos;
@@ -100,7 +100,7 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
     {
         if (!HaveImage || eventData.pointerId != -3)
             return;
-        CanvasCtrl.Instance.IsMainImageDragging = false;
+        ProjectStage.Instance.IsMainImageDragging = false;
         SetDraggedPosition(eventData);
     }
 

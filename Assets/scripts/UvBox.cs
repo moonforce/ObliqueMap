@@ -62,7 +62,7 @@ public class UvBox : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHan
             ImageController.Instance.OnBeginDrag(eventData);
             return;
         }
-        if (eventData.pointerId != -1 || CanvasCtrl.Instance.IsUvLineDragging)
+        if (eventData.pointerId != -1 || ProjectStage.Instance.IsUvLineDragging)
             return;
         RectTransformUtility.ScreenPointToWorldPointInRectangle(m_RT, eventData.position, eventData.pressEventCamera, out m_LastMousePosiotion);
         SetDraggedPosition(eventData);
@@ -76,7 +76,7 @@ public class UvBox : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHan
             ImageController.Instance.OnDrag(eventData);
             return;
         }
-        if (eventData.pointerId != -1 || CanvasCtrl.Instance.IsUvLineDragging)
+        if (eventData.pointerId != -1 || ProjectStage.Instance.IsUvLineDragging)
             return;
         SetDraggedPosition(eventData);
     }
@@ -89,7 +89,7 @@ public class UvBox : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHan
             ImageController.Instance.OnEndDrag(eventData);
             return;
         }
-        if (eventData.pointerId != -1 || CanvasCtrl.Instance.IsUvLineDragging)
+        if (eventData.pointerId != -1 || ProjectStage.Instance.IsUvLineDragging)
             return;
         SetDraggedPosition(eventData);
     }

@@ -19,7 +19,7 @@ public class ContextMenuHandler : MonoBehaviour
 
     private void Start()
     {
-        m_MainCanvas = CanvasCtrl.Instance.MainCanvas;
+        m_MainCanvas = ProjectStage.Instance.MainCanvas;
     }
 
     private void Update()

@@ -8,9 +8,12 @@ using UnityEngine.EventSystems;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 
-public class CanvasCtrl : Singleton<CanvasCtrl>
+public class ProjectStage : Singleton<ProjectStage>
 {
-    protected CanvasCtrl() { }
+    protected ProjectStage() { }
+
+    public bool FaceChosed = false;
+    public bool FaceEditting = false;
     public bool IsMainImageDragging = false;
     public bool IsGalleryDragging = false;
     public bool IsUvLineDragging = false;
@@ -24,13 +27,5 @@ public class CanvasCtrl : Singleton<CanvasCtrl>
     void Start()
     {
         
-    }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            
-        }
     }
 }

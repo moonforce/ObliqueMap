@@ -117,7 +117,7 @@ public class UvLine : MonoBehaviour
             if (colliderObject == m_EdgeCollider2D)
             {
                 m_IsDragging = true;
-                CanvasCtrl.Instance.IsUvLineDragging = true;
+                ProjectStage.Instance.IsUvLineDragging = true;
                 m_LastMousePosition = Input.mousePosition;
             }
         }
@@ -126,7 +126,7 @@ public class UvLine : MonoBehaviour
             if (m_IsDragging)
             {
                 m_IsDragging = false;
-                CanvasCtrl.Instance.IsUvLineDragging = false;
+                ProjectStage.Instance.IsUvLineDragging = false;
             }
         }
     }

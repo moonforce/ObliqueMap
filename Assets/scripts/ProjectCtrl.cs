@@ -16,16 +16,16 @@ using TMPro;
 public class ProjectCtrl : Singleton<ProjectCtrl>
 {
     public string CompleteUvCommentLine { get; } = "# This Obj File Has Complete UVs";
-    public string EmptyUv { get; } = "vt 0 0 0";
+    public string EmptyUv { get; } = "vt 0 0";
     const int DoubleSignificantDigits = 17;
     const int m_thumb_width = 240;
 
     protected ProjectCtrl() { }
 
-    public TextMeshProUGUI m_ProjectName;    
+    public TextMeshProUGUI m_ProjectName;
 
     public Transform ModelContainer;
-    
+
     public float ModelDeltaX { get; set; }
     public float ModelDeltaY { get; set; }
 
@@ -159,11 +159,11 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         foreach (XmlNode ObliqueImageNode in ObliqueImageNodes)
         {
             imageFileInfos.Add(new FileInfo(ObliqueImageNode.InnerText));
-        }        
+        }
         if (imageFileInfos.Count > 0)
         {
             StartCoroutine(AddObliqueImages(imageFileInfos));
-        }            
+        }
         XmlNodeList Models = xml.SelectSingleNode("//Models").SelectNodes("Model");
         List<FileInfo> modelFileInfos = new List<FileInfo>();
         foreach (XmlNode Model in Models)
@@ -250,7 +250,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         {
             MessageBoxCtrl.Instance.Show("保存工程失败，还未创建或打开");
             return;
-        }            
+        }
         XmlDocument xmlDoc = new XmlDocument();
         xmlDoc.AppendChild(xmlDoc.CreateXmlDeclaration("1.0", "utf-8", null));
         xmlDoc.AppendChild(xmlDoc.CreateElement("Project"));
@@ -336,9 +336,9 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
             if (!ProjectPath.DataValue.EndsWith("*"))
             {
                 ProjectPath.DataValue += "*";
-            }               
+            }
             StartCoroutine(AddObliqueImages(fileInfos));
-        }            
+        }
     }
 
     public IEnumerator AddObliqueImages(List<FileInfo> fileInfos, bool wait = false)
@@ -348,7 +348,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
             yield return new WaitForSeconds(1);
         }
         yield return new WaitUntil(ProgressbarCtrl.Instance.isFinished);
-        
+
         ProgressbarCtrl.Instance.Show("正在创建倾斜影像缩略图……");
         ProgressbarCtrl.Instance.ResetMaxCount(fileInfos.Count);
 
@@ -429,7 +429,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         {
             yield return new WaitForSeconds(1);
         }
-        yield return new WaitUntil(ProgressbarCtrl.Instance.isFinished);        
+        yield return new WaitUntil(ProgressbarCtrl.Instance.isFinished);
         ProgressbarCtrl.Instance.Show("正在解析三维模型……");
         ProgressbarCtrl.Instance.ResetMaxCount(fileInfos.Count);
 
@@ -473,7 +473,9 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
             sb.AppendLine(CompleteUvCommentLine);
             string[] lines = loadedText.Split("\n".ToCharArray());
             char[] separators = new char[] { ' ', '\t' };
-            int numVerts = 0;
+            int numVertex = 0;
+            int numNormal = 0;
+            int numUv = 0;
             List<string> faceLines = new List<string>();
             for (int j = 0; j < lines.Length; j++)
             {
@@ -492,9 +494,11 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
                 switch (p[0])
                 {
                     case "v":
+                        numVertex++;
                         sb.AppendLine(line);
                         break;
                     case "vn":
+                        numNormal++;
                         sb.AppendLine(line);
                         break;
                     case "g":
@@ -502,29 +506,41 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
                         break;
                     case "f":
                         {
-                            numVerts += p.Length - 1;
+                            //numVerts += p.Length - 1;
                             faceLines.Add(line);
                         }
                         break;
                 }
             }
-            for (int j = 0; j < numVerts; ++j)
-            {
-                sb.AppendLine(EmptyUv);
-            }
-            int uvIndex = 0;
+
+            List<string> faces = new List<string>();
             foreach (string oldFace in faceLines)
             {
                 List<string> vertexes = oldFace.Split(separators, StringSplitOptions.RemoveEmptyEntries).ToList();
                 vertexes.RemoveAt(0);
                 string newFace = "f ";
+                Dictionary<string, int> uniqueVertexes = new Dictionary<string, int>();
                 foreach (string vertex in vertexes)
                 {
+                    if (!uniqueVertexes.ContainsKey(vertex))
+                    {
+                        numUv++;
+                        uniqueVertexes.Add(vertex, numUv);
+                    }
                     string[] vertexElements = vertex.Split('/');
-                    newFace += vertexElements[0] + '/' + (uvIndex++ - numVerts).ToString() + '/' + vertexElements[2] + ' ';
+                    newFace += (int.Parse(vertexElements[0]) + numVertex + 1).ToString() + '/' + uniqueVertexes[vertex].ToString() + '/' + (int.Parse(vertexElements[2]) + numNormal + 1).ToString() + ' ';  
                 }
-                sb.AppendLine(newFace);
+                faces.Add(newFace);
             }
+            for (int j = 0; j < numUv; ++j)
+            {
+                sb.AppendLine(EmptyUv);
+            }
+            foreach (var face in faces)
+            {
+                sb.AppendLine(face);
+            }
+
             File.WriteAllText(loadFileName, sb.ToString());
             yield return LoadModelFile(fileInfo, false);
         }
@@ -569,7 +585,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         {
             MessageBoxCtrl.Instance.Show("未选择Smart3D空三数据文件");
             return;
-        }               
+        }
         if (!ProjectPath.DataValue.EndsWith("*"))
         {
             ProjectPath.DataValue += "*";

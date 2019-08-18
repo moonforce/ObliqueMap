@@ -68,7 +68,7 @@ public class TextureHandler : Singleton<TextureHandler>
         {
             GameObject line = Instantiate(Resources.Load<GameObject>("prefab/UvLine"));
             UvLine uvLine = line.GetComponent<UvLine>();
-            uvLine.TheLine.SetCanvas(CanvasCtrl.Instance.MainCanvas);
+            uvLine.TheLine.SetCanvas(ProjectStage.Instance.MainCanvas);
             line.transform.SetParent(transform);
             //line.transform.SetSiblingIndex(0);
             line.transform.localPosition = Vector3.zero;

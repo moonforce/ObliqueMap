@@ -7,7 +7,7 @@ using System;
 
 public class ObjExportHandler
 {
-    public static string DefaultMatName = "default";
+    public static string DefaultMatName = "default185617";
     public static string ExportSuffix = "";
 
     public static void Export(MeshFilter[] sceneMeshes, string exportPath)
@@ -87,14 +87,13 @@ public class ObjExportHandler
 
             foreach (Vector2 v in mesh.uv)
             {
-                sb.AppendLine("vt " + v.x + " " + v.y + " 0");
+                sb.AppendLine("vt " + v.x + " " + v.y);
             }
 
             for (int i = 0; i < mesh.subMeshCount; i++)
             {
                 string matName = mr.sharedMaterials[i].name;
-                if (DefaultMatName != matName)
-                    sb.AppendLine("usemtl " + matName);
+                sb.AppendLine("usemtl " + matName);
 
                 List<string> OrigonalFacesList = subMeshInfo.OrigonalFacesLists[i];
                 Dictionary<string, int> OrigonalFaceNewIndexDictionary = subMeshInfo.OrigonalFaceNewIndexDictionary;
