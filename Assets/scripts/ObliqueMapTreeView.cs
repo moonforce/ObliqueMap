@@ -22,7 +22,7 @@ public class ObliqueMapTreeView : TreeView
 
     void DoubleClickListener(int index)
     {
-        var node = DataSource[index].Node;        
+        var node = DataSource[index].Node;
         if (node.Parent == ProjectCtrl.Instance.ModelsTreeNode)
         {
             if (CurrentGameObject)
@@ -38,18 +38,19 @@ public class ObliqueMapTreeView : TreeView
         }
         else if (node.Parent == ProjectCtrl.Instance.ObliqueImagesTreeNode)
         {
-            if (MeshAnaliser.Instance.Editting)
+            if (ProjectStage.Instance.FaceChosed || ProjectStage.Instance.FaceEditting)
             {
                 MeshAnaliser.Instance.ResetChoice();
+                OrbitCamera.Instance.Replace();
             }
             string imageUrl = node.Item.Name;
-            ImageController.Instance.ResetContent();
+            TextureHandler.Instance.ResetContent();
             StartCoroutine(DatabaseLoaderTexture_DDS.Load(Utills.ChangeExtensionToDDS(imageUrl), SetTexture));
         }        
     }
 
     private void SetTexture(Texture2D texture)
     {
-        ImageController.Instance.setImageTexture(texture);
+        TextureHandler.Instance.SetImage(texture);
     }
 }

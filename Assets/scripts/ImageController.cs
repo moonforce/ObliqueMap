@@ -15,7 +15,13 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
     private RectTransform m_RT;
     private RectTransform m_RT_Parent;
 
-    public bool HaveImage { get; set; } = false;
+    public bool HaveImage
+    {
+        get
+        {
+            return Texture.texture != null;
+        }
+    }
 
     [SerializeField]
     private float m_AdjustOnZooming = 2f;
@@ -118,23 +124,6 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
         }
     }
 
-    public void setImageTexture(Texture2D texture)
-    {
-        Texture.texture = texture;
-        Texture.enabled = true;
-        enabled = true;        
-        ConfigureContentView();
-    }
-
-    public void ResetContent()
-    {
-        Texture.enabled = false;
-        enabled = false;
-        Destroy(Texture.texture);
-        Texture.texture = null;
-        HaveImage = false;
-    }
-
     void OnDestroy()
     {
         if (HaveImage)
@@ -160,6 +149,5 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
         }
         m_RT.anchoredPosition = Vector2.zero;
         m_RT.localScale = Vector3.one;
-        HaveImage = true;
     }
 }

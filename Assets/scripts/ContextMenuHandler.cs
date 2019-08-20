@@ -62,7 +62,7 @@ public class ContextMenuHandler : MonoBehaviour
         {
             item.Command = "DisabledCmd";
         }
-        if (MeshAnaliser.Instance.Editting && ImageController.Instance.HaveImage)
+        if (ProjectStage.Instance.FaceEditting && ImageController.Instance.HaveImage)
         {
             items[0].Command = "Paste";
         }
@@ -110,7 +110,7 @@ public class ContextMenuHandler : MonoBehaviour
     {
         if (cmd == "Paste")
         {
-            TextureHandler.Instance.PasteTexture();
+            TextureHandler.Instance.PasteTextureToModelFace();
         }
         else if (cmd == "FullImage")
         {

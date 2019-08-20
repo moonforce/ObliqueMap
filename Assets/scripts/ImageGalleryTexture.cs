@@ -59,7 +59,7 @@ public class ImageGalleryTexture : MonoBehaviour, IPointerClickHandler
         CreateUv();
         if (SiblingIndexInGallery == 0)
         {
-            SendTexture();
+            SendTextureToTextureHandler();
         }
     }
 
@@ -84,12 +84,12 @@ public class ImageGalleryTexture : MonoBehaviour, IPointerClickHandler
     {
         if (eventData.clickCount == 2)
         {
-            SendTexture();
+            SendTextureToTextureHandler();
         }
     }
 
-    private void SendTexture()
+    private void SendTextureToTextureHandler()
     {
-        TextureHandler.Instance.ReceiveTexture(gameObject.name, m_UvLines, m_UniqueIndexUv);
+        TextureHandler.Instance.ReceiveTextureFromImageGallery(gameObject.name, m_UvLines, m_UniqueIndexUv);
     }
 }

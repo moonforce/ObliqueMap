@@ -25,19 +25,17 @@ public class TextureHandler : Singleton<TextureHandler>
     private RectTransform m_RT_Parent;
     private RawImage m_Texture;
 
+    private ImageController m_ImageController;
+
     void Start()
     {
         m_RT = gameObject.GetComponent<RectTransform>();
         m_RT_Parent = transform.parent.GetComponent<RectTransform>();
         m_Texture = GetComponent<RawImage>();
+        m_ImageController = GetComponent<ImageController>();
     }
 
-    private void Update()
-    {
-
-    }
-
-    public void PasteTexture()
+    public void PasteTextureToModelFace()
     {
         Texture2D tileTexture;
         string tileTexturePath = Path.GetDirectoryName(MeshAnaliser.Instance.ClickedSubMeshInfo.FilePath) + '/' + Path.GetFileNameWithoutExtension(MeshAnaliser.Instance.ClickedSubMeshInfo.FilePath) + '_' + DateTime.Now.ToString("yyyyMMddHHmmss") + ".jpg";
@@ -50,7 +48,15 @@ public class TextureHandler : Singleton<TextureHandler>
             tileTexturePath
             );
         MeshAnaliser.Instance.ClickedSubMeshInfo.ImagePaths[MeshAnaliser.Instance.ClickedSubMeshIndex] = tileTexturePath;
-        SetMaterialTextureAndUv(tileTexture, Path.GetFileName(tileTexturePath));
+        MeshAnaliser.Instance.ClickedMaterial.name = Path.GetFileName(tileTexturePath);
+        MeshAnaliser.Instance.ClickedMaterial.mainTexture = tileTexture;
+        MeshAnaliser.Instance.ClickedMaterial.SetColor("_Color", new Color(1, 1, 1, 1));
+        Vector2[] uvCopy = MeshAnaliser.Instance.ClickedMesh.uv;
+        foreach (var pair in m_UniqueIndexUv)
+        {
+            uvCopy[pair.Key] = ConvertGlobalUvToLocalUv(pair.Value);
+        }
+        MeshAnaliser.Instance.ClickedMesh.uv = uvCopy;
     }
 
     public void ResetContent()
@@ -58,10 +64,13 @@ public class TextureHandler : Singleton<TextureHandler>
         Utills.DestroyAllChildren(transform);
         UvLines.Clear();
         UvPoints.Clear();
-        ImageController.Instance.ResetContent();
+        m_ImageController.enabled = false;
+        m_Texture.enabled = false;        
+        Destroy(m_Texture.texture);
+        m_Texture.texture = null;
     }
 
-    public void ReceiveTexture(string imageUrl, List<UvLine> uvLines, Dictionary<int, Vector2> uniqueIndexUv)
+    public void ReceiveTextureFromImageGallery(string imageUrl, List<UvLine> uvLines, Dictionary<int, Vector2> uniqueIndexUv)
     {
         ResetContent();
         foreach (UvLine galleryUvLine in uvLines)
@@ -81,29 +90,24 @@ public class TextureHandler : Singleton<TextureHandler>
             uvLine.gameObject.SetActive(false);
         }
         m_UniqueIndexUv = uniqueIndexUv;
-        StartCoroutine(DatabaseLoaderTexture_DDS.Load(Utills.ChangeExtensionToDDS(imageUrl), SetTexture));
+        StartCoroutine(DatabaseLoaderTexture_DDS.Load(Utills.ChangeExtensionToDDS(imageUrl), SetTextureAndUvElements));
     }
 
-    private void SetTexture(Texture2D texture)
+    private void SetTextureAndUvElements(Texture2D texture)
     {
         TextureDownloaded = texture;
-        ImageController.Instance.setImageTexture(TextureDownloaded);
+        SetImage(TextureDownloaded);
         CreateLines();
         CreatePointsAndAABB();
         FocusAABB();
-    }    
+    }
 
-    private void SetMaterialTextureAndUv(Texture2D texture, string matName)
+    public void SetImage(Texture2D image)
     {
-        MeshAnaliser.Instance.ClickedMaterial.name = matName;
-        MeshAnaliser.Instance.ClickedMaterial.mainTexture = texture;
-        MeshAnaliser.Instance.ClickedMaterial.SetColor("_Color", new Color(1, 1, 1, 1));
-        Vector2[] uvCopy = MeshAnaliser.Instance.ClickedMesh.uv;
-        foreach (var pair in m_UniqueIndexUv)
-        {
-            uvCopy[pair.Key] = ConvertGlobalUvToLocalUv(pair.Value);
-        }
-        MeshAnaliser.Instance.ClickedMesh.uv = uvCopy;
+        m_Texture.texture = image;
+        m_Texture.enabled = true;
+        m_ImageController.enabled = true;
+        m_ImageController.ConfigureContentView();
     }
 
     private void CreateLines()
@@ -192,7 +196,7 @@ public class TextureHandler : Singleton<TextureHandler>
         UpdateUvBox();
     }
 
-    public void UpdateUvBox()
+    private void UpdateUvBox()
     {
         m_UvBox.Refresh();
         foreach (var indexUv in m_UniqueIndexUv)

@@ -19,7 +19,6 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
     public int ClickedSubMeshIndex { get; set; }
     public Material ClickedMaterial { get; set; }
     public Mesh ClickedMesh { get; set; }
-    public bool Editting { get; set; } = false;
 
     private void Start()
     {
@@ -40,7 +39,7 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
             {
                 if (9 == hit.transform.gameObject.layer) //Model layer
                 {
-                    Editting = true;
+                    ProjectStage.Instance.FaceChosed = true;
                     m_MainLight.rotation = Quaternion.LookRotation(-hit.normal) * Quaternion.Euler(45, 0, 45);
                     ClickedMesh = Utills.GetMeshOfGameobject(hit.transform.gameObject);
 
@@ -62,51 +61,18 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
                             {
                                 ClickedSubMeshIndex = i;
                                 HighlightMaterial();
-                                find = true;
-                                TextureHandler.Instance.ResetContent();
+                                find = true;                                
                                 break;
                             }
                         }
                         if (find)
                             break;
-                    }
-                    ClickedSubMeshInfo = ObliqueMapTreeView.CurrentGameObject.GetComponent<SubMeshInfo>();
-                    List<int> indecies = ClickedSubMeshInfo.FaceNewIndexLists[ClickedSubMeshIndex];
-                    Vector3[] allVertices = ClickedMesh.vertices;
-                    Dictionary<int, Vector3> subMeshVertices = new Dictionary<int, Vector3>();
-                    foreach (int index in indecies)
-                    {
-                        if (!subMeshVertices.ContainsKey(index))
-                        {
-                            //注意y/z的互换
-                            subMeshVertices.Add(index, new Vector3(allVertices[index].x + 0, allVertices[index].z + 0, allVertices[index].y));
-                        }
-                    }
-                    Vector3 faceNormal = new Vector3(ClickedMesh.normals[indecies[0]].x, ClickedMesh.normals[indecies[0]].y, ClickedMesh.normals[indecies[0]].z);
-                    List<ImageInfo> imageInfos = ProjectCtrl.Instance.ProjectPoints(subMeshVertices, faceNormal);
-                    imageInfos = imageInfos.OrderBy(it => it.DirectionDot).ToList();
-
-                    for (int i = imageInfos.Count - 1; i >= 0; i--)
-                    {
-                        //路径不同
-                        string path = ProjectCtrl.Instance.ObliqueImages.Find(o => Path.GetFileName(o) == imageInfos[i].File.Name);
-                        if (path == null)
-                            imageInfos.Remove(imageInfos[i]);
-                        else
-                            imageInfos[i].File = new FileInfo(path);
-                        //路径相同
-                        ////if (!ProjectCtrl.Instance.ObliqueImages.Contains(imageInfos[i].File.FullName))
-                        ////{
-                        ////    imageInfos.Remove(imageInfos[i]);
-                        ////}
-                    }
-                    ImageGallery.Instance.ClearContents();
-                    for (int i = 0; i < imageInfos.Count; ++i)
-                    {
-                        ImageGallery.Instance.AddImage(imageInfos[i], ClickedSubMeshInfo.LineIndexLists[ClickedSubMeshIndex], i);
-                    }
-                    ImageGallery.Instance.GetComponent<AutoResizeImageGallerySize>().UpdateLayout();
+                    }                    
                 }
+            }
+            else
+            {
+                ResetChoice();
             }
         }
         //else if (Editting
@@ -117,9 +83,51 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
         //}
     }
 
+    public void StartEditting()
+    {
+        TextureHandler.Instance.ResetContent();
+        ClickedSubMeshInfo = ObliqueMapTreeView.CurrentGameObject.GetComponent<SubMeshInfo>();
+        List<int> indecies = ClickedSubMeshInfo.FaceNewIndexLists[ClickedSubMeshIndex];
+        Vector3[] allVertices = ClickedMesh.vertices;
+        Dictionary<int, Vector3> subMeshVertices = new Dictionary<int, Vector3>();
+        foreach (int index in indecies)
+        {
+            if (!subMeshVertices.ContainsKey(index))
+            {
+                //注意y/z的互换
+                subMeshVertices.Add(index, new Vector3(allVertices[index].x + 0, allVertices[index].z + 0, allVertices[index].y));
+            }
+        }
+        Vector3 faceNormal = new Vector3(ClickedMesh.normals[indecies[0]].x, ClickedMesh.normals[indecies[0]].y, ClickedMesh.normals[indecies[0]].z);
+        List<ImageInfo> imageInfos = ProjectCtrl.Instance.ProjectPoints(subMeshVertices, faceNormal);
+        imageInfos = imageInfos.OrderBy(it => it.DirectionDot).ToList();
+
+        for (int i = imageInfos.Count - 1; i >= 0; i--)
+        {
+            //路径不同
+            string path = ProjectCtrl.Instance.ObliqueImages.Find(o => Path.GetFileName(o) == imageInfos[i].File.Name);
+            if (path == null)
+                imageInfos.Remove(imageInfos[i]);
+            else
+                imageInfos[i].File = new FileInfo(path);
+            //路径相同
+            ////if (!ProjectCtrl.Instance.ObliqueImages.Contains(imageInfos[i].File.FullName))
+            ////{
+            ////    imageInfos.Remove(imageInfos[i]);
+            ////}
+        }
+        ImageGallery.Instance.ClearContents();
+        for (int i = 0; i < imageInfos.Count; ++i)
+        {
+            ImageGallery.Instance.AddImage(imageInfos[i], ClickedSubMeshInfo.LineIndexLists[ClickedSubMeshIndex], i);
+        }
+        ImageGallery.Instance.GetComponent<AutoResizeImageGallerySize>().UpdateLayout();
+    }
+
     public void ResetChoice()
     {
-        Editting = false;
+        ProjectStage.Instance.FaceChosed = false;
+        ProjectStage.Instance.FaceEditting = false;
         m_MainLight.rotation = m_MainLightOrigonQuaternion;
         if (ClickedMaterial)
         {
