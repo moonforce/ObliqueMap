@@ -88,8 +88,9 @@ public class ImageGalleryTexture : MonoBehaviour, IPointerClickHandler
         }
     }
 
-    private void SendTextureToTextureHandler()
+    public void SendTextureToTextureHandler()
     {
+        ImageGallery.Instance.CurrentTextureSibling = transform.GetSiblingIndex();
         TextureHandler.Instance.ReceiveTextureFromImageGallery(gameObject.name, m_UvLines, m_UniqueIndexUv);
     }
 }

@@ -12,6 +12,8 @@ public class ImageGallery : Singleton<ImageGallery>
 
     public Scrollbar HorizontalScrollbar { get; set; }
 
+    public int CurrentTextureSibling { get; set; } = -1;
+
     void Start()
     {
         ImagesParent = transform.Find("ScrollView/Viewport/Content");
@@ -45,5 +47,14 @@ public class ImageGallery : Singleton<ImageGallery>
         newImage.transform.localScale = Vector3.one;
         string imageUrl = fileInfo.DirectoryName + "/thumb/" + fileInfo.Name;
         newImage.GetComponent<ImageGalleryTexture>().InitContent(imageUrl, lineIndexList, imageInfo.Index_UVs, siblingIndex);
+    }
+
+    public void SwitchToNextImage()
+    {
+        if (++CurrentTextureSibling >= ImagesParent.childCount)
+            CurrentTextureSibling = 0;
+        ImagesParent.GetChild(CurrentTextureSibling).GetComponent<ImageGalleryTexture>().SendTextureToTextureHandler();
+        //以下语句不应CurrentTextureSibling + 1，应为CurrentTextureSibling，但CurrentTextureSibling + 1能弥补误差
+        HorizontalScrollbar.value = (float)CurrentTextureSibling / ImagesParent.childCount + ImagesParent.GetComponent<GridLayoutGroup>().spacing.x * (CurrentTextureSibling + 1) / ImagesParent.GetComponent<RectTransform>().sizeDelta.x;
     }
 }

@@ -13,14 +13,14 @@ public class Shortcuts : MonoBehaviour
     public KeyCode PsOpenKey = KeyCode.F;
     public KeyCode RefreshTextureKey = KeyCode.R;
     public KeyCode OutputModelKey = KeyCode.S;
-    public KeyCode SwitchImageKey = KeyCode.Space;    
+    public KeyCode SwitchImageKey = KeyCode.Space;
     public KeyCode DeleteTextureKey = KeyCode.D;
     public KeyCode UndoKey = KeyCode.Z;
     public KeyCode RedoKey = KeyCode.Y;
 
     void Start()
     {
-        
+
     }
 
     void Update()
@@ -82,7 +82,7 @@ public class Shortcuts : MonoBehaviour
                 if (!string.IsNullOrEmpty(clickedImagePath) && MeshAnaliser.Instance.ClickedMaterial.name != ObjExportHandler.DefaultMatName)
                 {
                     StartCoroutine(DownloadTexture(clickedImagePath, MeshAnaliser.Instance.ClickedSubMeshIndex));
-                }                
+                }
             }
         }
         else if (Input.GetKeyDown(OutputModelKey))
@@ -90,6 +90,20 @@ public class Shortcuts : MonoBehaviour
             if (ProjectStage.Instance.FaceEditting)
             {
                 ObjExportHandler.Export(ObliqueMapTreeView.CurrentGameObject.GetComponentsInChildren<MeshFilter>(), null);
+            }
+        }
+        else if (Input.GetKeyDown(SwitchImageKey))
+        {
+            if (ProjectStage.Instance.FaceEditting)
+            {
+                ImageGallery.Instance.SwitchToNextImage();
+            }
+        }
+        else if (Input.GetKeyDown(DeleteTextureKey))
+        {
+            if (ProjectStage.Instance.FaceEditting)
+            {
+                
             }
         }
     }

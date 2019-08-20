@@ -72,7 +72,8 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
             }
             else
             {
-                ResetChoice();
+                if (m_MainCamera.pixelRect.Contains(Input.mousePosition))
+                    ResetChoice();
             }
         }
         //else if (Editting
