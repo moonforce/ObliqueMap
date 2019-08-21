@@ -47,7 +47,8 @@ public class TextureHandler : Singleton<TextureHandler>
             (int)(m_UvBox.AABB.Spacing.y * TextureDownloaded.height + 0.5f),
             tileTexturePath
             );
-        MeshAnaliser.Instance.ClickedSubMeshInfo.ImagePaths[MeshAnaliser.Instance.ClickedSubMeshIndex] = tileTexturePath;
+        //MeshAnaliser.Instance.ClickedSubMeshInfo.ImagePaths[MeshAnaliser.Instance.ClickedSubMeshIndex] = tileTexturePath;
+        MeshAnaliser.Instance.DestroyClickedMainTexture();
         MeshAnaliser.Instance.ClickedMaterial.name = Path.GetFileName(tileTexturePath);
         MeshAnaliser.Instance.ClickedMaterial.mainTexture = tileTexture;
         MeshAnaliser.Instance.ClickedMaterial.SetColor("_Color", new Color(1, 1, 1, 1));

@@ -52,8 +52,7 @@ public class Shortcuts : MonoBehaviour
         {
             if (ProjectStage.Instance.FaceEditting)
             {
-                string directory = Path.GetDirectoryName(MeshAnaliser.Instance.ClickedSubMeshInfo.FilePath);
-                string clickedImagePath = directory + '/' + MeshAnaliser.Instance.ClickedMaterial.name;
+                string clickedImagePath = MeshAnaliser.Instance.GetClickedImagePath();
                 if (!string.IsNullOrEmpty(clickedImagePath) && MeshAnaliser.Instance.ClickedMaterial.name != ObjExportHandler.DefaultMatName)
                 {
                     if (!File.Exists(SettingsPanelCtrl.Instance.PhotoshopPath))
@@ -77,8 +76,7 @@ public class Shortcuts : MonoBehaviour
         {
             if (ProjectStage.Instance.FaceEditting)
             {
-                string directory = Path.GetDirectoryName(MeshAnaliser.Instance.ClickedSubMeshInfo.FilePath);
-                string clickedImagePath = directory + '/' + MeshAnaliser.Instance.ClickedMaterial.name;
+                string clickedImagePath = MeshAnaliser.Instance.GetClickedImagePath();
                 if (!string.IsNullOrEmpty(clickedImagePath) && MeshAnaliser.Instance.ClickedMaterial.name != ObjExportHandler.DefaultMatName)
                 {
                     StartCoroutine(DownloadTexture(clickedImagePath, MeshAnaliser.Instance.ClickedSubMeshIndex));
@@ -103,7 +101,7 @@ public class Shortcuts : MonoBehaviour
         {
             if (ProjectStage.Instance.FaceEditting)
             {
-                
+                MeshAnaliser.Instance.DestroyClickedMainTexture(true);
             }
         }
     }

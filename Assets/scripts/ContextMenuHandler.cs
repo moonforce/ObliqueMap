@@ -88,8 +88,8 @@ public class ContextMenuHandler : MonoBehaviour
         int clickedSubmeshIndex = MeshAnaliser.Instance.GetClickedSubmeshIndex();
         // 选中某个面并且此面材质含图片
         if (clickedSubmeshIndex != -1)
-        {            
-            string clickedImagePath = ObliqueMapTreeView.CurrentGameObject.GetComponent<SubMeshInfo>().ImagePaths[clickedSubmeshIndex];
+        {
+            string clickedImagePath = MeshAnaliser.Instance.GetClickedImagePath();
             if (!string.IsNullOrEmpty(clickedImagePath) && clickedImagePath != ObjExportHandler.DefaultMatName)
             {
                 items[0].Command = "PS|" + clickedImagePath;

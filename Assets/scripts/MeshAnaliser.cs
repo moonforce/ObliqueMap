@@ -15,6 +15,8 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
     Transform m_MainLight;
     Quaternion m_MainLightOrigonQuaternion;
 
+    public Texture2D WhiteTexture2D;
+
     public SubMeshInfo ClickedSubMeshInfo { get; set; }
     public int ClickedSubMeshIndex { get; set; }
     public Material ClickedMaterial { get; set; }
@@ -150,6 +152,24 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
         }
         ClickedMaterial = ObliqueMapTreeView.CurrentGameObject.GetComponentInChildren<MeshRenderer>().sharedMaterials[ClickedSubMeshIndex];
         SwitchShader(OutlineShader);
+    }
+
+    public void DestroyClickedMainTexture(bool reset = false)
+    {
+        if (ClickedMaterial.mainTexture != null && ClickedMaterial.mainTexture != WhiteTexture2D)
+        {
+            Destroy(ClickedMaterial.mainTexture);            
+        }
+        if (reset)
+        {
+            ClickedMaterial.mainTexture = WhiteTexture2D;
+            ClickedMaterial.name = ObjExportHandler.DefaultMatName;
+        }        
+    }
+
+    public string GetClickedImagePath()
+    {
+        return Path.GetDirectoryName(ClickedSubMeshInfo.FilePath) + '/' + ClickedMaterial.name;
     }
 
     public int GetClickedSubmeshIndex()

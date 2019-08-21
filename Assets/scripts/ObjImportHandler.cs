@@ -18,6 +18,7 @@ namespace ObjLoaderLY
         DataSetLY m_DataSet = new DataSetLY();
         Texture2D m_LoadedTexture;
         Dictionary<int, Material> m_Materials = new Dictionary<int, Material>();
+        Dictionary<int, string> m_ImagePaths = new Dictionary<int, string>();
         //string m_mtlLib;
 
         public IEnumerator Load(string objName, string absolutePath, Transform parentObj, bool isCompleteUvModel)
@@ -119,7 +120,7 @@ namespace ObjLoaderLY
                     case "usemtl":
                         if (!string.IsNullOrEmpty(parameters) && ObjExportHandler.DefaultMatName != parameters)
                         {
-                            m_SubMeshInfo.ImagePaths.Add(faceCount, parameters);
+                            m_ImagePaths.Add(faceCount, parameters);
                         }
                         break;
                 }
@@ -128,7 +129,7 @@ namespace ObjLoaderLY
 
         protected IEnumerator Build()
         {
-            foreach (var indexPathPair in m_SubMeshInfo.ImagePaths)
+            foreach (var indexPathPair in m_ImagePaths)
             {
                 yield return LoadMaterialTexture(Path.GetDirectoryName(m_SubMeshInfo.FilePath) + '/' + indexPathPair.Value);
 
@@ -215,7 +216,6 @@ namespace ObjLoaderLY
                 {
                     materials[i] = new Material(DefaultMaterial);
                     materials[i].name = ObjExportHandler.DefaultMatName;
-                    m_SubMeshInfo.ImagePaths.Add(i, "default");
                 }                    
             }
             renderer.sharedMaterials = materials;
