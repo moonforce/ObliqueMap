@@ -5,8 +5,10 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class Shortcuts : MonoBehaviour
+public class Shortcuts : Singleton<Shortcuts>
 {
+    protected Shortcuts() { }
+
     public KeyCode StartEdittingKey = KeyCode.E;
     public KeyCode TexturePasteKey = KeyCode.T;
     public KeyCode CancelKey = KeyCode.C;
@@ -27,83 +29,137 @@ public class Shortcuts : MonoBehaviour
     {
         if (Input.GetKeyDown(StartEdittingKey))
         {
-            if (ProjectStage.Instance.FaceChosed)
+            if (ProjectStage.Instance.FaceChosed && !ProjectStage.Instance.FaceEditting)
             {
-                ProjectStage.Instance.FaceEditting = true;
-                MeshAnaliser.Instance.StartEditting();
+                StartEditting();
             }
         }
         else if (Input.GetKeyDown(TexturePasteKey))
         {
-            if (ProjectStage.Instance.FaceEditting && ImageController.Instance.HaveImage)
+            if (ProjectStage.Instance.FaceEditting)
             {
-                TextureHandler.Instance.PasteTextureToModelFace();
+                TexturePaste();
             }
         }
         else if (Input.GetKeyDown(CancelKey))
         {
             if (ProjectStage.Instance.FaceEditting)
             {
-                MeshAnaliser.Instance.ResetChoice();
-                OrbitCamera.Instance.Replace();
+                Cancel();
             }
         }
         else if (Input.GetKeyDown(PsOpenKey))
         {
             if (ProjectStage.Instance.FaceEditting)
             {
-                string clickedImagePath = MeshAnaliser.Instance.GetClickedImagePath();
-                if (!string.IsNullOrEmpty(clickedImagePath) && MeshAnaliser.Instance.ClickedMaterial.name != ObjExportHandler.DefaultMatName)
-                {
-                    if (!File.Exists(SettingsPanelCtrl.Instance.PhotoshopPath))
-                    {
-                        MessageBoxCtrl.Instance.Show("PS路径不正确！");
-                        return;
-                    }
-                    else if (!File.Exists(clickedImagePath))
-                    {
-                        MessageBoxCtrl.Instance.Show("未找到该贴图文件！");
-                        return;
-                    }
-                    Process process = new Process();
-                    process.StartInfo.FileName = SettingsPanelCtrl.Instance.PhotoshopPath;
-                    process.StartInfo.Arguments = clickedImagePath;
-                    process.Start();
-                }
+                PS();
             }
         }
         else if (Input.GetKeyDown(RefreshTextureKey))
         {
             if (ProjectStage.Instance.FaceEditting)
             {
-                string clickedImagePath = MeshAnaliser.Instance.GetClickedImagePath();
-                if (!string.IsNullOrEmpty(clickedImagePath) && MeshAnaliser.Instance.ClickedMaterial.name != ObjExportHandler.DefaultMatName)
-                {
-                    StartCoroutine(DownloadTexture(clickedImagePath, MeshAnaliser.Instance.ClickedSubMeshIndex));
-                }
+                RefreshTexture();
             }
         }
         else if (Input.GetKeyDown(OutputModelKey))
         {
             if (ProjectStage.Instance.FaceEditting)
             {
-                ObjExportHandler.Export(ObliqueMapTreeView.CurrentGameObject.GetComponentsInChildren<MeshFilter>(), null);
+                OutputModel();
             }
         }
         else if (Input.GetKeyDown(SwitchImageKey))
         {
             if (ProjectStage.Instance.FaceEditting)
             {
-                ImageGallery.Instance.SwitchToNextImage();
+                SwitchImage();
             }
         }
         else if (Input.GetKeyDown(DeleteTextureKey))
         {
             if (ProjectStage.Instance.FaceEditting)
             {
-                MeshAnaliser.Instance.DestroyClickedMainTexture(true);
+                DeleteTexture();
             }
         }
+    }
+    
+    public void StartEditting()
+    {
+        ProjectStage.Instance.FaceEditting = true;
+        MeshAnaliser.Instance.StartEditting();
+    }
+
+    public void TexturePaste()
+    {
+        TextureHandler.Instance.PasteTextureToModelFace();
+    }
+
+    public void FullImage()
+    {
+        ImageController.Instance.ViewFullImage();
+    }
+
+    public void SwitchImage()
+    {
+        ImageGallery.Instance.SwitchToNextImage();
+    }
+
+    public void PS()
+    {
+        string clickedImagePath = MeshAnaliser.Instance.GetClickedImagePath();
+        if (!string.IsNullOrEmpty(clickedImagePath) && MeshAnaliser.Instance.ClickedMaterial.name != ObjExportHandler.DefaultMatName)
+        {
+            if (!File.Exists(SettingsPanelCtrl.Instance.PhotoshopPath))
+            {
+                MessageBoxCtrl.Instance.Show("PS路径不正确！");
+                return;
+            }
+            else if (!File.Exists(clickedImagePath))
+            {
+                MessageBoxCtrl.Instance.Show("未找到该贴图文件！");
+                return;
+            }
+            Process process = new Process();
+            process.StartInfo.FileName = SettingsPanelCtrl.Instance.PhotoshopPath;
+            process.StartInfo.Arguments = clickedImagePath;
+            process.Start();
+        }
+    }
+
+    public void RefreshTexture()
+    {
+        string clickedImagePath = MeshAnaliser.Instance.GetClickedImagePath();
+        if (!string.IsNullOrEmpty(clickedImagePath) && MeshAnaliser.Instance.ClickedMaterial.name != ObjExportHandler.DefaultMatName)
+        {
+            StartCoroutine(DownloadTexture(clickedImagePath, MeshAnaliser.Instance.ClickedSubMeshIndex));
+        }
+    }
+
+    public void DeleteTexture()
+    {
+        string clickedImagePath = MeshAnaliser.Instance.GetClickedImagePath();
+        if (!string.IsNullOrEmpty(clickedImagePath) && MeshAnaliser.Instance.ClickedMaterial.name != ObjExportHandler.DefaultMatName)
+        {
+            MeshAnaliser.Instance.DestroyClickedMainTexture(true);
+        }
+    }
+
+    public void ReplaceModel()
+    {
+        OrbitCamera.Instance.ReplaceModel();
+    }
+
+    public void OutputModel()
+    {
+        ObjExportHandler.Export(ObliqueMapTreeView.CurrentGameObject.GetComponentsInChildren<MeshFilter>(), null);
+    }
+
+    public void Cancel()
+    {
+        MeshAnaliser.Instance.ResetChoice();
+        OrbitCamera.Instance.ReplaceModel();
     }
 
     public static IEnumerator DownloadTexture(string imagePath, int index)

@@ -142,7 +142,7 @@ public class OrbitCamera : Singleton<OrbitCamera>
         //}
     }
 
-    public void Replace()
+    public void ReplaceModel()
     {
         target.localPosition = Vector3.zero;
     }

@@ -41,7 +41,7 @@ public class ObliqueMapTreeView : TreeView
             if (ProjectStage.Instance.FaceChosed || ProjectStage.Instance.FaceEditting)
             {
                 MeshAnaliser.Instance.ResetChoice();
-                OrbitCamera.Instance.Replace();
+                OrbitCamera.Instance.ReplaceModel();
             }
             string imageUrl = node.Item.Name;
             TextureHandler.Instance.ResetContent();

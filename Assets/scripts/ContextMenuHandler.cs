@@ -62,14 +62,20 @@ public class ContextMenuHandler : MonoBehaviour
         {
             item.Command = "DisabledCmd";
         }
-        if (ProjectStage.Instance.FaceEditting && ImageController.Instance.HaveImage)
+        if (ProjectStage.Instance.FaceChosed && !ProjectStage.Instance.FaceEditting)
         {
-            items[0].Command = "Paste";
+            items[0].Command = "StartEditting";
+        }
+        if (ProjectStage.Instance.FaceEditting)
+        {
+            items[1].Command = "TexturePaste";
+            items[3].Command = "SwitchImage";
+            items[4].Command = "Cancel";
         }
         if (ImageController.Instance.HaveImage)
-        {            
-            items[1].Command = "FullImage";
-        }        
+        {
+            items[2].Command = "FullImage";
+        }
     }
 
     void ModelPanelContextMenuCheckButtonState(Menu menu)
@@ -78,24 +84,42 @@ public class ContextMenuHandler : MonoBehaviour
         foreach (var item in items)
         {
             item.Command = "DisabledCmd";
-        }            
-        if (ObliqueMapTreeView.CurrentGameObject)
+        }
+        if (ProjectStage.Instance.FaceChosed && !ProjectStage.Instance.FaceEditting)
         {
-            items[2].Command = "Replace";
-            items[3].Command = "Cancel";
-            items[4].Command = "Output";
-        }            
-        int clickedSubmeshIndex = MeshAnaliser.Instance.GetClickedSubmeshIndex();
-        // 选中某个面并且此面材质含图片
-        if (clickedSubmeshIndex != -1)
+            items[0].Command = "StartEditting";
+        }
+        if (ProjectStage.Instance.FaceEditting)
         {
             string clickedImagePath = MeshAnaliser.Instance.GetClickedImagePath();
-            if (!string.IsNullOrEmpty(clickedImagePath) && clickedImagePath != ObjExportHandler.DefaultMatName)
+            if (!string.IsNullOrEmpty(clickedImagePath) && MeshAnaliser.Instance.ClickedMaterial.name != ObjExportHandler.DefaultMatName)
             {
-                items[0].Command = "PS|" + clickedImagePath;
-                items[1].Command = "Refresh|" + clickedImagePath + '|' + clickedSubmeshIndex.ToString();
-            }
+                items[1].Command = "PS";
+                items[2].Command = "RefreshTexture";
+                items[3].Command = "DeleteTexture";
+            }                
         }
+        if (ObliqueMapTreeView.CurrentGameObject)
+        {
+            items[4].Command = "ReplaceModel";
+        }
+        if (ProjectStage.Instance.FaceEditting)
+        {
+            items[5].Command = "OutputModel";
+            items[6].Command = "Cancel";
+        }
+        // 可以PS和刷新非选中面的方法
+        //int clickedSubmeshIndex = MeshAnaliser.Instance.GetClickedSubmeshIndex();
+        //// 选中某个面并且此面材质含图片
+        //if (clickedSubmeshIndex != -1)
+        //{
+        //    string clickedImagePath = MeshAnaliser.Instance.GetClickedImagePath();
+        //    if (!string.IsNullOrEmpty(clickedImagePath) && clickedImagePath != ObjExportHandler.DefaultMatName)
+        //    {
+        //        items[0].Command = "PS|" + clickedImagePath;
+        //        items[1].Command = "Refresh|" + clickedImagePath + '|' + clickedSubmeshIndex.ToString();
+        //    }
+        //}
     }
 
     public void OnValidateCmd(MenuItemValidationArgs args)
@@ -108,52 +132,46 @@ public class ContextMenuHandler : MonoBehaviour
 
     public void OnCmd(string cmd)
     {
-        if (cmd == "Paste")
+        if (cmd == "StartEditting")
         {
-            TextureHandler.Instance.PasteTextureToModelFace();
+            Shortcuts.Instance.StartEditting();
+        }
+        else if (cmd == "TexturePaste")
+        {
+            Shortcuts.Instance.TexturePaste();
         }
         else if (cmd == "FullImage")
         {
-            ImageController.Instance.ViewFullImage();
+            Shortcuts.Instance.FullImage();
         }
+        else if (cmd == "SwitchImage")
+        {
+            Shortcuts.Instance.SwitchImage();
+        }        
         else if (cmd.StartsWith("PS"))
         {
-            string imagePath = cmd.Split('|')[1];
-            if (!File.Exists(SettingsPanelCtrl.Instance.PhotoshopPath))
-            {
-                MessageBoxCtrl.Instance.Show("PS路径不正确！");
-                return;
-            }
-            else if (!File.Exists(imagePath))
-            {
-                MessageBoxCtrl.Instance.Show("未找到该贴图文件！");
-                return;
-            }
-            Process process = new Process();
-            process.StartInfo.FileName = SettingsPanelCtrl.Instance.PhotoshopPath;
-            process.StartInfo.Arguments = cmd.Split('|')[1];
-            process.Start();
+            Shortcuts.Instance.PS();
         }
-        else if (cmd.StartsWith("Refresh"))
+        else if (cmd.StartsWith("RefreshTexture"))
         {
-            var argvs = cmd.Split('|');
-            string imagePath = argvs[1];
-            int index = int.Parse(argvs[2]);
-            StartCoroutine(DownloadTexture(imagePath, index));
+            Shortcuts.Instance.RefreshTexture();
         }
-        else if (cmd == "Output")
+        else if (cmd.StartsWith("DeleteTexture"))
         {
-            ObjExportHandler.Export(ObliqueMapTreeView.CurrentGameObject.GetComponentsInChildren<MeshFilter>(), null);
+            Shortcuts.Instance.DeleteTexture();
+        }
+        else if (cmd == "ReplaceModel")
+        {
+            Shortcuts.Instance.ReplaceModel();
+        }
+        else if (cmd == "OutputModel")
+        {
+            Shortcuts.Instance.OutputModel();
         }
         else if (cmd == "Cancel")
         {
-            MeshAnaliser.Instance.ResetChoice();
-            OrbitCamera.Instance.Replace();
-        }
-        else if (cmd == "Replace")
-        {
-            OrbitCamera.Instance.Replace();
-        }
+            Shortcuts.Instance.Cancel();
+        }       
     }
 
     public static IEnumerator DownloadTexture(string imagePath, int index)
