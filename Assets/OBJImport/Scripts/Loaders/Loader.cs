@@ -204,7 +204,7 @@ namespace AsImpL
             lastTime = Time.realtimeSinceStartup;
             if (HasMaterialLibrary)
             {
-                yield return LoadMaterialLibrary(absolutePath);
+                LoadMaterialLibrary(absolutePath);
             }
             loadStats.materialsParseTime = Time.realtimeSinceStartup - lastTime;
             lastTime = Time.realtimeSinceStartup;
@@ -245,7 +245,7 @@ namespace AsImpL
         /// </summary>
         /// <param name="absolutePath">absolute file path</param>
         /// <remarks>This is called by Load() method</remarks>
-        protected abstract IEnumerator LoadMaterialLibrary(string absolutePath);
+        protected abstract void LoadMaterialLibrary(string absolutePath);
 
 
         /// <summary>

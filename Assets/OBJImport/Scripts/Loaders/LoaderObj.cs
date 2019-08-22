@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Globalization;
+using System.Text;
 
 namespace AsImpL
 {
@@ -39,7 +40,7 @@ namespace AsImpL
     {
         private string mtlLib;
         private string loadedText;
-
+        private Encoding GBK = Encoding.GetEncoding("GBK");
 
         /// <summary>
         /// Parse dependencies of the given OBJ file.
@@ -87,8 +88,8 @@ namespace AsImpL
 
         protected override IEnumerator LoadModelFile(string absolutePath)
         {
-            string url = absolutePath.Contains("//") ? absolutePath : "file:///" + absolutePath;
-            yield return LoadOrDownloadText(url);
+            //string url = absolutePath.Contains("//") ? absolutePath : "file:///" + absolutePath;
+            LoadOrDownloadText(absolutePath);
 
             if (string.IsNullOrEmpty(loadedText))
             {
@@ -103,7 +104,7 @@ namespace AsImpL
         }
 
 
-        protected override IEnumerator LoadMaterialLibrary(string absolutePath)
+        protected override void LoadMaterialLibrary(string absolutePath)
         {
             string mtlPath;
             string basePath = GetDirName(absolutePath);
@@ -124,23 +125,23 @@ namespace AsImpL
             }
             else
             {
-                if(Path.IsPathRooted(mtlLib))
+                if (Path.IsPathRooted(mtlLib))
                 {
-                    mtlPath = "file:///" + mtlLib;
+                    mtlPath = /*"file:///" + */mtlLib;
                 }
                 else
                 {
-                    mtlPath = "file:///" + basePath + mtlLib;
+                    mtlPath = /*"file:///" + */basePath + mtlLib;
                 }
             }
-            yield return LoadOrDownloadText(mtlPath);
+            LoadOrDownloadText(mtlPath);
             if (loadedText == null)
             {
                 mtlLib = Path.GetFileName(mtlLib);
-                mtlPath = "file:///" + basePath + mtlLib;
+                mtlPath = /*"file:///" + */basePath + mtlLib;
                 Debug.LogWarningFormat("Trying loading material library {0} from the same directory as the OBJ file...\n", mtlLib);
 
-                yield return LoadOrDownloadText(mtlPath);
+                LoadOrDownloadText(mtlPath);
             }
 
             if (loadedText != null)
@@ -508,11 +509,11 @@ namespace AsImpL
                         case "map_kA":
                             if (!string.IsNullOrEmpty(parameters))
                             {
-                                Debug.Log("Map not supported:" + line);
+                                //Debug.Log("Map not supported:" + line);
                             }
                             break;
                         default:
-                            Debug.Log("this line was not processed :" + line);
+                            //Debug.Log("this line was not processed :" + line);
                             break;
                     }
                 }
@@ -620,22 +621,23 @@ namespace AsImpL
         }
 
 
-        private IEnumerator LoadOrDownloadText(string url)
+        private void LoadOrDownloadText(string url)
         {
             loadedText = null;
-#if UNITY_2018_3_OR_NEWER
-            UnityWebRequest uwr = UnityWebRequest.Get(url);
-            yield return uwr.SendWebRequest();
+            loadedText = File.ReadAllText(url, GBK);
+#if UNITY_2018_3_OR_NEWER                        
+            //UnityWebRequest uwr = UnityWebRequest.Get(url);
+            //yield return uwr.SendWebRequest();
 
-            if (uwr.isNetworkError || uwr.isHttpError)
-            {
-                Debug.LogError(uwr.error);
-            }
-            else
-            {
-                // Get downloaded asset bundle
-                loadedText = uwr.downloadHandler.text;
-            }
+            //if (uwr.isNetworkError || uwr.isHttpError)
+            //{
+            //    Debug.LogError(uwr.error);
+            //}
+            //else
+            //{
+            //    // Get downloaded asset bundle
+            //    loadedText = uwr.downloadHandler.text;
+            //}
 #else
             WWW www = new WWW(url);
             yield return www;

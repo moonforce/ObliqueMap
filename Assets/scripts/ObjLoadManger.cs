@@ -10,13 +10,10 @@ public class ObjLoadManger : Singleton<ObjLoadManger>
 
     private ObjectImporter objImporter;
 
-    public Transform SubMeshInfoContainer;
-
     private void Start()
     {
         objImporter = gameObject.GetComponent<ObjectImporter>();
-        GetComponent<ObjectImporter>().ImportedModel += ObjImporter_ImportedModel;
-        SubMeshInfoContainer = GameObject.Find("SubMeshInfoContainer").transform;
+        //GetComponent<ObjectImporter>().ImportedModel += ObjImporter_ImportedModel;
     }
 
     private void ObjImporter_ImportedModel(GameObject go, string path)
@@ -25,7 +22,7 @@ public class ObjLoadManger : Singleton<ObjLoadManger>
         ProgressbarCtrl.Instance.ProgressPlusPlus();
     }
 
-    public void ImportModelAsync(string objName, string filePath, bool isWhiteModel = false)
+    public void ImportModelAsync(string objName, string filePath)
     {
         objImporter.ImportModelAsync(objName, filePath, transform, importOptions);
     }

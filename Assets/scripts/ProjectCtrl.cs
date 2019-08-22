@@ -563,9 +563,10 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
             MessageBoxCtrl.Instance.Show("请先创建或打开工程");
             return;
         }
-        string filePath = FileBrowser.OpenSingleFile();
+        string filePath = FileBrowser.OpenSingleFile("选择地面模型文件", null, "obj");
         if (filePath.Length == 0)
             return;
+        ObjLoadManger.Instance.ImportModelAsync(Path.GetFileNameWithoutExtension(filePath), filePath);
     }
 
     public void Quit()
