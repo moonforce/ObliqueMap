@@ -41,6 +41,10 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
             {
                 if (9 == hit.transform.gameObject.layer) //Model layer
                 {
+                    if (ProjectStage.Instance.FaceEditting)
+                    {
+                        ResetChoice();
+                    }
                     ProjectStage.Instance.FaceChosed = true;
                     m_MainLight.rotation = Quaternion.LookRotation(-hit.normal) * Quaternion.Euler(45, 0, 45);
                     ClickedMesh = Utills.GetMeshOfGameobject(hit.transform.gameObject);
@@ -114,10 +118,10 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
             else
                 imageInfos[i].File = new FileInfo(path);
             //路径相同
-            ////if (!ProjectCtrl.Instance.ObliqueImages.Contains(imageInfos[i].File.FullName))
-            ////{
-            ////    imageInfos.Remove(imageInfos[i]);
-            ////}
+            //if (!ProjectCtrl.Instance.ObliqueImages.Contains(imageInfos[i].File.FullName))
+            //{
+            //    imageInfos.Remove(imageInfos[i]);
+            //}
         }
         ImageGallery.Instance.ClearContents();
         for (int i = 0; i < imageInfos.Count; ++i)
