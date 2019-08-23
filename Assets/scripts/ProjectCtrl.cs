@@ -33,12 +33,9 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
     private TreeView m_Tree;
 
     public Dictionary<string, CameraHandler> CameraHandlers { get; set; } = new Dictionary<string, CameraHandler>();
-    public List<string> ObliqueImages { get; set; } = new List<string>();
-    public List<string> Models { get; set; } = new List<string>();
-    public List<string> Sceneries { get; set; } = new List<string>();
     public TreeNode<TreeViewItem> ObliqueImagesTreeNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("航拍斜片"));
     public TreeNode<TreeViewItem> ModelsTreeNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("三维模型"));
-    public TreeNode<TreeViewItem> SceneryTreeNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("地面模型"));
+    public TreeNode<TreeViewItem> SceneriesTreeNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("地面模型"));
     public DataExchange<string> ProjectPath = new DataExchange<string>();
 
     void Start()
@@ -46,7 +43,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         m_Tree = transform.GetComponentInChildren<TreeView>();
         m_Tree.Init();
         SetTreeNodes();
-        ProjectPath.OnDataChanged += SetProjectName;        
+        ProjectPath.OnDataChanged += SetProjectName;
     }
 
     void SetProjectName(string projectName)
@@ -66,25 +63,22 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         var nodes = new ObservableList<TreeNode<TreeViewItem>>();
         nodes.Add(ObliqueImagesTreeNode);
         nodes.Add(ModelsTreeNode);
-        nodes.Add(SceneryTreeNode);
+        nodes.Add(SceneriesTreeNode);
         ObliqueImagesTreeNode.Nodes = new ObservableList<TreeNode<TreeViewItem>>();
         ModelsTreeNode.Nodes = new ObservableList<TreeNode<TreeViewItem>>();
-        SceneryTreeNode.Nodes = new ObservableList<TreeNode<TreeViewItem>>();
+        SceneriesTreeNode.Nodes = new ObservableList<TreeNode<TreeViewItem>>();
         m_Tree.Nodes = nodes;
     }
 
     private void ClearProject()
     {
         CameraHandlers.Clear();
-        ObliqueImages.Clear();
-        Models.Clear();
-        Sceneries.Clear();
         ObliqueImagesTreeNode.IsExpanded = false;
         ObliqueImagesTreeNode.Nodes.Clear();
         ModelsTreeNode.IsExpanded = false;
         ModelsTreeNode.Nodes.Clear();
-        SceneryTreeNode.IsExpanded = false;
-        SceneryTreeNode.Nodes.Clear();
+        SceneriesTreeNode.IsExpanded = false;
+        SceneriesTreeNode.Nodes.Clear();
     }
 
     public void CreateProjectBtnClick()
@@ -254,10 +248,10 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
             MessageBoxCtrl.Instance.Show("另存工程失败，未选择路径");
             return;
         }
-        SaveProject();
+        SaveProject(true);
     }
 
-    private void SaveProject()
+    private void SaveProject(bool saveAs = false)
     {
         if (string.IsNullOrEmpty(ProjectPath.DataValue))
         {
@@ -267,9 +261,9 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         XmlDocument xmlDoc = new XmlDocument();
         xmlDoc.AppendChild(xmlDoc.CreateXmlDeclaration("1.0", "utf-8", null));
         xmlDoc.AppendChild(xmlDoc.CreateElement("Project"));
-        AddRootLeaf(xmlDoc, "ObliqueImages", "ObliqueImage", ObliqueImages);
-        AddRootLeaf(xmlDoc, "Models", "Model", Models);
-        AddRootLeaf(xmlDoc, "Sceneries", "Scenery", Sceneries);
+        AddRootLeaf(xmlDoc, "ObliqueImages", "ObliqueImage", GetChildrenFromRootNode(ObliqueImagesTreeNode));
+        AddRootLeaf(xmlDoc, "Models", "Model", GetChildrenFromRootNode(ModelsTreeNode));
+        AddRootLeaf(xmlDoc, "Sceneries", "Scenery", GetChildrenFromRootNode(SceneriesTreeNode));
         var photogroupsNode = CreateNode(xmlDoc, xmlDoc.SelectSingleNode("Project"), "Photogroups");
         foreach (var cameraHandler in CameraHandlers.Values)
         {
@@ -304,7 +298,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
                 CreateNode(xmlDoc, centerNode, "z", Utills.DoubleToStringSignificantDigits(image.Z, DoubleSignificantDigits));
             }
         }
-        if (ProjectPath.DataValue.EndsWith("*"))
+        if (ProjectPath.DataValue.EndsWith("*") || saveAs)
         {
             ProjectPath.DataValue = ProjectPath.DataValue.TrimEnd('*');
             xmlDoc.Save(ProjectPath.DataValue);
@@ -336,9 +330,10 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         string[] extensions = new[] { ".jpg" };
         DirectoryInfo dinfo = new DirectoryInfo(folderPath);
         List<FileInfo> fileInfos = dinfo.EnumerateFiles().Where(f => extensions.Contains(f.Extension.ToLower())).ToList();
+        List<string> obliqueImages = GetChildrenFromRootNode(ObliqueImagesTreeNode);
         for (int i = fileInfos.Count - 1; i >= 0; i--)
         {
-            if (ObliqueImages.Contains(fileInfos[i].FullName))
+            if (obliqueImages.Contains(fileInfos[i].FullName))
             {
                 fileInfos.Remove(fileInfos[i]);
             }
@@ -367,7 +362,6 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
 
         foreach (var file in fileInfos)
         {
-            ObliqueImages.Add(file.FullName);
             string thumb_path = file.DirectoryName + "/thumb/";
             if (!Directory.Exists(thumb_path))
             {
@@ -418,9 +412,10 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         {
             fileInfos.Add(new FileInfo(modelFile));
         }
+        List<string> models = GetChildrenFromRootNode(ModelsTreeNode);
         for (int i = fileInfos.Count - 1; i >= 0; i--)
         {
-            if (Models.Contains(fileInfos[i].FullName))
+            if (models.Contains(fileInfos[i].FullName))
             {
                 fileInfos.Remove(fileInfos[i]);
             }
@@ -448,7 +443,6 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
 
         foreach (var fileInfo in fileInfos)
         {
-            Models.Add(fileInfo.FullName);
             yield return StartCoroutine(StartParsingModels(fileInfo));
         }
     }
@@ -578,7 +572,16 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         }
         string filePath = FileBrowser.OpenSingleFile("选择地面模型文件", null, "obj");
         if (filePath.Length == 0)
-            return;        
+        {
+            MessageBoxCtrl.Instance.Show("未选择地面模型文件");
+            return;
+        }
+        List<string> sceneries = GetChildrenFromRootNode(SceneriesTreeNode);
+        if (sceneries.Contains(filePath))
+        {
+            MessageBoxCtrl.Instance.Show("已经加载过此地面模型");
+            return;
+        }
         MessageBoxCtrl.Instance.Show("正在加载地景模型……", false, false);
         ObjLoadManger.Instance.GetComponent<ObjectImporter>().ImportedModel += ObjImporter_ImportedSingleModel;
         StartCoroutine(ObjLoadManger.Instance.ImportModelAsync(Path.GetFileNameWithoutExtension(filePath), filePath));
@@ -608,8 +611,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         FileInfo fileInfo = new FileInfo(path);
         TreeViewItem item = new TreeViewItem(fileInfo.FullName);
         item.LocalizedName = fileInfo.Name;
-        SceneryTreeNode.Nodes.Add(new TreeNode<TreeViewItem>(item));
-        Sceneries.Add(fileInfo.FullName);
+        SceneriesTreeNode.Nodes.Add(new TreeNode<TreeViewItem>(item));
         if (ProgressbarCtrl.Instance.isFinished())
         {
             ObjLoadManger.Instance.GetComponent<ObjectImporter>().ImportedModel -= ObjImporter_ImportedModel;
@@ -625,8 +627,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         FileInfo fileInfo = new FileInfo(path);
         TreeViewItem item = new TreeViewItem(fileInfo.FullName);
         item.LocalizedName = fileInfo.Name;
-        SceneryTreeNode.Nodes.Add(new TreeNode<TreeViewItem>(item));
-        Sceneries.Add(fileInfo.FullName);
+        SceneriesTreeNode.Nodes.Add(new TreeNode<TreeViewItem>(item));
         ObjLoadManger.Instance.GetComponent<ObjectImporter>().ImportedModel -= ObjImporter_ImportedSingleModel;
     }
 
@@ -729,12 +730,27 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         }      
     }
 
-    public static XmlNode CreateNode(XmlDocument xmlDoc, XmlNode parentNode, string name, string value = null)
+    public XmlNode CreateNode(XmlDocument xmlDoc, XmlNode parentNode, string name, string value = null)
     {
         XmlNode node = xmlDoc.CreateNode(XmlNodeType.Element, name, null);
         if (value != null)
             node.InnerText = value;
         parentNode.AppendChild(node);
         return node;
+    }
+
+    public List<string> GetObliqueImageList()
+    {
+        return GetChildrenFromRootNode(ObliqueImagesTreeNode);
+    }
+
+    private List<string> GetChildrenFromRootNode(TreeNode<TreeViewItem> treeNode)
+    {
+        List<string> fileInfos = new List<string>();
+        foreach (var node in treeNode.Nodes)
+        {
+            fileInfos.Add(node.Item.Name);
+        }
+        return fileInfos;
     }
 }
