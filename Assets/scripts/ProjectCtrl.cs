@@ -12,6 +12,7 @@ using Point = OpenCVForUnity.CoreModule.Point;
 using System.Text;
 using ObjLoaderLY;
 using TMPro;
+using AsImpL;
 
 public class ProjectCtrl : Singleton<ProjectCtrl>
 {
@@ -45,7 +46,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         m_Tree = transform.GetComponentInChildren<TreeView>();
         m_Tree.Init();
         SetTreeNodes();
-        ProjectPath.OnDataChanged += SetProjectName;
+        ProjectPath.OnDataChanged += SetProjectName;        
     }
 
     void SetProjectName(string projectName)
@@ -171,7 +172,19 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
             modelFileInfos.Add(new FileInfo(Model.InnerText));
         }
         if (modelFileInfos.Count > 0)
-            StartCoroutine(AddModels(modelFileInfos, true));
+        {
+            StartCoroutine(AddModels(modelFileInfos, 1f));
+        }
+        XmlNodeList Sceneries = xml.SelectSingleNode("//Sceneries").SelectNodes("Scenery");
+        List<FileInfo> sceneryFileInfos = new List<FileInfo>();
+        foreach (XmlNode Scenery in Sceneries)
+        {
+            sceneryFileInfos.Add(new FileInfo(Scenery.InnerText));
+        }
+        if (sceneryFileInfos.Count > 0)
+        {
+            StartCoroutine(AddSceneries(sceneryFileInfos, 2f));
+        }
         ParsePhotogroups(xml, false);
     }
 
@@ -341,11 +354,11 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         }
     }
 
-    public IEnumerator AddObliqueImages(List<FileInfo> fileInfos, bool wait = false)
+    public IEnumerator AddObliqueImages(List<FileInfo> fileInfos, float waitTime = 0)
     {
-        if (wait)
+        if (waitTime > 0)
         {
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(waitTime);
         }
         yield return new WaitUntil(ProgressbarCtrl.Instance.isFinished);
 
@@ -423,11 +436,11 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         StartCoroutine(AddModels(fileInfos));
     }
 
-    public IEnumerator AddModels(List<FileInfo> fileInfos, bool wait = false)
+    public IEnumerator AddModels(List<FileInfo> fileInfos, float waitTime = 0)
     {
-        if (wait)
+        if (waitTime > 0)
         {
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(waitTime);
         }
         yield return new WaitUntil(ProgressbarCtrl.Instance.isFinished);
         ProgressbarCtrl.Instance.Show("正在解析三维模型……");
@@ -565,8 +578,56 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         }
         string filePath = FileBrowser.OpenSingleFile("选择地面模型文件", null, "obj");
         if (filePath.Length == 0)
-            return;
-        ObjLoadManger.Instance.ImportModelAsync(Path.GetFileNameWithoutExtension(filePath), filePath);
+            return;        
+        MessageBoxCtrl.Instance.Show("正在加载地景模型……", false, false);
+        ObjLoadManger.Instance.GetComponent<ObjectImporter>().ImportedModel += ObjImporter_ImportedSingleModel;
+        StartCoroutine(ObjLoadManger.Instance.ImportModelAsync(Path.GetFileNameWithoutExtension(filePath), filePath));
+    }
+
+    public IEnumerator AddSceneries(List<FileInfo> fileInfos, float waitTime = 0)
+    {
+        if (waitTime > 0)
+        {
+            yield return new WaitForSeconds(waitTime);
+        }
+        yield return new WaitUntil(ProgressbarCtrl.Instance.isFinished);
+
+        ProgressbarCtrl.Instance.Show("正在加载地面模型……");
+        ProgressbarCtrl.Instance.ResetMaxCount(fileInfos.Count);
+
+        ObjLoadManger.Instance.GetComponent<ObjectImporter>().ImportedModel += ObjImporter_ImportedModel;
+        foreach (var file in fileInfos)
+        {
+            yield return StartCoroutine(ObjLoadManger.Instance.ImportModelAsync(Path.GetFileNameWithoutExtension(file.Name), file.FullName));
+        }
+    }
+
+    private void ObjImporter_ImportedModel(GameObject go, string path)
+    {
+        ProgressbarCtrl.Instance.ProgressPlusPlus();
+        FileInfo fileInfo = new FileInfo(path);
+        TreeViewItem item = new TreeViewItem(fileInfo.FullName);
+        item.LocalizedName = fileInfo.Name;
+        SceneryTreeNode.Nodes.Add(new TreeNode<TreeViewItem>(item));
+        Sceneries.Add(fileInfo.FullName);
+        if (ProgressbarCtrl.Instance.isFinished())
+        {
+            ObjLoadManger.Instance.GetComponent<ObjectImporter>().ImportedModel -= ObjImporter_ImportedModel;
+        }
+    }
+
+    private void ObjImporter_ImportedSingleModel(GameObject go, string path)
+    {
+        if (!ProjectPath.DataValue.EndsWith("*"))
+        {
+            ProjectPath.DataValue += "*";
+        }
+        FileInfo fileInfo = new FileInfo(path);
+        TreeViewItem item = new TreeViewItem(fileInfo.FullName);
+        item.LocalizedName = fileInfo.Name;
+        SceneryTreeNode.Nodes.Add(new TreeNode<TreeViewItem>(item));
+        Sceneries.Add(fileInfo.FullName);
+        ObjLoadManger.Instance.GetComponent<ObjectImporter>().ImportedModel -= ObjImporter_ImportedSingleModel;
     }
 
     public void Quit()

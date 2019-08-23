@@ -378,7 +378,7 @@ namespace AsImpL
         /// <param name="filePath"></param>
         /// <param name="parentObj"></param>
         /// <param name="options"></param>
-        public void ImportModelAsync(string objName, string filePath, Transform parentObj, ImportOptions options)
+        public IEnumerator ImportModelAsync(string objName, string filePath, Transform parentObj, ImportOptions options)
         {
             if (loaderList == null)
             {
@@ -397,7 +397,7 @@ namespace AsImpL
             Loader loader = CreateLoader(absolutePath);
             if (loader == null)
             {
-                return;
+                yield return null;
             }
             numTotalImports++;
             loaderList.Add(loader);

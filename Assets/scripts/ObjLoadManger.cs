@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using AsImpL;
+using System.Collections;
 
 public class ObjLoadManger : Singleton<ObjLoadManger>
 {
@@ -13,17 +14,23 @@ public class ObjLoadManger : Singleton<ObjLoadManger>
     private void Start()
     {
         objImporter = gameObject.GetComponent<ObjectImporter>();
-        //GetComponent<ObjectImporter>().ImportedModel += ObjImporter_ImportedModel;
+        GetComponent<ObjectImporter>().ImportError += ObjImporter_ImportedError;
+        GetComponent<ObjectImporter>().ImportedModel += ObjImporter_ImportedModel;
+    }
+
+    private void ObjImporter_ImportedError(string modelPath)
+    {
+        MessageBoxCtrl.Instance.Show("模型加载失败");
+        ProgressbarCtrl.Instance.Hide();
     }
 
     private void ObjImporter_ImportedModel(GameObject go, string path)
     {
-        go.SetActive(false);
-        ProgressbarCtrl.Instance.ProgressPlusPlus();
+        MessageBoxCtrl.Instance.Hide();
     }
 
-    public void ImportModelAsync(string objName, string filePath)
+    public IEnumerator ImportModelAsync(string objName, string filePath)
     {
-        objImporter.ImportModelAsync(objName, filePath, transform, importOptions);
+        yield return StartCoroutine(objImporter.ImportModelAsync(objName, filePath, transform, importOptions));
     }
 }

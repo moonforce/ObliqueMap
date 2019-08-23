@@ -48,11 +48,14 @@ public class ProgressbarCtrl : Singleton<ProgressbarCtrl>
         ++m_CurrentCount;
         SetProgressbar((int)((m_CurrentCount) * 100f / m_MaxCount + 0.5f));
         if (m_CurrentCount == m_MaxCount)
-            Hide();
+        {
+            Invoke("Hide", 0.5f);
+        }
     }
 
     public void Show(string title)
     {
+        CancelInvoke();
         Progressbar.Value = 0;
         m_Title.text = title;
         m_MainCanvasRaycaster.enabled = false;
