@@ -35,6 +35,7 @@ public class ImageGallery : Singleton<ImageGallery>
             Destroy(ImagesParent.GetChild(i).gameObject);
         }
         ResetScrollbar();
+        Resources.UnloadUnusedAssets();
     }
 
     public void AddImage(ImageInfo imageInfo, List<Tuple<int, int>> lineIndexList, int siblingIndex)

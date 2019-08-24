@@ -130,6 +130,7 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
         {
             Destroy(Texture.texture);
             Texture.texture = null;
+            Resources.UnloadUnusedAssets();
         }
     }
 

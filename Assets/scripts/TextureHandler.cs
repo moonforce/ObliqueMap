@@ -69,6 +69,7 @@ public class TextureHandler : Singleton<TextureHandler>
         m_Texture.enabled = false;        
         Destroy(m_Texture.texture);
         m_Texture.texture = null;
+        Resources.UnloadUnusedAssets();
     }
 
     public void ReceiveTextureFromImageGallery(string imageUrl, List<UvLine> uvLines, Dictionary<int, Vector2> uniqueIndexUv)

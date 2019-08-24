@@ -705,30 +705,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
             imageInfos.AddRange(cameraHandler.Value.ProjectPoints(points, faceNormal));
         }
         return imageInfos;
-    }
-
-    public void ClearUselessTextures()
-    {
-        foreach (MeshRenderer meshRenderer in ModelContainer.GetComponentsInChildren<MeshRenderer>(true))
-        {
-            if (meshRenderer.name == "ModelGridPlane")
-                continue;
-            SubMeshInfo subMeshInfo = meshRenderer.GetComponent<SubMeshInfo>();
-            string prefix = Path.GetFileNameWithoutExtension(subMeshInfo.name);
-            string postfix = "*.jpg";
-            List<string> imageFiles = Directory.GetFiles(Path.GetDirectoryName(subMeshInfo.FilePath), prefix + postfix).ToList();
-            // 如果引用的是materials，会给所有的材质名增加(Instanced)后缀
-            foreach (Material material in meshRenderer.sharedMaterials)
-            {
-                string matImagePath = Path.GetDirectoryName(subMeshInfo.FilePath) + '\\' + material.name;
-                imageFiles.Remove(matImagePath);
-            }
-            foreach (string imageFile in imageFiles)
-            {
-                File.Delete(imageFile);
-            }
-        }      
-    }
+    }    
 
     public XmlNode CreateNode(XmlDocument xmlDoc, XmlNode parentNode, string name, string value = null)
     {
