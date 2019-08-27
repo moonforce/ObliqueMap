@@ -88,8 +88,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 335958eb9001ffe47856422b8f530d7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_PointNomalColor: {r: 1, g: 1, b: 0, a: 0.5019608}
-  m_PointHighlightColor: {r: 1, g: 0, b: 0, a: 0.5019608}
+  m_PointNomalColor: {r: 1, g: 0, b: 1, a: 0.5019608}
+  m_PointHighlightColor: {r: 0, g: 1, b: 1, a: 0.5019608}
 --- !u!58 &8910527585114666603
 CircleCollider2D:
   m_ObjectHideFlags: 0

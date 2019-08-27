@@ -21,6 +21,7 @@ public class UvPoint : MonoBehaviour, IDragHandler, IPointerExitHandler, IPointe
     {
         m_RT = GetComponent<RectTransform>();
         m_Circle = GetComponent<UICircle>();
+        m_Circle.color = m_PointNomalColor;
     }
 
     public void OnDrag(PointerEventData eventData)
