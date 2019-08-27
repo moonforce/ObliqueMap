@@ -74,4 +74,41 @@ public class ObliqueMapTreeView : TreeView
     {
         TextureHandler.Instance.SetImage(texture);
     }
+
+    public static void DeleteSingleNode(TreeNode<TreeViewItem> selectedNode)
+    {
+        if (selectedNode.Parent == ProjectCtrl.Instance.ObliqueImagesTreeNode)
+        {
+            if (DoubleClickNode == selectedNode)
+            {
+                ProjectCtrl.Instance.ClearWhenDeleteObliqueImage();
+            }
+            selectedNode.RemoveFromTree();
+            ProjectCtrl.Instance.ModifyProjectPath();
+        }
+        else if (selectedNode.Parent == ProjectCtrl.Instance.ModelsTreeNode)
+        {
+            if (DoubleClickNode == selectedNode)
+            {
+                ProjectCtrl.Instance.ClearWhenDeleteModel();
+            }
+            ProjectCtrl.Instance.DestroyGameObject(ProjectCtrl.Instance.ModelContainer.Find(selectedNode.Item.LocalizedName).gameObject);
+            selectedNode.RemoveFromTree();
+            ProjectCtrl.Instance.ModifyProjectPath();
+        }
+        else if (selectedNode.Parent == ProjectCtrl.Instance.SceneriesTreeNode)
+        {
+            ProjectCtrl.Instance.DestroyGameObject(ObjLoadManger.Instance.transform.Find(selectedNode.Item.LocalizedName).gameObject);
+            selectedNode.RemoveFromTree();
+            ProjectCtrl.Instance.ModifyProjectPath();
+        }
+    }
+
+    public static void DeleteMultipleNodes()
+    {
+        foreach(var selectedNode in ProjectCtrl.Instance.Tree.SelectedNodes)
+        {
+            DeleteSingleNode(selectedNode);
+        }
+    }
 }

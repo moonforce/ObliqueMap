@@ -247,27 +247,7 @@ public class ContextMenuHandler : Singleton<ContextMenuHandler>
         }
         else if (cmd == "Delete")
         {
-            if (m_SelectedComponent.Node.Parent == ProjectCtrl.Instance.ObliqueImagesTreeNode)
-            {
-                if (ObliqueMapTreeView.DoubleClickNode == m_SelectedComponent.Node)
-                {
-                    ProjectCtrl.Instance.ClearWhenDeleteObliqueImage();
-                }
-            }
-            else if (m_SelectedComponent.Node.Parent == ProjectCtrl.Instance.ModelsTreeNode)
-            {                
-                if (ObliqueMapTreeView.DoubleClickNode == m_SelectedComponent.Node)
-                {
-                    ProjectCtrl.Instance.ClearWhenDeleteModel();
-                }
-                ProjectCtrl.Instance.DestroyGameObject(ProjectCtrl.Instance.ModelContainer.Find(m_SelectedComponent.Item.LocalizedName).gameObject);
-            }
-            else if (m_SelectedComponent.Node.Parent == ProjectCtrl.Instance.SceneriesTreeNode)
-            {
-                ProjectCtrl.Instance.DestroyGameObject(ObjLoadManger.Instance.transform.Find(m_SelectedComponent.Item.LocalizedName).gameObject);
-            }
-            m_SelectedComponent.Node.RemoveFromTree();
-            ProjectCtrl.Instance.ModifyProjectPath();
+            ObliqueMapTreeView.DeleteSingleNode(m_SelectedComponent.Node);
         }
     }
 

@@ -19,6 +19,7 @@ public class Shortcuts : Singleton<Shortcuts>
     public KeyCode DeleteTextureKey = KeyCode.D;
     public KeyCode UndoKey = KeyCode.Z;
     public KeyCode RedoKey = KeyCode.Y;
+    public KeyCode MulipleDelete = KeyCode.Delete;
 
     void Start()
     {
@@ -82,6 +83,10 @@ public class Shortcuts : Singleton<Shortcuts>
             {
                 DeleteTexture();
             }
+        }
+        else if (Input.GetKeyDown(MulipleDelete))
+        {
+            ObliqueMapTreeView.DeleteMultipleNodes();
         }
     }
     
