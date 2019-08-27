@@ -41,7 +41,7 @@ public class ImageController : Singleton<ImageController>, IBeginDragHandler, ID
 
     void Update()
     {
-        if (Input.GetAxis("Mouse ScrollWheel") != 0 && RectTransformUtility.RectangleContainsScreenPoint(m_RT_Parent, Input.mousePosition) && HaveImage)
+        if (Input.GetAxis("Mouse ScrollWheel") != 0 && RectTransformUtility.RectangleContainsScreenPoint(m_RT_Parent, Input.mousePosition) && HaveImage && !ProjectStage.Instance.IsMainImageDragging)
         {
             RectTransformUtility.ScreenPointToWorldPointInRectangle(m_RT, Input.mousePosition, null, out m_GlobalMousePosition);
             Vector3 localScale = m_RT.localScale;
