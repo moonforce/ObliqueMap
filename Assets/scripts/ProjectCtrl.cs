@@ -120,13 +120,20 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
     {
         SceneriesTreeNode.IsExpanded = false;
         SceneriesTreeNode.Nodes.Clear();
+        for (int i = 0; i < ObjLoadManger.Instance.transform.childCount; ++i)
+        {
+            DestroyGameObject(ObjLoadManger.Instance.transform.GetChild(i).gameObject);
+        }
     }
 
     public void DestroyGameObject(GameObject go)
     {
-        foreach (var mat in go.GetComponent<MeshRenderer>().sharedMaterials)
+        foreach (var mr in go.GetComponentsInChildren<MeshRenderer>())
         {
-            Destroy(mat.mainTexture);
+            foreach (var mat in mr.materials)
+            {
+                Destroy(mat.mainTexture);
+            }
         }
         Destroy(go);
         Resources.UnloadUnusedAssets();
@@ -642,7 +649,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         }
         MessageBoxCtrl.Instance.Show("正在加载地景模型……", false, false);
         ObjLoadManger.Instance.GetComponent<ObjectImporter>().ImportedModel += ObjImporter_ImportedSingleModel;
-        StartCoroutine(ObjLoadManger.Instance.ImportModelAsync(Path.GetFileNameWithoutExtension(filePath), filePath));
+        StartCoroutine(ObjLoadManger.Instance.ImportModelAsync(Path.GetFileName(filePath), filePath));
     }
 
     public IEnumerator AddSceneries(List<FileInfo> fileInfos, float waitTime = 0)
@@ -659,7 +666,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         ObjLoadManger.Instance.GetComponent<ObjectImporter>().ImportedModel += ObjImporter_ImportedModel;
         foreach (var file in fileInfos)
         {
-            yield return StartCoroutine(ObjLoadManger.Instance.ImportModelAsync(Path.GetFileNameWithoutExtension(file.Name), file.FullName));
+            yield return StartCoroutine(ObjLoadManger.Instance.ImportModelAsync(Path.GetFileName(file.Name), file.FullName));
         }
     }
 

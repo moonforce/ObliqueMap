@@ -264,7 +264,7 @@ public class ContextMenuHandler : Singleton<ContextMenuHandler>
             }
             else if (m_SelectedComponent.Node.Parent == ProjectCtrl.Instance.SceneriesTreeNode)
             {
-                
+                ProjectCtrl.Instance.DestroyGameObject(ObjLoadManger.Instance.transform.Find(m_SelectedComponent.Item.LocalizedName).gameObject);
             }
             m_SelectedComponent.Node.RemoveFromTree();
             ProjectCtrl.Instance.ModifyProjectPath();
