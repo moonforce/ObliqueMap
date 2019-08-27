@@ -79,6 +79,12 @@ public class OrbitCamera : Singleton<OrbitCamera>
         grid.transform.localScale = new Vector3(magnitude / 5, 1, magnitude / 5);
     }
 
+    public void ResetGrid()
+    {
+        grid.SetActive(false);
+        grid.transform.SetParent(null);
+    }
+
     void OnGUI()
     {
         if (target && (GetComponent<Camera>().pixelRect.Contains(Input.mousePosition) || (!GetComponent<Camera>().pixelRect.Contains(Input.mousePosition) && isRotating))

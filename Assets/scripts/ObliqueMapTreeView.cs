@@ -1,9 +1,13 @@
-﻿using UIWidgets;
+﻿using System;
+using UIWidgets;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class ObliqueMapTreeView : TreeView
 {
     public static GameObject CurrentGameObject = null;
+    public static TreeNode<TreeViewItem> DoubleClickNode = null;
+    public static TreeViewComponent PointerEnterComponent = null;
 
     protected override void RemoveCallback(ListViewItem item)
     {
@@ -11,6 +15,8 @@ public class ObliqueMapTreeView : TreeView
         if (item != null)
         {
             item.onDoubleClick.RemoveListener(DoubleClickListener);
+            item.onPointerClick.RemoveListener(PointerClickListener);
+            item.onPointerEnterItem.RemoveListener(PointerEnterListener);
         }
     }
 
@@ -18,17 +24,32 @@ public class ObliqueMapTreeView : TreeView
     {
         base.AddCallback(item);
         item.onDoubleClick.AddListener(DoubleClickListener);
+        item.onPointerClick.AddListener(PointerClickListener);
+        item.onPointerEnterItem.AddListener(PointerEnterListener);
+    }
+
+    private void PointerEnterListener(ListViewItem item)
+    {
+        PointerEnterComponent = item.GetComponent<TreeViewComponent>();
+    }
+
+    private void PointerClickListener(PointerEventData pointerEventData)
+    {
+        if (pointerEventData.pointerId == -2)
+        {
+            ContextMenuHandler.Instance.OpenTreeContextMenu(PointerEnterComponent);
+        }            
     }
 
     void DoubleClickListener(int index)
     {
-        var node = DataSource[index].Node;
-        if (node.Parent == ProjectCtrl.Instance.ModelsTreeNode)
+        DoubleClickNode = DataSource[index].Node;
+        if (DoubleClickNode.Parent == ProjectCtrl.Instance.ModelsTreeNode)
         {
             if (CurrentGameObject)
                 CurrentGameObject.SetActive(false);
             MeshAnaliser.Instance.ResetChoice();
-            GameObject go = ProjectCtrl.Instance.ModelContainer.Find(node.Item.LocalizedName).gameObject;
+            GameObject go = ProjectCtrl.Instance.ModelContainer.Find(DoubleClickNode.Item.LocalizedName).gameObject;
             Bounds bounds = go.transform.GetComponent<MeshFilter>().sharedMesh.bounds;
             Vector3 center = bounds.center;
             Vector3 size = bounds.size;
@@ -36,14 +57,14 @@ public class ObliqueMapTreeView : TreeView
             go.SetActive(true);
             CurrentGameObject = go;
         }
-        else if (node.Parent == ProjectCtrl.Instance.ObliqueImagesTreeNode)
+        else if (DoubleClickNode.Parent == ProjectCtrl.Instance.ObliqueImagesTreeNode)
         {
             if (ProjectStage.Instance.FaceChosed || ProjectStage.Instance.FaceEditting)
             {
                 MeshAnaliser.Instance.ResetChoice();
                 OrbitCamera.Instance.ReplaceModel();
             }
-            string imageUrl = node.Item.Name;
+            string imageUrl = DoubleClickNode.Item.Name;
             TextureHandler.Instance.ResetContent();
             StartCoroutine(DatabaseLoaderTexture_DDS.Load(Utills.ChangeExtensionToDDS(imageUrl), SetTexture));
         }        

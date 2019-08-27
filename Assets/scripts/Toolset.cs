@@ -38,4 +38,10 @@ public class Toolset : MonoBehaviour
     {
         Resources.UnloadUnusedAssets();
     }
+
+    public void ClearCameraHandlers()
+    {
+        ProjectCtrl.Instance.CameraHandlers.Clear();
+        ProjectCtrl.Instance.ModifyProjectPath();
+    }
 }

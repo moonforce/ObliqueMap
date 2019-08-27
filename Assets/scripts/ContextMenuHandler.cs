@@ -5,15 +5,24 @@ using Battlehub.UIControls.MenuControl;
 using System.Diagnostics;
 using System.Collections;
 using UnityEngine.Networking;
+using UIWidgets;
 
-public class ContextMenuHandler : MonoBehaviour
+public class ContextMenuHandler : Singleton<ContextMenuHandler>
 {
+    protected ContextMenuHandler() { }
+
     [SerializeField]
     private Menu m_ImagePanelContextMenu = null;
     [SerializeField]
     private Menu m_ModelPanelContextMenu = null;
+    [SerializeField]
+    private Menu m_TreeRootContextMenu = null;
+    [SerializeField]
+    private Menu m_TreeLeafContextMenu = null;
 
     private Canvas m_MainCanvas;
+
+    private TreeViewComponent m_SelectedComponent;
 
     private delegate void CheckeButtonState(Menu menu);
 
@@ -33,6 +42,37 @@ public class ContextMenuHandler : MonoBehaviour
             // ModelPanelContextMenu的判断
             else if (CheckContextMenu(m_ModelPanelContextMenu, ModelPanelContextMenuCheckButtonState))
             {
+            }
+        }
+    }
+
+    public void OpenTreeContextMenu(TreeViewComponent PointerEnterComponent)
+    {
+        m_SelectedComponent = PointerEnterComponent;
+        Vector3 worldPosition;
+        Vector2 mousePosition = Input.mousePosition;
+        if (PointerEnterComponent.Node == ProjectCtrl.Instance.ObliqueImagesTreeNode || PointerEnterComponent.Node == ProjectCtrl.Instance.ModelsTreeNode || PointerEnterComponent.Node == ProjectCtrl.Instance.SceneriesTreeNode)
+        {
+            if (PointerEnterComponent.Node.Nodes.Count == 0)
+            {
+                m_TreeRootContextMenu.Items[1].Command = "DisabledCmd";
+            }
+            else
+            {
+                m_TreeRootContextMenu.Items[1].Command = "Clear";
+            }
+            if (RectTransformUtility.ScreenPointToWorldPointInRectangle((RectTransform)transform, mousePosition, m_MainCanvas.worldCamera, out worldPosition))
+            {
+                m_TreeRootContextMenu.transform.position = worldPosition;
+                m_TreeRootContextMenu.Open();
+            }            
+        }
+        else
+        {
+            if (RectTransformUtility.ScreenPointToWorldPointInRectangle((RectTransform)transform, mousePosition, m_MainCanvas.worldCamera, out worldPosition))
+            {
+                m_TreeLeafContextMenu.transform.position = worldPosition;
+                m_TreeLeafContextMenu.Open();
             }
         }
     }
@@ -97,7 +137,7 @@ public class ContextMenuHandler : MonoBehaviour
                 items[1].Command = "PS";
                 items[2].Command = "RefreshTexture";
                 items[3].Command = "DeleteTexture";
-            }                
+            }
         }
         if (ObliqueMapTreeView.CurrentGameObject)
         {
@@ -147,7 +187,7 @@ public class ContextMenuHandler : MonoBehaviour
         else if (cmd == "SwitchImage")
         {
             Shortcuts.Instance.SwitchImage();
-        }        
+        }
         else if (cmd.StartsWith("PS"))
         {
             Shortcuts.Instance.PS();
@@ -171,7 +211,64 @@ public class ContextMenuHandler : MonoBehaviour
         else if (cmd == "Cancel")
         {
             Shortcuts.Instance.Cancel();
-        }       
+        }
+        else if (cmd == "Add")
+        {
+            if (m_SelectedComponent.Node == ProjectCtrl.Instance.ObliqueImagesTreeNode)
+            {
+                ProjectCtrl.Instance.AddObliqueImagesBtnClick();
+            }
+            else if (m_SelectedComponent.Node == ProjectCtrl.Instance.ModelsTreeNode)
+            {
+                ProjectCtrl.Instance.AddModelsBtnClick();
+            }
+            else if (m_SelectedComponent.Node == ProjectCtrl.Instance.SceneriesTreeNode)
+            {
+                ProjectCtrl.Instance.AddSceneryBtnClick();
+            }
+        }
+        else if (cmd == "Clear")
+        {
+            if (m_SelectedComponent.Node == ProjectCtrl.Instance.ObliqueImagesTreeNode)
+            {
+                ProjectCtrl.Instance.ClearObliqueImages();
+                ProjectCtrl.Instance.ClearWhenDeleteObliqueImage();
+            }
+            else if (m_SelectedComponent.Node == ProjectCtrl.Instance.ModelsTreeNode)
+            {
+                ProjectCtrl.Instance.ClearWhenDeleteModel();
+                ProjectCtrl.Instance.ClearModels();
+            }
+            else if (m_SelectedComponent.Node == ProjectCtrl.Instance.SceneriesTreeNode)
+            {
+                ProjectCtrl.Instance.ClearSceneries();
+            }
+            ProjectCtrl.Instance.ModifyProjectPath();
+        }
+        else if (cmd == "Delete")
+        {
+            if (m_SelectedComponent.Node.Parent == ProjectCtrl.Instance.ObliqueImagesTreeNode)
+            {
+                if (ObliqueMapTreeView.DoubleClickNode == m_SelectedComponent.Node)
+                {
+                    ProjectCtrl.Instance.ClearWhenDeleteObliqueImage();
+                }
+            }
+            else if (m_SelectedComponent.Node.Parent == ProjectCtrl.Instance.ModelsTreeNode)
+            {                
+                if (ObliqueMapTreeView.DoubleClickNode == m_SelectedComponent.Node)
+                {
+                    ProjectCtrl.Instance.ClearWhenDeleteModel();
+                }
+                ProjectCtrl.Instance.DestroyGameObject(ProjectCtrl.Instance.ModelContainer.Find(m_SelectedComponent.Item.LocalizedName).gameObject);
+            }
+            else if (m_SelectedComponent.Node.Parent == ProjectCtrl.Instance.SceneriesTreeNode)
+            {
+                
+            }
+            m_SelectedComponent.Node.RemoveFromTree();
+            ProjectCtrl.Instance.ModifyProjectPath();
+        }
     }
 
     public static IEnumerator DownloadTexture(string imagePath, int index)

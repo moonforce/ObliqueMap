@@ -289,7 +289,7 @@ namespace Battlehub.UIControls.MenuControl
             }
         }
 
-
+        public bool FitX = true;
         private void Fit()
         {
             RectTransform rootRT = (RectTransform)m_root;
@@ -301,7 +301,7 @@ namespace Battlehub.UIControls.MenuControl
 
             const float offset = 3;
 
-            if (position.x + size.x - offset > topLeft.x + rootRT.rect.width)
+            if (position.x + size.x - offset > topLeft.x + rootRT.rect.width && FitX)
             {
                 position.x = position.x - size.x - offset;
             }

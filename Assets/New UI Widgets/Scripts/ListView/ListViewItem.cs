@@ -373,7 +373,8 @@ namespace UIWidgets
 
 			onPointerClick.Invoke(eventData);
 
-			if ((eventData.button == PointerEventData.InputButton.Left) && (eventData.clickCount == 1))
+            // ly更改，右键也可以选中
+			if ((eventData.button == PointerEventData.InputButton.Left || eventData.button == PointerEventData.InputButton.Right) && (eventData.clickCount == 1))
 			{
 				onClick.Invoke();
 				onClickItem.Invoke(this);

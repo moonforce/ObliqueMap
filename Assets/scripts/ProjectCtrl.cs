@@ -30,18 +30,18 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
     public float ModelDeltaX { get; set; }
     public float ModelDeltaY { get; set; }
 
-    private TreeView m_Tree;
-
+    public TreeView Tree { get; set; }
     public Dictionary<string, CameraHandler> CameraHandlers { get; set; } = new Dictionary<string, CameraHandler>();
     public TreeNode<TreeViewItem> ObliqueImagesTreeNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("航拍斜片"));
     public TreeNode<TreeViewItem> ModelsTreeNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("三维模型"));
     public TreeNode<TreeViewItem> SceneriesTreeNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("地面模型"));
+
     public DataExchange<string> ProjectPath = new DataExchange<string>();
 
     void Start()
     {
-        m_Tree = transform.GetComponentInChildren<TreeView>();
-        m_Tree.Init();
+        Tree = transform.GetComponentInChildren<TreeView>();
+        Tree.Init();
         SetTreeNodes();
         ProjectPath.OnDataChanged += SetProjectName;
     }
@@ -67,18 +67,69 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         ObliqueImagesTreeNode.Nodes = new ObservableList<TreeNode<TreeViewItem>>();
         ModelsTreeNode.Nodes = new ObservableList<TreeNode<TreeViewItem>>();
         SceneriesTreeNode.Nodes = new ObservableList<TreeNode<TreeViewItem>>();
-        m_Tree.Nodes = nodes;
+        Tree.Nodes = nodes;
     }
 
     private void ClearProject()
     {
+        ClearCameraHandlers();
+        ClearObliqueImages();
+        ClearModels();
+        ClearSceneries();
+    }
+
+    public void ClearCameraHandlers()
+    {
         CameraHandlers.Clear();
+    }
+
+    public void ClearObliqueImages()
+    {
         ObliqueImagesTreeNode.IsExpanded = false;
         ObliqueImagesTreeNode.Nodes.Clear();
+    }
+
+    public void ClearWhenDeleteObliqueImage()
+    {
+        if (ProjectStage.Instance.FaceChosed || ProjectStage.Instance.FaceEditting)
+        {
+            MeshAnaliser.Instance.ResetChoice();
+            OrbitCamera.Instance.ReplaceModel();
+        }
+        TextureHandler.Instance.ResetContent();
+    }
+
+    public void ClearModels()
+    {
         ModelsTreeNode.IsExpanded = false;
         ModelsTreeNode.Nodes.Clear();
+        OrbitCamera.Instance.ResetGrid();
+        for (int i = 0; i < ModelContainer.childCount; ++i)
+        {
+            DestroyGameObject(ModelContainer.GetChild(i).gameObject);
+        }
+    }
+
+    public void ClearWhenDeleteModel()
+    {
+        OrbitCamera.Instance.ResetGrid();
+        MeshAnaliser.Instance.ResetChoice();
+    }
+
+    public void ClearSceneries()
+    {
         SceneriesTreeNode.IsExpanded = false;
         SceneriesTreeNode.Nodes.Clear();
+    }
+
+    public void DestroyGameObject(GameObject go)
+    {
+        foreach (var mat in go.GetComponent<MeshRenderer>().sharedMaterials)
+        {
+            Destroy(mat.mainTexture);
+        }
+        Destroy(go);
+        Resources.UnloadUnusedAssets();
     }
 
     public void CreateProjectBtnClick()
@@ -305,6 +356,19 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         }
     }
 
+    public void ModifyProjectPath()
+    {
+        if (string.IsNullOrEmpty(ProjectPath.DataValue))
+        {
+            MessageBoxCtrl.Instance.Show("空工程");
+            return;
+        }
+        if (!ProjectPath.DataValue.EndsWith("*"))
+        {
+            ProjectPath.DataValue += "*";
+        }
+    }
+
     private void AddRootLeaf(XmlDocument xmlDoc, string rootName, string leafName, List<string> elements)
     {
         var rootNode = CreateNode(xmlDoc, xmlDoc.SelectSingleNode("Project"), rootName);
@@ -324,7 +388,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         string folderPath = FileBrowser.OpenSingleFolder("选择航拍影像文件夹");
         if (string.IsNullOrEmpty(folderPath))
         {
-            MessageBoxCtrl.Instance.Show("选择航拍影像文件夹失败，未选择路径");
+            MessageBoxCtrl.Instance.Show("选择航拍影像文件夹失败，\n未选择路径");
             return;
         }
         string[] extensions = new[] { ".jpg" };
@@ -341,10 +405,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         fileInfos.Reverse();
         if (fileInfos.Count > 0)
         {
-            if (!ProjectPath.DataValue.EndsWith("*"))
-            {
-                ProjectPath.DataValue += "*";
-            }
+            ModifyProjectPath();
             StartCoroutine(AddObliqueImages(fileInfos));
         }
     }
@@ -423,10 +484,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         fileInfos.Reverse();
         if (fileInfos.Count > 0)
         {
-            if (!ProjectPath.DataValue.EndsWith("*"))
-            {
-                ProjectPath.DataValue += "*";
-            }
+            ModifyProjectPath();
         }
         StartCoroutine(AddModels(fileInfos));
     }
@@ -535,7 +593,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
                         uniqueVertexes.Add(vertex, numUv);
                     }
                     string[] vertexElements = vertex.Split('/');
-                    newFace += (int.Parse(vertexElements[0]) + numVertex + 1).ToString() + '/' + uniqueVertexes[vertex].ToString() + '/' + (int.Parse(vertexElements[2]) + numNormal + 1).ToString() + ' ';  
+                    newFace += (int.Parse(vertexElements[0]) + numVertex + 1).ToString() + '/' + uniqueVertexes[vertex].ToString() + '/' + (int.Parse(vertexElements[2]) + numNormal + 1).ToString() + ' ';
                 }
                 faces.Add(newFace);
             }
@@ -620,10 +678,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
 
     private void ObjImporter_ImportedSingleModel(GameObject go, string path)
     {
-        if (!ProjectPath.DataValue.EndsWith("*"))
-        {
-            ProjectPath.DataValue += "*";
-        }
+        ModifyProjectPath();
         FileInfo fileInfo = new FileInfo(path);
         TreeViewItem item = new TreeViewItem(fileInfo.FullName);
         item.LocalizedName = fileInfo.Name;
@@ -649,10 +704,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
             MessageBoxCtrl.Instance.Show("未选择Smart3D空三数据文件");
             return;
         }
-        if (!ProjectPath.DataValue.EndsWith("*"))
-        {
-            ProjectPath.DataValue += "*";
-        }
+        ModifyProjectPath();
         XmlDocument xml = new XmlDocument();
         XmlReaderSettings set = new XmlReaderSettings();
         set.IgnoreComments = true;
@@ -705,7 +757,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
             imageInfos.AddRange(cameraHandler.Value.ProjectPoints(points, faceNormal));
         }
         return imageInfos;
-    }    
+    }
 
     public XmlNode CreateNode(XmlDocument xmlDoc, XmlNode parentNode, string name, string value = null)
     {
