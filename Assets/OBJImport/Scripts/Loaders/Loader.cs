@@ -47,15 +47,21 @@ namespace AsImpL
         protected static Dictionary<string, int> instanceCount = new Dictionary<string, int>();
 
         protected DataSet dataSet = new DataSet();
-        protected ObjectBuilder objectBuilder = new ObjectBuilder();
+        protected ObjectBuilder objectBuilder/* = new ObjectBuilder()*/;
 
         protected List<MaterialData> materialData;
 
-        protected SingleLoadingProgress objLoadingProgress = new SingleLoadingProgress();
+        protected SingleLoadingProgress objLoadingProgress/* = new SingleLoadingProgress()*/;
 
         protected Stats loadStats;
 
         private Texture2D loadedTexture = null;
+
+        public virtual void Init()
+        {
+            objectBuilder = new ObjectBuilder();
+            objLoadingProgress = new SingleLoadingProgress();
+        }
 
         /// <summary>
         /// Load the file assuming its vertical axis is Z instead of Y 

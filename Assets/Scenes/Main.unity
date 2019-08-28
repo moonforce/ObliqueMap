@@ -6509,11 +6509,11 @@ MonoBehaviour:
     characterCount: 3
     spriteCount: 0
     spaceCount: 0
-    wordCount: 1
+    wordCount: 2
     linkCount: 0
     lineCount: 1
     pageCount: 1
-    materialCount: 2
+    materialCount: 1
   m_havePropertiesChanged: 0
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
@@ -15467,7 +15467,7 @@ MonoBehaviour:
   m_enableWordWrapping: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
-  m_firstOverflowCharacterIndex: -1
+  m_firstOverflowCharacterIndex: 9
   m_linkedTextComponent: {fileID: 0}
   m_isLinkedTextComponent: 0
   m_isTextTruncated: 0
@@ -15493,11 +15493,11 @@ MonoBehaviour:
     characterCount: 11
     spriteCount: 0
     spaceCount: 0
-    wordCount: 1
+    wordCount: 2
     linkCount: 0
-    lineCount: 1
+    lineCount: 2
     pageCount: 1
-    materialCount: 2
+    materialCount: 1
   m_havePropertiesChanged: 0
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
@@ -15655,11 +15655,11 @@ MonoBehaviour:
     characterCount: 3
     spriteCount: 0
     spaceCount: 0
-    wordCount: 1
+    wordCount: 2
     linkCount: 0
     lineCount: 1
     pageCount: 1
-    materialCount: 2
+    materialCount: 1
   m_havePropertiesChanged: 0
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
@@ -21452,7 +21452,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.000026968111, y: 0.000030517578}
+  m_AnchoredPosition: {x: -0.00006997364, y: 0.000012011864}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &8916199124309357404
@@ -21578,7 +21578,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 8916199124068221062}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.99999577
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -22592,7 +22592,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 8916199125688926566}
   m_Direction: 0
   m_Value: 0
-  m_Size: 0.998543
+  m_Size: 0.9999874
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:

@@ -40,7 +40,13 @@ namespace AsImpL
     {
         private string mtlLib;
         private string loadedText;
-        private Encoding GBK = Encoding.GetEncoding("GBK");
+        private Encoding GBK;
+
+        public override void Init()
+        {
+            base.Init();
+            GBK = Encoding.GetEncoding("GBK");
+        }
 
         /// <summary>
         /// Parse dependencies of the given OBJ file.

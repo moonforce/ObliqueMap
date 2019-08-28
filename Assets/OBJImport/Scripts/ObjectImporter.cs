@@ -363,6 +363,7 @@ namespace AsImpL
                         return null;
                 }
             }
+            loader.Init();
             loader.ModelCreated += OnModelCreated;
             loader.ModelLoaded += OnImported;
             loader.ModelError += OnImportError;
