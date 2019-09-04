@@ -1724,6 +1724,7 @@ GameObject:
   - component: {fileID: 184391678}
   - component: {fileID: 184391677}
   - component: {fileID: 184391680}
+  - component: {fileID: 184391681}
   m_Layer: 5
   m_Name: ButtonHelp
   m_TagString: Untagged
@@ -1844,6 +1845,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_IsPointerIn: 0
+--- !u!114 &184391681
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 184391675}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 097ed9d74850c90479da7dca57d8a2f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &245786447
 GameObject:
   m_ObjectHideFlags: 0
@@ -6112,7 +6125,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_text: "\u5173\u4E8E"
+  m_text: "\u5E2E\u52A9\u6587\u6863"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: f5fe019b56c42cf43bbd645b9e7d3010, type: 2}
   m_sharedMaterial: {fileID: 21533890862614298, guid: f5fe019b56c42cf43bbd645b9e7d3010,
@@ -6194,7 +6207,7 @@ MonoBehaviour:
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_spriteAnimator: {fileID: 0}
-  m_isInputParsingRequired: 0
+  m_isInputParsingRequired: 1
   m_inputSource: 0
   m_hasFontAssetChanged: 0
   m_subTextObjects:
@@ -7131,7 +7144,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1723593579}
   m_Direction: 0
   m_Value: 0
-  m_Size: 0.99999994
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -18481,7 +18494,7 @@ GameObject:
   - component: {fileID: 2105134623}
   - component: {fileID: 2105134622}
   m_Layer: 5
-  m_Name: ButtonAbout
+  m_Name: ButtonDocument
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -18546,7 +18559,18 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2105134623}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 184391681}
+        m_MethodName: OpenUserManual
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
 --- !u!114 &2105134623
@@ -21452,7 +21476,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -0.00004444463, y: 0.00009286069}
+  m_AnchoredPosition: {x: -0.00009415505, y: 0.00011341305}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &8916199124309357404
@@ -21578,7 +21602,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 8916199124068221062}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.9999909
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -22591,8 +22615,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 8916199125688926565}
   m_HandleRect: {fileID: 8916199125688926566}
   m_Direction: 0
-  m_Value: 0
-  m_Size: 0.9999713
+  m_Value: 1
+  m_Size: 0.99999976
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
