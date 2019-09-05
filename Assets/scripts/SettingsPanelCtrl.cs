@@ -42,6 +42,12 @@ public class SettingsPanelCtrl : Singleton<SettingsPanelCtrl>
         CheckPlayerPrefs();
     }
 
+    private void OnDestroy()
+    {
+        m_PointRadius_InputField.onEndEdit.RemoveAllListeners();
+        m_LineWidth_InputField.onEndEdit.RemoveAllListeners();
+    }
+
     void CheckPlayerPrefs()
     {
         PhotoshopPath = PlayerPrefs.GetString("PhotoshopPath", string.Empty);
@@ -85,6 +91,18 @@ public class SettingsPanelCtrl : Singleton<SettingsPanelCtrl>
 
     public void DeltaXInputFieldEndEidt(string input)
     {
+        float TMP_DeltaX = DeltaX;
+        SetDeltaX(input);
+        if (Mathf.Abs(TMP_DeltaX - DeltaX) > 1e-5)
+        {
+            ProjectCtrl.Instance.ModifyProjectPath(false);
+        }
+        Debug.Log("one");
+    }
+
+    public void SetDeltaX(string input)
+    {
+        m_DeltaX_InputField.SetValue(input);
         if (float.TryParse(input, out DeltaX))
         {
             PlayerPrefs.SetFloat("DeltaX", DeltaX);
@@ -93,6 +111,17 @@ public class SettingsPanelCtrl : Singleton<SettingsPanelCtrl>
 
     public void DeltaYInputFieldEndEidt(string input)
     {
+        float TMP_DeltaY = DeltaY;
+        SetDeltaY(input);
+        if (Mathf.Abs(TMP_DeltaY - DeltaY) > 1e-5)
+        {
+            ProjectCtrl.Instance.ModifyProjectPath(false);
+        }
+    }
+
+    public void SetDeltaY(string input)
+    {
+        m_DeltaY_InputField.SetValue(input);
         if (float.TryParse(input, out DeltaY))
         {
             PlayerPrefs.SetFloat("DeltaY", DeltaY);
@@ -101,9 +130,11 @@ public class SettingsPanelCtrl : Singleton<SettingsPanelCtrl>
 
     public void PointRadiusInputFieldEndEidt(string input)
     {
-        if (float.TryParse(input, out PointRadius))
+        float TMP_PointRadius = PointRadius;
+        SetPointRadius(input);
+        if (Mathf.Abs(TMP_PointRadius - PointRadius) > 1e-5)
         {
-            PlayerPrefs.SetFloat("PointRadius", PointRadius);
+            ProjectCtrl.Instance.ModifyProjectPath(false);
         }
         //更新已存在的UvPoint
         foreach (var point in TextureHandler.Instance.UvPoints)
@@ -112,16 +143,36 @@ public class SettingsPanelCtrl : Singleton<SettingsPanelCtrl>
         }
     }
 
+    public void SetPointRadius(string input)
+    {
+        m_PointRadius_InputField.SetValue(input);
+        if (float.TryParse(input, out PointRadius))
+        {
+            PlayerPrefs.SetFloat("PointRadius", PointRadius);
+        }
+    }
+
     public void LineWidthInputFieldEndEidt(string input)
     {
-        if (float.TryParse(input, out LineWidth))
+        float TMP_LineWidth = LineWidth;
+        SetLineWidth(input);
+        if (Mathf.Abs(TMP_LineWidth - LineWidth) > 1e-5)
         {
-            PlayerPrefs.SetFloat("LineWidth", LineWidth);
+            ProjectCtrl.Instance.ModifyProjectPath(false);
         }
         //更新已存在的UvLine
         foreach (var line in TextureHandler.Instance.UvLines)
         {
             line.UpdateLineWidth(LineWidth);
+        }
+    }
+
+    public void SetLineWidth(string input)
+    {
+        m_LineWidth_InputField.SetValue(input);
+        if (float.TryParse(input, out LineWidth))
+        {
+            PlayerPrefs.SetFloat("LineWidth", LineWidth);
         }
     }
 

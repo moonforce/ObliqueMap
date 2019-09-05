@@ -32,9 +32,9 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
 
     public TreeView Tree { get; set; }
     public Dictionary<string, CameraHandler> CameraHandlers { get; set; } = new Dictionary<string, CameraHandler>();
-    public TreeNode<TreeViewItem> ObliqueImagesTreeNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("航拍斜片"));
+    public TreeNode<TreeViewItem> ObliqueImagesTreeNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("航拍影像"));
     public TreeNode<TreeViewItem> ModelsTreeNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("三维模型"));
-    public TreeNode<TreeViewItem> SceneriesTreeNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("地面模型"));
+    public TreeNode<TreeViewItem> SceneriesTreeNode { get; set; } = new TreeNode<TreeViewItem>(new TreeViewItem("地景模型"));
 
     public DataExchange<string> ProjectPath = new DataExchange<string>();
 
@@ -76,6 +76,10 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         ClearObliqueImages();
         ClearModels();
         ClearSceneries();
+        if (ProjectStage.Instance.FaceChosed || ProjectStage.Instance.FaceEditting)
+        {
+            MeshAnaliser.Instance.ResetChoice();
+        }
     }
 
     public void ClearCameraHandlers()
@@ -94,7 +98,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         if (ProjectStage.Instance.FaceChosed || ProjectStage.Instance.FaceEditting)
         {
             MeshAnaliser.Instance.ResetChoice();
-            OrbitCamera.Instance.ReplaceModel();
+            //OrbitCamera.Instance.ReplaceModel();
         }
         TextureHandler.Instance.ResetContent();
     }
@@ -207,6 +211,11 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         XmlReaderSettings set = new XmlReaderSettings();
         set.IgnoreComments = true;
         xml.Load(XmlReader.Create(ProjectPath.DataValue, set));
+        XmlNode projectNode = xml.SelectSingleNode("Project");
+        SettingsPanelCtrl.Instance.SetDeltaX(projectNode.Attributes["DeltaX"].Value);
+        SettingsPanelCtrl.Instance.SetDeltaY(projectNode.Attributes["DeltaY"].Value);
+        SettingsPanelCtrl.Instance.SetPointRadius(projectNode.Attributes["PointRadius"].Value);
+        SettingsPanelCtrl.Instance.SetLineWidth(projectNode.Attributes["LineWidth"].Value);
         XmlNodeList ObliqueImageNodes = xml.SelectSingleNode("//ObliqueImages").SelectNodes("ObliqueImage");
         List<FileInfo> imageFileInfos = new List<FileInfo>();
         foreach (XmlNode ObliqueImageNode in ObliqueImageNodes)
@@ -318,7 +327,12 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         }
         XmlDocument xmlDoc = new XmlDocument();
         xmlDoc.AppendChild(xmlDoc.CreateXmlDeclaration("1.0", "utf-8", null));
-        xmlDoc.AppendChild(xmlDoc.CreateElement("Project"));
+        XmlElement projectNode = xmlDoc.CreateElement("Project");
+        projectNode.SetAttribute("DeltaX", SettingsPanelCtrl.Instance.DeltaX.ToString());
+        projectNode.SetAttribute("DeltaY", SettingsPanelCtrl.Instance.DeltaY.ToString());
+        projectNode.SetAttribute("LineWidth", SettingsPanelCtrl.Instance.LineWidth.ToString());
+        projectNode.SetAttribute("PointRadius", SettingsPanelCtrl.Instance.PointRadius.ToString());
+        xmlDoc.AppendChild(projectNode);
         AddRootLeaf(xmlDoc, "ObliqueImages", "ObliqueImage", GetChildrenFromRootNode(ObliqueImagesTreeNode));
         AddRootLeaf(xmlDoc, "Models", "Model", GetChildrenFromRootNode(ModelsTreeNode));
         AddRootLeaf(xmlDoc, "Sceneries", "Scenery", GetChildrenFromRootNode(SceneriesTreeNode));
@@ -363,11 +377,12 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         }
     }
 
-    public void ModifyProjectPath()
+    public void ModifyProjectPath(bool showMessageBox = true)
     {
         if (string.IsNullOrEmpty(ProjectPath.DataValue))
         {
-            MessageBoxCtrl.Instance.Show("空工程");
+            if (showMessageBox)
+                MessageBoxCtrl.Instance.Show("空工程");
             return;
         }
         if (!ProjectPath.DataValue.EndsWith("*"))
@@ -635,16 +650,16 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
             MessageBoxCtrl.Instance.Show("请先创建或打开工程");
             return;
         }
-        string filePath = FileBrowser.OpenSingleFile("选择地面模型文件", null, "obj");
+        string filePath = FileBrowser.OpenSingleFile("选择地景模型文件", null, "obj");
         if (filePath.Length == 0)
         {
-            MessageBoxCtrl.Instance.Show("未选择地面模型文件");
+            MessageBoxCtrl.Instance.Show("未选择地景模型文件");
             return;
         }
         List<string> sceneries = GetChildrenFromRootNode(SceneriesTreeNode);
         if (sceneries.Contains(filePath))
         {
-            MessageBoxCtrl.Instance.Show("已经加载过此地面模型");
+            MessageBoxCtrl.Instance.Show("已经加载过此地景模型");
             return;
         }
         MessageBoxCtrl.Instance.Show("正在加载地景模型……", false, false);
@@ -660,7 +675,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         }
         yield return new WaitUntil(ProgressbarCtrl.Instance.isFinished);
 
-        ProgressbarCtrl.Instance.Show("正在加载地面模型……");
+        ProgressbarCtrl.Instance.Show("正在加载地景模型……");
         ProgressbarCtrl.Instance.ResetMaxCount(fileInfos.Count);
 
         ObjLoadManger.Instance.GetComponent<ObjectImporter>().ImportedModel += ObjImporter_ImportedModel;

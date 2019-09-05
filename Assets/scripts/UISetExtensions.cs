@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using UnityEngine.UI;
+using TMPro;
 
 /// <summary>
 /// http://forum.unity3d.com/threads/change-the-value-of-a-toggle-without-triggering-onvaluechanged.275056/#post-2348336
@@ -52,6 +53,15 @@ public static class UISetExtensions
     {
         var originalEvent = instance.onValueChanged;
         instance.onValueChanged = emptyInputFieldEvent;
+        instance.text = value;
+        instance.onValueChanged = originalEvent;
+    }
+
+    static TMP_InputField.OnChangeEvent emptyTMP_InputFieldEvent = new TMP_InputField.OnChangeEvent();
+    public static void SetValue(this TMP_InputField instance, string value)
+    {
+        var originalEvent = instance.onValueChanged;
+        instance.onValueChanged = emptyTMP_InputFieldEvent;
         instance.text = value;
         instance.onValueChanged = originalEvent;
     }
