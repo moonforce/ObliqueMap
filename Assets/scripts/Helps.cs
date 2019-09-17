@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Helps : MonoBehaviour
 {
-    private string m_HelpDocumentPath = Application.streamingAssetsPath + "/UserManual.docx";
+    private string m_HelpDocumentPath = "UserManual.docx";
 
     void Start()
     {
