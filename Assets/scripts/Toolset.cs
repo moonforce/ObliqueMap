@@ -51,7 +51,7 @@ public class Toolset : MonoBehaviour
         MeshAnaliser.Instance.ResetChoice();
         List<MeshFilter> meshFilters = ProjectCtrl.Instance.ModelContainer.GetComponentsInChildren<MeshFilter>(true).ToList();
         meshFilters.Remove(meshFilters.Find(meshFilter => meshFilter.name == "ModelGridPlane"));
-        if (meshFilters.Count <= 0)
+        if (meshFilters.Count == 0)
             return;
         ProgressbarCtrl.Instance.Show("正在自动贴图……");
         ProgressbarCtrl.Instance.ResetMaxCount(meshFilters.Count);
@@ -89,6 +89,8 @@ public class Toolset : MonoBehaviour
             Vector3 faceNormal = new Vector3(mesh.normals[indecies[0]].x, mesh.normals[indecies[0]].y, mesh.normals[indecies[0]].z);
             List<ImageInfo> imageInfos = ProjectCtrl.Instance.ProjectPoints(subMeshVertices, faceNormal);
             imageInfos = imageInfos.OrderBy(it => it.DirectionDot).ToList();
+            if (imageInfos.Count == 0)
+                continue;
 
             for (int j = imageInfos.Count - 1; j >= 0; j--)
             {
@@ -104,28 +106,31 @@ public class Toolset : MonoBehaviour
                 //    imageInfos.Remove(imageInfos[j]);
                 //}
             }
-            Dictionary<int, Vector2> m_UniqueIndexUv = new Dictionary<int, Vector2>();
+            if (imageInfos.Count == 0)
+                continue;
+
+            Dictionary<int, Vector2> uniqueIndexUv = new Dictionary<int, Vector2>();
             foreach (Tuple<int, int> lineIndex in subMeshInfo.LineIndexLists[i])
             {
                 int index1 = lineIndex.Item1;
                 int index2 = lineIndex.Item2;
                 Vector2 uv1 = imageInfos[0].Index_UVs[index1];
                 Vector2 uv2 = imageInfos[0].Index_UVs[index2];
-                if (!m_UniqueIndexUv.ContainsKey(index1))
+                if (!uniqueIndexUv.ContainsKey(index1))
                 {
-                    m_UniqueIndexUv.Add(index1, uv1);
+                    uniqueIndexUv.Add(index1, uv1);
                 }
-                if (!m_UniqueIndexUv.ContainsKey(index2))
+                if (!uniqueIndexUv.ContainsKey(index2))
                 {
-                    m_UniqueIndexUv.Add(index2, uv2);
+                    uniqueIndexUv.Add(index2, uv2);
                 }
             }
-            UV_AABB m_UV_AABB = new UV_AABB();
-            foreach (var indexUv in m_UniqueIndexUv)
+            UV_AABB uv_AABB = new UV_AABB();
+            foreach (var indexUv in uniqueIndexUv)
             {
-                m_UV_AABB.UpdateAABB(indexUv.Value);
+                uv_AABB.UpdateAABB(indexUv.Value);
             }
-            m_UV_AABB.ExpandAABB(new Vector2(imageInfos[0].Width, imageInfos[0].Height));
+            uv_AABB.ExpandAABB(new Vector2(imageInfos[0].Width, imageInfos[0].Height));
 
             Texture2D TextureDownloaded = null;
             yield return StartCoroutine(DatabaseLoaderTexture_DDS.LoadAndInvoke(Utills.ChangeExtensionToDDS(imageInfos[0].File.FullName), (texture) => { TextureDownloaded = texture; }));
@@ -135,10 +140,10 @@ public class Toolset : MonoBehaviour
             string tileTexturePath = Path.GetDirectoryName(subMeshInfo.FilePath) + '/' + Path.GetFileNameWithoutExtension(subMeshInfo.FilePath) + '_' + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".jpg";
             Utills.TextureTile2ImageFile(TextureDownloaded,
                 out tileTexture,
-                (int)(m_UV_AABB.MinX * TextureDownloaded.width + 0.5f),
-                (int)((1 - m_UV_AABB.MaxY) * TextureDownloaded.height + 0.5f),
-                (int)(m_UV_AABB.Spacing.x * TextureDownloaded.width + 0.5f),
-                (int)(m_UV_AABB.Spacing.y * TextureDownloaded.height + 0.5f),
+                (int)(uv_AABB.MinX * TextureDownloaded.width + 0.5f),
+                (int)((1 - uv_AABB.MaxY) * TextureDownloaded.height + 0.5f),
+                (int)(uv_AABB.Spacing.x * TextureDownloaded.width + 0.5f),
+                (int)(uv_AABB.Spacing.y * TextureDownloaded.height + 0.5f),
                 tileTexturePath
                 );
             Material material = subMeshInfo.GetComponent<MeshRenderer>().sharedMaterials[i];
@@ -149,9 +154,9 @@ public class Toolset : MonoBehaviour
             material.name = Path.GetFileName(tileTexturePath);
             material.mainTexture = tileTexture;
             Vector2[] uvCopy = mesh.uv;
-            foreach (var pair in m_UniqueIndexUv)
+            foreach (var pair in uniqueIndexUv)
             {
-                uvCopy[pair.Key] = new Vector2((pair.Value.x - m_UV_AABB.MinX) / m_UV_AABB.Spacing.x, (pair.Value.y - m_UV_AABB.MinY) / m_UV_AABB.Spacing.y); ;
+                uvCopy[pair.Key] = new Vector2((pair.Value.x - uv_AABB.MinX) / uv_AABB.Spacing.x, (pair.Value.y - uv_AABB.MinY) / uv_AABB.Spacing.y); ;
             }
             mesh.uv = uvCopy;
             Destroy(TextureDownloaded);
