@@ -17,6 +17,8 @@ public class ProgressbarCtrl : Singleton<ProgressbarCtrl>
     private OrbitCamera m_ModelViewScript;
     private Canvas m_ProgressbarCanvas;
 
+    static object m_LockObjStatic = new object();
+
     void Start()
     {
         Progressbar = GetComponentInChildren<ProgressbarDeterminate>();
@@ -45,12 +47,15 @@ public class ProgressbarCtrl : Singleton<ProgressbarCtrl>
 
     public void ProgressPlusPlus()
     {
-        ++m_CurrentCount;
-        SetProgressbar((int)((m_CurrentCount) * 100f / m_MaxCount + 0.5f));
-        if (m_CurrentCount == m_MaxCount)
+        lock (m_LockObjStatic)
         {
-            Invoke("Hide", 0.5f);
-        }
+            ++m_CurrentCount;
+            SetProgressbar((int)((m_CurrentCount) * 100f / m_MaxCount + 0.5f));
+            if (m_CurrentCount == m_MaxCount)
+            {
+                Invoke("Hide", 0.5f);
+            }
+        }        
     }
 
     public void Show(string title)

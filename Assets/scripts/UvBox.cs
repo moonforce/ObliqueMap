@@ -35,20 +35,14 @@ public class UvBox : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHan
 
     public void UpdateAABB(Vector2 uv)
     {
-        AABB.MinX = Mathf.Min(AABB.MinX, uv.x);
-        AABB.MaxX = Mathf.Max(AABB.MaxX, uv.x);
-        AABB.MinY = Mathf.Min(AABB.MinY, uv.y);
-        AABB.MaxY = Mathf.Max(AABB.MaxY, uv.y);
+        AABB.UpdateAABB(uv);
     }
 
-    public void SetPosition()
-    {
-        Vector2 textureRectSize = ImageController.Instance.Texture.rectTransform.sizeDelta;
+    public void ExpandAABBandSetPosition()
+    {        
         Vector2 textureSize = new Vector2(TextureHandler.Instance.TextureDownloaded.width, TextureHandler.Instance.TextureDownloaded.height);
-        AABB.MinX -= m_MaterialExpandPixels / textureSize.x;
-        AABB.MinY -= m_MaterialExpandPixels / textureSize.y;
-        AABB.MaxX += m_MaterialExpandPixels / textureSize.x;
-        AABB.MaxY += m_MaterialExpandPixels / textureSize.y;
+        AABB.ExpandAABB(textureSize);
+        Vector2 textureRectSize = ImageController.Instance.Texture.rectTransform.sizeDelta;
         m_RT.anchoredPosition = new Vector2(AABB.MinX * textureRectSize.x, AABB.MinY * textureRectSize.y);
         m_RT.sizeDelta = new Vector2((AABB.MaxX - AABB.MinX) * textureRectSize.x, (AABB.MaxY - AABB.MinY) * textureRectSize.y);
     }

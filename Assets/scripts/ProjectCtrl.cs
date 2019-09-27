@@ -103,7 +103,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         TextureHandler.Instance.ResetContent();
     }
 
-    public void ClearModels()
+    public void ClearModels() //隐藏了Grid
     {
         ModelsTreeNode.IsExpanded = false;
         ModelsTreeNode.Nodes.Clear();
@@ -740,30 +740,40 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         XmlNodeList photogroups = xml.SelectSingleNode("//Photogroups").SelectNodes("Photogroup");
         foreach (XmlNode photogroup in photogroups)
         {
-            List<ImageInfo> imageInfos = new List<ImageInfo>();
-            foreach (XmlNode photoNode in photogroup.SelectNodes("Photo"))
-            {
-                imageInfos.Add(new ImageInfo(new FileInfo(photoNode.SelectSingleNode("ImagePath").InnerText),
-                    double.Parse(photoNode.SelectSingleNode("Pose/Rotation/Omega").InnerText),
-                    double.Parse(photoNode.SelectSingleNode("Pose/Rotation/Phi").InnerText),
-                    double.Parse(photoNode.SelectSingleNode("Pose/Rotation/Kappa").InnerText),
-                    double.Parse(photoNode.SelectSingleNode("Pose/Center/x").InnerText),
-                    double.Parse(photoNode.SelectSingleNode("Pose/Center/y").InnerText),
-                    double.Parse(photoNode.SelectSingleNode("Pose/Center/z").InnerText)));
-            }
-
             CameraHandler cameraHandler;
             string name = photogroup.SelectSingleNode("Name").InnerText;
+            int width;
+            int height;
             if (!CameraHandlers.TryGetValue(name, out cameraHandler))
             {
-                int width = int.Parse(photogroup.SelectSingleNode("ImageDimensions/Width").InnerText);
-                int height = int.Parse(photogroup.SelectSingleNode("ImageDimensions/Height").InnerText);
+                width = int.Parse(photogroup.SelectSingleNode("ImageDimensions/Width").InnerText);
+                height = int.Parse(photogroup.SelectSingleNode("ImageDimensions/Height").InnerText);
                 double focalLength = double.Parse(photogroup.SelectSingleNode("FocalLength").InnerText);
                 double sensorSize = double.Parse(photogroup.SelectSingleNode("SensorSize").InnerText);
                 Point principalPoint = new Point(double.Parse(photogroup.SelectSingleNode("PrincipalPoint/x").InnerText), double.Parse(photogroup.SelectSingleNode("PrincipalPoint/y").InnerText));
                 double aspectRatio = double.Parse(photogroup.SelectSingleNode("AspectRatio").InnerText);
                 cameraHandler = new CameraHandler(name, width, height, focalLength, sensorSize, principalPoint, photogroup.SelectSingleNode("Distortion"), aspectRatio);
                 CameraHandlers.Add(name, cameraHandler);
+            }
+            else
+            {
+                width = cameraHandler.Width;
+                height = cameraHandler.Height;
+            }
+            List<ImageInfo> imageInfos = new List<ImageInfo>();
+            foreach (XmlNode photoNode in photogroup.SelectNodes("Photo"))
+            {
+                imageInfos.Add(
+                    new ImageInfo(
+                    width,
+                    height,
+                    new FileInfo(photoNode.SelectSingleNode("ImagePath").InnerText),
+                    double.Parse(photoNode.SelectSingleNode("Pose/Rotation/Omega").InnerText),
+                    double.Parse(photoNode.SelectSingleNode("Pose/Rotation/Phi").InnerText),
+                    double.Parse(photoNode.SelectSingleNode("Pose/Rotation/Kappa").InnerText),
+                    double.Parse(photoNode.SelectSingleNode("Pose/Center/x").InnerText),
+                    double.Parse(photoNode.SelectSingleNode("Pose/Center/y").InnerText),
+                    double.Parse(photoNode.SelectSingleNode("Pose/Center/z").InnerText)));
             }
             cameraHandler.Images.AddRange(imageInfos);
         }

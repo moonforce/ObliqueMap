@@ -158,7 +158,7 @@ public class Shortcuts : Singleton<Shortcuts>
 
     public void OutputModel()
     {
-        ObjExportHandler.Export(ObliqueMapTreeView.CurrentGameObject.GetComponentsInChildren<MeshFilter>(), null);
+        ObjExportHandler.Export(ObliqueMapTreeView.CurrentGameObject.GetComponent<MeshFilter>(), null);
     }
 
     public void Cancel()

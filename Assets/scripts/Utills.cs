@@ -107,6 +107,20 @@ public static class Utills
         return null;
     }
 
+    public static Mesh GetMeshOfMeshFilter(MeshFilter mf)
+    {
+        if (mf)
+        {
+            Mesh m = mf.sharedMesh;
+            if (!m) { m = mf.mesh; }
+            if (m)
+            {
+                return m;
+            }
+        }
+        return null;
+    }
+
     public static void DestroyAllChildren(Transform parent)
     {
         for (int i = 0; i < parent.childCount; ++i)

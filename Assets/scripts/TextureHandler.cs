@@ -92,7 +92,7 @@ public class TextureHandler : Singleton<TextureHandler>
             uvLine.gameObject.SetActive(false);
         }
         m_UniqueIndexUv = uniqueIndexUv;
-        StartCoroutine(DatabaseLoaderTexture_DDS.Load(Utills.ChangeExtensionToDDS(imageUrl), SetTextureAndUvElements));
+        StartCoroutine(DatabaseLoaderTexture_DDS.LoadAndInvoke(Utills.ChangeExtensionToDDS(imageUrl), SetTextureAndUvElements));
     }
 
     private void SetTextureAndUvElements(Texture2D texture)
@@ -148,7 +148,7 @@ public class TextureHandler : Singleton<TextureHandler>
 
             m_UvBox.UpdateAABB(indexUv.Value);
         }
-        m_UvBox.SetPosition();
+        m_UvBox.ExpandAABBandSetPosition();
         m_UvBox.gameObject.SetActive(true);
     }
 
@@ -205,7 +205,7 @@ public class TextureHandler : Singleton<TextureHandler>
         {
             m_UvBox.UpdateAABB(indexUv.Value);
         }
-        m_UvBox.SetPosition();
+        m_UvBox.ExpandAABBandSetPosition();
     }
 
     public void UpdateUvByBox(Vector2 deltaMousePos)

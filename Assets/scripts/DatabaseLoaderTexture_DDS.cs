@@ -20,13 +20,13 @@ public class DatabaseLoaderTexture_DDS : MonoBehaviour
 
     public delegate void SetTexture(Texture2D texture);
 
-    public static IEnumerator Load(string file, SetTexture setTexture)
+    public static IEnumerator LoadAndInvoke(string file, SetTexture setTexture)
     {
         Texture2D texture = LoadDDS(file, true);
         if (texture == null)
             Debug.Log(error);
         else
-            setTexture(texture);
+            setTexture?.Invoke(texture);
         yield return null;
     }
 

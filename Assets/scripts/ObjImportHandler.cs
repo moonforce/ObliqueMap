@@ -234,7 +234,7 @@ namespace ObjLoaderLY
 
                 if (uwr.isNetworkError || uwr.isHttpError)
                 {
-                    Debug.LogError(uwr.error);
+                    Debug.LogError(uwr.error + "：" + texPath);
                 }
                 else
                 {

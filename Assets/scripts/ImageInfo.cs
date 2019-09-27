@@ -15,6 +15,9 @@ public class ImageInfo
     public Mat TranslationVector { get; set; } = new Mat(3, 1, CvType.CV_32F);
 
     private Mat R = new Mat(3, 3, CvType.CV_32F);
+
+    public int Width { get; set; }
+    public int Height { get; set; }
     public FileInfo File { get; set; }
     public float DirectionDot { get; set; }
     public Vector3 Direction { get; set; }
@@ -26,8 +29,10 @@ public class ImageInfo
     public double Y { get; set; }
     public double Z { get; set; }
 
-    public ImageInfo(FileInfo fileInfo, double omega, double phi, double kappa, double x, double y, double z)
+    public ImageInfo(int width, int height, FileInfo fileInfo, double omega, double phi, double kappa, double x, double y, double z)
     {
+        Width = width;
+        Height = height;
         File = fileInfo;
         Omega = omega;
         Phi = phi;

@@ -66,7 +66,7 @@ public class ObliqueMapTreeView : TreeView
             }
             string imageUrl = DoubleClickNode.Item.Name;
             TextureHandler.Instance.ResetContent();
-            StartCoroutine(DatabaseLoaderTexture_DDS.Load(Utills.ChangeExtensionToDDS(imageUrl), SetTexture));
+            StartCoroutine(DatabaseLoaderTexture_DDS.LoadAndInvoke(Utills.ChangeExtensionToDDS(imageUrl), SetTexture));
         }        
     }
 
