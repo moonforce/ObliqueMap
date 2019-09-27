@@ -220,7 +220,8 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         List<FileInfo> imageFileInfos = new List<FileInfo>();
         foreach (XmlNode ObliqueImageNode in ObliqueImageNodes)
         {
-            imageFileInfos.Add(new FileInfo(ObliqueImageNode.InnerText));
+            if (File.Exists(ObliqueImageNode.InnerText))
+                imageFileInfos.Add(new FileInfo(ObliqueImageNode.InnerText));
         }
         if (imageFileInfos.Count > 0)
         {
@@ -230,7 +231,8 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         List<FileInfo> modelFileInfos = new List<FileInfo>();
         foreach (XmlNode Model in Models)
         {
-            modelFileInfos.Add(new FileInfo(Model.InnerText));
+            if (File.Exists(Model.InnerText))
+                modelFileInfos.Add(new FileInfo(Model.InnerText));
         }
         if (modelFileInfos.Count > 0)
         {
@@ -240,7 +242,8 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         List<FileInfo> sceneryFileInfos = new List<FileInfo>();
         foreach (XmlNode Scenery in Sceneries)
         {
-            sceneryFileInfos.Add(new FileInfo(Scenery.InnerText));
+            if (File.Exists(Scenery.InnerText))
+                sceneryFileInfos.Add(new FileInfo(Scenery.InnerText));
         }
         if (sceneryFileInfos.Count > 0)
         {
