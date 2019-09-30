@@ -289,7 +289,7 @@ public class DatabaseLoaderTexture_DDS : MonoBehaviour
             byte[] dxtBytes = new byte[width * height * 2];
             int bytesPos = 0;
             for (int i = y; i > y - height; --i)
-            {                
+            {
                 reader.BaseStream.Position = (dwWidth * i + x) * 2 + 128;
                 reader.ReadBytes(width * 2).CopyTo(dxtBytes, bytesPos);
                 bytesPos += width * 2;

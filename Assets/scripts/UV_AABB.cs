@@ -47,9 +47,9 @@ public class UV_AABB
 
     public void ExpandAABB(Vector2 textureSize)
     {
-        MinX -= MaterialExpandPixels / textureSize.x;
-        MinY -= MaterialExpandPixels / textureSize.y;
-        MaxX += MaterialExpandPixels / textureSize.x;
-        MaxY += MaterialExpandPixels / textureSize.y;
+        MinX = Mathf.Max(0f, MinX - MaterialExpandPixels / textureSize.x);
+        MinY = Mathf.Max(0f, MinY - MaterialExpandPixels / textureSize.y);
+        MaxX = Mathf.Min(1f, MaxX + MaterialExpandPixels / textureSize.x);
+        MaxY = Mathf.Min(1f, MaxY + MaterialExpandPixels / textureSize.y);
     }
 }
