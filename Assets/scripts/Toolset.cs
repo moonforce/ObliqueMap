@@ -133,33 +133,30 @@ public class Toolset : MonoBehaviour
             uv_AABB.ExpandAABB(new Vector2(imageInfos[0].Width, imageInfos[0].Height));
 
             Texture2D TextureDownloaded = null;
-            yield return StartCoroutine(DatabaseLoaderTexture_DDS.LoadAndInvoke(Utills.ChangeExtensionToDDS(imageInfos[0].File.FullName), (texture) => { TextureDownloaded = texture; }));
+            yield return StartCoroutine(DatabaseLoaderTexture_DDS.LoadPartAndInvoke(Utills.ChangeExtensionToDDS(imageInfos[0].File.FullName),
+                uv_AABB.MinX,
+                1 - uv_AABB.MinY,
+                uv_AABB.Spacing.x,
+                uv_AABB.Spacing.y,
+                (texture) => { TextureDownloaded = texture; }));
             if (TextureDownloaded == null)
                 continue;
-            Texture2D tileTexture;
             string tileTexturePath = Path.GetDirectoryName(subMeshInfo.FilePath) + '/' + Path.GetFileNameWithoutExtension(subMeshInfo.FilePath) + '_' + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".jpg";
-            Utills.TextureTile2ImageFile(TextureDownloaded,
-                out tileTexture,
-                (int)(uv_AABB.MinX * TextureDownloaded.width + 0.5f),
-                (int)((1 - uv_AABB.MaxY) * TextureDownloaded.height + 0.5f),
-                (int)(uv_AABB.Spacing.x * TextureDownloaded.width + 0.5f),
-                (int)(uv_AABB.Spacing.y * TextureDownloaded.height + 0.5f),
-                tileTexturePath
-                );
+            File.WriteAllBytes(tileTexturePath, TextureDownloaded.EncodeToJPG(80));
             Material material = subMeshInfo.GetComponent<MeshRenderer>().sharedMaterials[i];
             if (material.mainTexture != null && material.mainTexture != MeshAnaliser.Instance.WhiteTexture2D)
             {
                 Destroy(material.mainTexture);
             }
             material.name = Path.GetFileName(tileTexturePath);
-            material.mainTexture = tileTexture;
+            material.mainTexture = TextureDownloaded;
             Vector2[] uvCopy = mesh.uv;
             foreach (var pair in uniqueIndexUv)
             {
                 uvCopy[pair.Key] = new Vector2((pair.Value.x - uv_AABB.MinX) / uv_AABB.Spacing.x, (pair.Value.y - uv_AABB.MinY) / uv_AABB.Spacing.y); ;
             }
             mesh.uv = uvCopy;
-            Destroy(TextureDownloaded);
+            //Destroy(TextureDownloaded);
             Resources.UnloadUnusedAssets();
         }
     }

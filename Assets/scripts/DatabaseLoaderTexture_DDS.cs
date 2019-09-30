@@ -22,7 +22,17 @@ public class DatabaseLoaderTexture_DDS : MonoBehaviour
 
     public static IEnumerator LoadAndInvoke(string file, SetTexture setTexture)
     {
-        Texture2D texture = LoadDDS(file, true);
+        Texture2D texture = LoadDDS_Simplified(file);
+        if (texture == null)
+            Debug.Log(error);
+        else
+            setTexture?.Invoke(texture);
+        yield return null;
+    }
+
+    public static IEnumerator LoadPartAndInvoke(string file, float x, float y, float width, float height, SetTexture setTexture)
+    {
+        Texture2D texture = LoadDDS_Simplified_Part(file, x, y, width, height);
         if (texture == null)
             Debug.Log(error);
         else
@@ -196,6 +206,98 @@ public class DatabaseLoaderTexture_DDS : MonoBehaviour
 
             if (QualitySettings.masterTextureLimit != quality)
                 QualitySettings.masterTextureLimit = quality;
+
+            return texture;
+        }
+    }
+
+    public static Texture2D LoadDDS_Simplified(string path)
+    {
+        if (!File.Exists(path))
+        {
+            error = "File does not exist";
+            return null;
+        }
+        using (BinaryReader reader = new BinaryReader(File.Open(path, FileMode.Open, FileAccess.Read)))
+        {
+            byte[] dwMagic = reader.ReadBytes(4);
+
+            if (!fourCCEquals(dwMagic, "DDS "))
+            {
+                error = "Invalid DDS file";
+                return null;
+            }
+
+            int dwSize = (int)reader.ReadUInt32();
+
+            //this header byte should be 124 for DDS image files
+            if (dwSize != 124)
+            {
+                error = "Invalid header size";
+                return null;
+            }
+
+            reader.BaseStream.Position += 4;
+            int dwHeight = (int)reader.ReadUInt32();
+            int dwWidth = (int)reader.ReadUInt32();
+            reader.BaseStream.Position += 108;
+
+            Texture2D texture = new Texture2D(dwWidth, dwHeight, TextureFormat.RGB565, false);
+            texture.LoadRawTextureData(reader.ReadBytes((int)(reader.BaseStream.Length - 128L)));
+            texture.Apply(false, false);
+
+            return texture;
+        }
+    }
+
+    public static Texture2D LoadDDS_Simplified_Part(string path, float _x, float _y, float _width, float _height)
+    {
+        if (!File.Exists(path))
+        {
+            error = "File does not exist";
+            return null;
+        }
+        using (BinaryReader reader = new BinaryReader(File.Open(path, FileMode.Open, FileAccess.Read)))
+        {
+            byte[] dwMagic = reader.ReadBytes(4);
+
+            if (!fourCCEquals(dwMagic, "DDS "))
+            {
+                error = "Invalid DDS file";
+                return null;
+            }
+
+            int dwSize = (int)reader.ReadUInt32();
+
+            //this header byte should be 124 for DDS image files
+            if (dwSize != 124)
+            {
+                error = "Invalid header size";
+                return null;
+            }
+
+            reader.BaseStream.Position += 4;
+            int dwHeight = (int)reader.ReadUInt32();
+            int dwWidth = (int)reader.ReadUInt32();
+            reader.BaseStream.Position += 108;
+
+            int x = (int)(_x * dwWidth + 0.5f);
+            int y = (int)(_y * dwHeight + 0.5f);
+            int width = (int)(_width * dwWidth + 0.5f);
+            int height = (int)(_height * dwHeight + 0.5f);
+
+            byte[] dxtBytes = new byte[width * height * 2];
+            int bytesPos = 0;
+            for (int i = y; i > y - height; --i)
+            {                
+                reader.BaseStream.Position = (dwWidth * i + x) * 2 + 128;
+                reader.ReadBytes(width * 2).CopyTo(dxtBytes, bytesPos);
+                bytesPos += width * 2;
+            }
+
+            Texture2D texture = new Texture2D(width, height, TextureFormat.RGB565, false);
+            texture.LoadRawTextureData(dxtBytes);
+            texture.Apply(false, false);
 
             return texture;
         }
