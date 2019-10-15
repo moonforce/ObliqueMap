@@ -225,6 +225,7 @@ public class TextureHandler : Singleton<TextureHandler>
         {
             m_UniqueIndexUv[key] = m_UniqueIndexUv[key] + uvDelta;
         }
+        m_UvBox.UpdateAABBbyDelta(uvDelta);
     }
 
     public Vector2 ConvertToUv(Vector2 rectPos)

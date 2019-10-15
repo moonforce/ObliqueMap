@@ -45,6 +45,14 @@ public class UV_AABB
         MaxY = Mathf.Max(MaxY, uv.y);
     }
 
+    public void UpdateAABBbyDelta(Vector2 delta)
+    {
+        MinX += delta.x;
+        MaxX += delta.x;
+        MinY += delta.y;
+        MaxY += delta.y;
+    }
+
     public void ExpandAABB(Vector2 textureSize)
     {
         MinX = Mathf.Max(0f, MinX - MaterialExpandPixels / textureSize.x);

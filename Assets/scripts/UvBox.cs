@@ -38,6 +38,11 @@ public class UvBox : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHan
         AABB.UpdateAABB(uv);
     }
 
+    public void UpdateAABBbyDelta(Vector2 delta)
+    {
+        AABB.UpdateAABBbyDelta(delta);
+    }
+
     public void ExpandAABBandSetPosition()
     {        
         Vector2 textureSize = new Vector2(TextureHandler.Instance.TextureDownloaded.width, TextureHandler.Instance.TextureDownloaded.height);
