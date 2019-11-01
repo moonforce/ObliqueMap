@@ -39,6 +39,11 @@ public class UvPoint : MonoBehaviour, IDragHandler, IPointerExitHandler, IPointe
         m_RT.anchoredPosition += deltaMousePos;
     }
 
+    public void UpdatePosition(Vector2 pos)
+    {
+        m_RT.anchoredPosition = pos;
+    }
+
     public void OnPointerExit(PointerEventData eventData)
     {
         if (!m_IsDragging)

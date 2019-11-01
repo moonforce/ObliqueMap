@@ -88,6 +88,14 @@ public class Shortcuts : Singleton<Shortcuts>
         {
             ObliqueMapTreeView.DeleteMultipleNodes();
         }
+        /*else if (Input.GetKeyDown(UndoKey))
+        {
+            CommandManager.Instance.Undo();
+        }
+        else if (Input.GetKeyDown(RedoKey))
+        {
+            CommandManager.Instance.Redo();
+        }*/
     }
     
     public void StartEditting()

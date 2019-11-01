@@ -4,12 +4,30 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using System.Diagnostics;
 
 public class Toolset : MonoBehaviour
 {
+    private FileStream m_LogFile;
+    private StreamWriter m_LogSW;
+    [SerializeField]
+    private bool m_LogOutput;
+
     void Start()
     {
+        if (m_LogOutput)
+        {
+            m_LogFile = new FileStream("Log.log", FileMode.Create);
+            m_LogSW = new StreamWriter(m_LogFile);
+        }        
+    }
 
+    void OnDestroy()
+    {
+        if (m_LogOutput)
+        {
+            m_LogSW.Close();
+        }
     }
 
     public void ClearUselessTextures()
@@ -99,12 +117,24 @@ public class Toolset : MonoBehaviour
                 if (path == null)
                     imageInfos.Remove(imageInfos[j]);
                 else
+                {
                     imageInfos[j].File = new FileInfo(path);
+                    if (m_LogOutput)
+                    {
+                        m_LogSW.Write(path);
+                        m_LogSW.WriteLine();
+                    }                        
+                }
+                    
                 //路径相同
                 //if (!ProjectCtrl.Instance.ObliqueImages.Contains(imageInfos[j].File.FullName))
                 //{
                 //    imageInfos.Remove(imageInfos[j]);
                 //}
+            }
+            if (m_LogOutput)
+            {
+                m_LogSW.WriteLine();
             }
             if (imageInfos.Count == 0)
                 continue;
@@ -159,5 +189,13 @@ public class Toolset : MonoBehaviour
             //Destroy(TextureDownloaded);
             Resources.UnloadUnusedAssets();
         }
+    }
+
+    public void ExecuteICP()
+    {
+        Process proc = new Process();
+        proc.StartInfo.FileName = Application.streamingAssetsPath + "\\ImageConverter Plus\\icp.exe";
+        proc.StartInfo.Verb = "runas";
+        proc.Start();
     }
 }

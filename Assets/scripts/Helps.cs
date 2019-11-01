@@ -13,6 +13,6 @@ public class Helps : MonoBehaviour
 
     public void OpenUserManual()
     {
-        Application.OpenURL(m_HelpDocumentPath);
+        Application.OpenURL(Application.streamingAssetsPath + "\\" + m_HelpDocumentPath);
     }
 }

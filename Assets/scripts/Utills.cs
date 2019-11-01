@@ -266,4 +266,10 @@ public static class Utills
         }
         return (strResult);
     }
+
+    public static Vector2 ConvertGlobalUvToLocalUv(Vector2 global, UV_AABB AABB)
+    {
+        Vector2 res = new Vector2((global.x - AABB.MinX) / AABB.Spacing.x, (global.y - AABB.MinY) / AABB.Spacing.y);
+        return res;
+    }
 }

@@ -37,27 +37,7 @@ public class TextureHandler : Singleton<TextureHandler>
 
     public void PasteTextureToModelFace()
     {
-        Texture2D tileTexture;
-        string tileTexturePath = Path.GetDirectoryName(MeshAnaliser.Instance.ClickedSubMeshInfo.FilePath) + '/' + Path.GetFileNameWithoutExtension(MeshAnaliser.Instance.ClickedSubMeshInfo.FilePath) + '_' + DateTime.Now.ToString("yyyyMMddHHmmss") + ".jpg";
-        Utills.TextureTile2ImageFile(TextureDownloaded,
-            out tileTexture,
-            (int)(m_UvBox.AABB.MinX * TextureDownloaded.width + 0.5f),
-            (int)((1 -  m_UvBox.AABB.MaxY) * TextureDownloaded.height + 0.5f),
-            (int)(m_UvBox.AABB.Spacing.x * TextureDownloaded.width + 0.5f),
-            (int)(m_UvBox.AABB.Spacing.y * TextureDownloaded.height + 0.5f),
-            tileTexturePath
-            );
-        //MeshAnaliser.Instance.ClickedSubMeshInfo.ImagePaths[MeshAnaliser.Instance.ClickedSubMeshIndex] = tileTexturePath;
-        MeshAnaliser.Instance.DestroyClickedMainTexture();
-        MeshAnaliser.Instance.ClickedMaterial.name = Path.GetFileName(tileTexturePath);
-        MeshAnaliser.Instance.ClickedMaterial.mainTexture = tileTexture;
-        MeshAnaliser.Instance.ClickedMaterial.SetColor("_Color", new Color(1, 1, 1, 1));
-        Vector2[] uvCopy = MeshAnaliser.Instance.ClickedMesh.uv;
-        foreach (var pair in m_UniqueIndexUv)
-        {
-            uvCopy[pair.Key] = ConvertGlobalUvToLocalUv(pair.Value);
-        }
-        MeshAnaliser.Instance.ClickedMesh.uv = uvCopy;
+        CommandManager.Instance.ExecuteCommand(new UvCommand(m_UniqueIndexUv, m_UvBox));
     }
 
     public void ResetContent()
@@ -228,19 +208,34 @@ public class TextureHandler : Singleton<TextureHandler>
         m_UvBox.UpdateAABBbyDelta(uvDelta);
     }
 
+    public void UpdateAllUvElementsByUniqueIndexUv(Dictionary<int, Vector2> uniqueIndexUv)
+    {
+        m_UniqueIndexUv = new Dictionary<int, Vector2>(uniqueIndexUv);
+        foreach (UvLine uvLine in UvLines)
+        {
+            uvLine.TheLine.points2[0] = ConvertToRectPos(m_UniqueIndexUv[uvLine.IndexTuple.Item1]);
+            uvLine.TheLine.points2[1] = ConvertToRectPos(m_UniqueIndexUv[uvLine.IndexTuple.Item2]);
+            uvLine.UpdateLineEverything();
+        }
+        foreach (UvPoint uvPoint in UvPoints)
+        {
+            uvPoint.UpdatePosition(ConvertToRectPos(m_UniqueIndexUv[uvPoint.Index]));
+        }
+        UpdateUvBox();
+    }
+
     public Vector2 ConvertToUv(Vector2 rectPos)
     {
         return new Vector2(rectPos.x / m_Texture.rectTransform.sizeDelta.x, rectPos.y / m_Texture.rectTransform.sizeDelta.y);
     }
 
+    public Vector2 ConvertToRectPos(Vector2 uv)
+    {
+        return new Vector2(uv.x * m_Texture.rectTransform.sizeDelta.x, uv.y * m_Texture.rectTransform.sizeDelta.y);
+    }
+
     public Vector2 ConvertToRelativeScale(Vector2 deltaVector2)
     {
         return new Vector2(deltaVector2.x / transform.lossyScale.x, deltaVector2.y / transform.lossyScale.y);
-    }
-
-    public Vector2 ConvertGlobalUvToLocalUv(Vector2 global)
-    {
-        Vector2 res = new Vector2((global.x - m_UvBox.AABB.MinX) / m_UvBox.AABB.Spacing.x, (global.y - m_UvBox.AABB.MinY) / m_UvBox.AABB.Spacing.y);
-        return res;
-    }
+    }    
 }
