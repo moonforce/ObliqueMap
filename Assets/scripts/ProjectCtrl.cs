@@ -345,11 +345,9 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
             var photogroupNode = CreateNode(xmlDoc, photogroupsNode, "Photogroup");
             CreateNode(xmlDoc, photogroupNode, "Name", cameraHandler.Name);
             var imageDimensionsNode = CreateNode(xmlDoc, photogroupNode, "ImageDimensions");
-            CreateNode(xmlDoc, photogroupNode, "FocalLength", Utills.DoubleToStringSignificantDigits(cameraHandler.OrigonalFocalLength, DoubleSignificantDigits));
-            CreateNode(xmlDoc, photogroupNode, "SensorSize", Utills.DoubleToStringSignificantDigits(cameraHandler.SensorSize, DoubleSignificantDigits));
+            CreateNode(xmlDoc, photogroupNode, "FocalLength", Utills.DoubleToStringSignificantDigits(cameraHandler.FocalLength, DoubleSignificantDigits));
             var principalPointNode = CreateNode(xmlDoc, photogroupNode, "PrincipalPoint");
             var distortionNode = CreateNode(xmlDoc, photogroupNode, "Distortion");
-            CreateNode(xmlDoc, photogroupNode, "AspectRatio", Utills.DoubleToStringSignificantDigits(cameraHandler.AspectRatio, DoubleSignificantDigits));
             CreateNode(xmlDoc, imageDimensionsNode, "Width", cameraHandler.Width.ToString());
             CreateNode(xmlDoc, imageDimensionsNode, "Height", cameraHandler.Height.ToString());
             CreateNode(xmlDoc, principalPointNode, "x", Utills.DoubleToStringSignificantDigits(cameraHandler.PrincipalPoint.x, DoubleSignificantDigits));
@@ -358,7 +356,7 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
             {
                 CreateNode(xmlDoc, distortionNode, DistCoeff.Key, Utills.DoubleToStringSignificantDigits(DistCoeff.Value, DoubleSignificantDigits));
             }
-            foreach (var image in cameraHandler.Images)
+            foreach (var image in cameraHandler.Images.Values)
             {
                 var photoNode = CreateNode(xmlDoc, photogroupNode, "Photo");
                 CreateNode(xmlDoc, photoNode, "ImagePath", image.File.FullName);
@@ -734,12 +732,35 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
         XmlReaderSettings set = new XmlReaderSettings();
         set.IgnoreComments = true;
         xml.Load(XmlReader.Create(path, set));
-        ParsePhotogroups(xml);
+        ParsePhotogroups(xml, true);
     }
 
-    private void ParsePhotogroups(XmlDocument xml, bool showMessage = true)
+    public void ParseQZSYBtnClick()
     {
-        CameraHandlers.Clear();
+        if (string.IsNullOrEmpty(ProjectPath.DataValue))
+        {
+            MessageBoxCtrl.Instance.Show("请先创建或打开工程");
+            return;
+        }
+        string camera_path = FileBrowser.OpenSingleFile("选择相机参数文件", null, "txt");
+        if (string.IsNullOrEmpty(camera_path))
+        {
+            MessageBoxCtrl.Instance.Show("未选择相机参数文件");
+            return;
+        }
+        string pos_path = FileBrowser.OpenSingleFile("选择影像参数文件", null, "txt");
+        if (string.IsNullOrEmpty(pos_path))
+        {
+            MessageBoxCtrl.Instance.Show("未选择影像参数文件");
+            return;
+        }
+        ModifyProjectPath();
+        ParseQZSYPhotogroups(camera_path, pos_path);
+    }
+
+    private void ParsePhotogroups(XmlDocument xml, bool isSmart3D)
+    {
+        //CameraHandlers.Clear();
         XmlNodeList photogroups = xml.SelectSingleNode("//Photogroups").SelectNodes("Photogroup");
         foreach (XmlNode photogroup in photogroups)
         {
@@ -752,10 +773,16 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
                 width = int.Parse(photogroup.SelectSingleNode("ImageDimensions/Width").InnerText);
                 height = int.Parse(photogroup.SelectSingleNode("ImageDimensions/Height").InnerText);
                 double focalLength = double.Parse(photogroup.SelectSingleNode("FocalLength").InnerText);
-                double sensorSize = double.Parse(photogroup.SelectSingleNode("SensorSize").InnerText);
                 Point principalPoint = new Point(double.Parse(photogroup.SelectSingleNode("PrincipalPoint/x").InnerText), double.Parse(photogroup.SelectSingleNode("PrincipalPoint/y").InnerText));
-                double aspectRatio = double.Parse(photogroup.SelectSingleNode("AspectRatio").InnerText);
-                cameraHandler = new CameraHandler(name, width, height, focalLength, sensorSize, principalPoint, photogroup.SelectSingleNode("Distortion"), aspectRatio);
+                if (isSmart3D)
+                {
+                    double sensorSize = double.Parse(photogroup.SelectSingleNode("SensorSize").InnerText);
+                    cameraHandler = new CameraHandler(name, width, height, focalLength, sensorSize, principalPoint, photogroup.SelectSingleNode("Distortion"));
+                }
+                else
+                {
+                    cameraHandler = new CameraHandler(name, width, height, focalLength, principalPoint, photogroup.SelectSingleNode("Distortion"));
+                }                   
                 CameraHandlers.Add(name, cameraHandler);
             }
             else
@@ -763,25 +790,55 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
                 width = cameraHandler.Width;
                 height = cameraHandler.Height;
             }
-            List<ImageInfo> imageInfos = new List<ImageInfo>();
             foreach (XmlNode photoNode in photogroup.SelectNodes("Photo"))
             {
-                imageInfos.Add(
-                    new ImageInfo(
-                    width,
-                    height,
-                    new FileInfo(photoNode.SelectSingleNode("ImagePath").InnerText),
-                    double.Parse(photoNode.SelectSingleNode("Pose/Rotation/Omega").InnerText),
-                    double.Parse(photoNode.SelectSingleNode("Pose/Rotation/Phi").InnerText),
-                    double.Parse(photoNode.SelectSingleNode("Pose/Rotation/Kappa").InnerText),
-                    double.Parse(photoNode.SelectSingleNode("Pose/Center/x").InnerText),
-                    double.Parse(photoNode.SelectSingleNode("Pose/Center/y").InnerText),
-                    double.Parse(photoNode.SelectSingleNode("Pose/Center/z").InnerText)));
+                cameraHandler.AddImageInfo(photoNode, width, height);
             }
-            cameraHandler.Images.AddRange(imageInfos);
         }
-        if (showMessage)
+        if (isSmart3D)
             MessageBoxCtrl.Instance.Show("解析Smart3D空三数据成功");
+    }
+
+    private void ParseQZSYPhotogroups(string camera_path, string pos_path)
+    {
+        //CameraHandlers.Clear();
+        int width;
+        int height;
+        string loadedText = File.ReadAllText(camera_path, Encoding.GetEncoding("GBK"));
+        string[] lines = loadedText.Split("\n".ToCharArray());
+        string line = lines[1];
+        line = line.Replace("\r", "");
+        string[] words = System.Text.RegularExpressions.Regex.Split(line, @"\s+");
+        CameraHandler cameraHandler;
+        string name = words[0];
+
+        if (!CameraHandlers.TryGetValue(name, out cameraHandler))
+        {
+            width = int.Parse(words[1]);
+            height = int.Parse(words[2]);
+            double focalLength = double.Parse(words[4]);
+            Point principalPoint = new Point(double.Parse(words[5]), double.Parse(words[6]));
+            cameraHandler = new CameraHandler(name, width, height, focalLength, principalPoint);
+            CameraHandlers.Add(name, cameraHandler);
+        }
+        else
+        {
+            width = cameraHandler.Width;
+            height = cameraHandler.Height;
+        }
+        loadedText = File.ReadAllText(pos_path, Encoding.GetEncoding("GBK"));
+        lines = loadedText.Split("\n".ToCharArray());
+        for (int i = 0; i < lines.Count(); ++i)
+        {
+            line = lines[i];
+            if (string.IsNullOrEmpty(line))
+                continue;
+            if (line[0] == '#')
+                continue;
+            line = line.Replace("\r", "");            
+            cameraHandler.AddImageInfo(line, width, height);
+        }
+        MessageBoxCtrl.Instance.Show("解析添加相机内外参成功");
     }
 
     public List<ImageInfo> ProjectPoints(Dictionary<int, Vector3> points, Vector3 faceNormal)

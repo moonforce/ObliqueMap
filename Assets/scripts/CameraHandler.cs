@@ -8,6 +8,7 @@ using OpenCVForUnity.ImgcodecsModule;
 using System;
 using System.Xml;
 using System.Linq;
+using System.IO;
 
 public class CameraHandler
 {
@@ -32,29 +33,47 @@ public class CameraHandler
         {"TY", 13}
     };
 
-    public List<ImageInfo> Images { get; set; } = new List<ImageInfo>();
+    public Dictionary<string, ImageInfo> Images { get; set; } = new Dictionary<string, ImageInfo>();
     public string Name { get; set; }
     public int Width { get; set; }
     public int Height { get; set; }
     public double FocalLength { get; set; }
-    public double OrigonalFocalLength { get; set; }
-    public double SensorSize { get; set; }
+    //public double SensorSize { get; set; }
     public Point PrincipalPoint { get; set; } = new Point();
-    public double AspectRatio { get; set; } = 1f;
+    //public double AspectRatio { get; set; } = 1f;
     public Dictionary<string, double> DistCoeffs { get; set; } = new Dictionary<string, double>();
 
-    public CameraHandler(string name, int width, int height, double focalLength, double sensorSize, Point principalPoint, XmlNode distortionNode, double aspectRatio)
+    //由Smart3D参数构建
+    public CameraHandler(string name, int width, int height, double focalLength, double sensorSize, Point principalPoint, XmlNode distortionNode)
     {
         Name = name;
         Width = width;
         Height = height;
-        OrigonalFocalLength = focalLength;
-        SensorSize = sensorSize;
-        FocalLength = OrigonalFocalLength * ((Width > Height) ? Width: Height) / sensorSize;
+        //OrigonalFocalLength、sensorSize是mm的，FocalLength、Width、Height是像素的
+        FocalLength = focalLength * ((Width > Height) ? Width : Height) / sensorSize;
         PrincipalPoint = principalPoint;
-        AspectRatio = aspectRatio;
+        m_CameraMatrix.put(0, 0, FocalLength, 0, PrincipalPoint.x, 0, FocalLength, PrincipalPoint.y, 0, 0, 1);
+        ParseDistortion(distortionNode);
+    }
+
+    //由工程文件中的参数或奇正数元参数创建
+    //奇正数元内参格式：无畸变，且主点归零
+    public CameraHandler(string name, int width, int height, double focalLength, Point principalPoint, XmlNode distortionNode = null)
+    {
+        Name = name;
+        Width = width;
+        Height = height;
+        FocalLength = focalLength;
+        PrincipalPoint = principalPoint;
         m_CameraMatrix.put(0, 0, FocalLength, 0, PrincipalPoint.x, 0, FocalLength, PrincipalPoint.y, 0, 0, 1);
 
+        if (null == distortionNode)
+            return;
+        ParseDistortion(distortionNode);
+    }
+
+    private void ParseDistortion(XmlNode distortionNode)
+    {
         double[] distCoeffsList = new double[distortionNode.ChildNodes.Count];
         foreach (XmlNode distCoeff in distortionNode.ChildNodes)
         {
@@ -65,7 +84,46 @@ public class CameraHandler
                 DistCoeffs.Add(distCoeff.Name, distCoeffsList[index]);
             }
         }
-        m_DistCoeffs.fromArray(distCoeffsList); 
+        m_DistCoeffs.fromArray(distCoeffsList);
+    }
+
+    public void AddImageInfo(XmlNode photoNode, int width, int height)
+    {
+        string imagePath = photoNode.SelectSingleNode("ImagePath").InnerText;
+        if (Images.ContainsKey(imagePath))
+            return;
+        Images.Add(
+            imagePath,
+            new ImageInfo(
+            width,
+            height,
+            new FileInfo(imagePath),
+            double.Parse(photoNode.SelectSingleNode("Pose/Rotation/Omega").InnerText),
+            double.Parse(photoNode.SelectSingleNode("Pose/Rotation/Phi").InnerText),
+            double.Parse(photoNode.SelectSingleNode("Pose/Rotation/Kappa").InnerText),
+            double.Parse(photoNode.SelectSingleNode("Pose/Center/x").InnerText),
+            double.Parse(photoNode.SelectSingleNode("Pose/Center/y").InnerText),
+            double.Parse(photoNode.SelectSingleNode("Pose/Center/z").InnerText)));
+    }
+
+    public void AddImageInfo(string line, int width, int height)
+    {
+        string[] words = System.Text.RegularExpressions.Regex.Split(line, @"\s+");
+        string imagePath = words[0];
+        if (Images.ContainsKey(imagePath))
+            return;
+        Images.Add(
+            words[0],
+            new ImageInfo(
+            width,
+            height,
+            new FileInfo(imagePath),
+            double.Parse(words[4]),
+            double.Parse(words[5]),
+            double.Parse(words[6]),
+             double.Parse(words[1]),
+            double.Parse(words[2]),
+            double.Parse(words[3])));
     }
 
     public List<ImageInfo> ProjectPoints(Dictionary<int, Vector3> point3Ds, Vector3 faceNormal)
@@ -78,7 +136,7 @@ public class CameraHandler
         }
 
         Utils.setDebugMode(true);
-        foreach (var image in Images)
+        foreach (var image in Images.Values)
         {
             image.DirectionDot = Vector3.Dot(faceNormal, image.Direction);
             image.Index_UVs.Clear();
