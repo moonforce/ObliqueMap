@@ -92,6 +92,8 @@ public class CameraHandler
         string imagePath = photoNode.SelectSingleNode("ImagePath").InnerText;
         if (Images.ContainsKey(imagePath))
             return;
+        if (photoNode.SelectSingleNode("Pose/Rotation") == null || photoNode.SelectSingleNode("Pose/Center") == null)
+            return;
         Images.Add(
             imagePath,
             new ImageInfo(
