@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -132,7 +133,9 @@ public static class Utills
     public delegate void SetTexture(Texture2D texture);
     public static IEnumerator DownloadTexture(string imageUrl, SetTexture setTexture)
     {
-        using (UnityWebRequest www = UnityWebRequestTexture.GetTexture(imageUrl))
+        imageUrl = UnityWebRequest.EscapeURL(imageUrl);//转义特殊字符，UrlEncode函数可达到同样效果
+        //imageUrl = UrlEncode(imageUrl);
+        using (UnityWebRequest www = UnityWebRequestTexture.GetTexture("file:///" + imageUrl))
         {
             yield return www.SendWebRequest();
             if (www.isNetworkError)
@@ -144,6 +147,24 @@ public static class Utills
                 setTexture(DownloadHandlerTexture.GetContent(www));
             }
         }
+    }
+
+    private readonly static string reservedCharacters = "!*'();:@&=+$,/?%#[]";
+    public static string UrlEncode(string value)
+    {
+        if (String.IsNullOrEmpty(value))
+            return String.Empty;
+
+        var sb = new StringBuilder();
+
+        foreach (char @char in value)
+        {
+            if (reservedCharacters.IndexOf(@char) == -1)
+                sb.Append(@char);
+            else
+                sb.AppendFormat("%{0:X2}", (int)@char);
+        }
+        return sb.ToString();
     }
 
     #region texture2image 
