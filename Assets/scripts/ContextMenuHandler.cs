@@ -142,10 +142,10 @@ public class ContextMenuHandler : Singleton<ContextMenuHandler>
         if (ObliqueMapTreeView.CurrentGameObject)
         {
             items[4].Command = "ReplaceModel";
+            items[5].Command = "OutputModel";
         }
         if (ProjectStage.Instance.FaceEditting)
         {
-            items[5].Command = "OutputModel";
             items[6].Command = "Cancel";
         }
         // 可以PS和刷新非选中面的方法
