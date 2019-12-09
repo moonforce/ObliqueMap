@@ -102,7 +102,7 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
             if (!subMeshVertices.ContainsKey(index))
             {
                 //注意y/z的互换
-                subMeshVertices.Add(index, new Vector3(allVertices[index].x + 0, allVertices[index].z + 0, allVertices[index].y));
+                subMeshVertices.Add(index, new Vector3(allVertices[index].x + ClickedSubMeshInfo.BigCoordinateDelta.x, allVertices[index].z + ClickedSubMeshInfo.BigCoordinateDelta.z, allVertices[index].y + ClickedSubMeshInfo.BigCoordinateDelta.y));
             }
         }
         Vector3 faceNormal = new Vector3(ClickedMesh.normals[indecies[0]].x, ClickedMesh.normals[indecies[0]].y, ClickedMesh.normals[indecies[0]].z);

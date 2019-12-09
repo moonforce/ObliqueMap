@@ -32,6 +32,8 @@ public class SubMeshInfo : MonoBehaviour
     public Dictionary<string, int> OrigonalFaceNewIndexDictionary { get; set; } = new Dictionary<string, int>();
     //Y轴最小值
     public float MinY { get; set; } = float.MaxValue;
+    //修正的大坐标偏移，Unity在坐标大于100,0000时，会出警告
+    public Vector3 BigCoordinateDelta { get; set; } = Vector3.zero;
 
     public void AddOrigonalFace(FaceIndices[] faces)
     {

@@ -97,7 +97,6 @@ public class SettingsPanelCtrl : Singleton<SettingsPanelCtrl>
         {
             ProjectCtrl.Instance.ModifyProjectPath(false);
         }
-        Debug.Log("one");
     }
 
     public void SetDeltaX(string input)

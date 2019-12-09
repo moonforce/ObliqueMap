@@ -73,9 +73,10 @@ namespace ObjLoaderLY
                 switch (p[0])
                 {
                     case "v":
-                        float z = ParseFloat(p[3]);
-                        m_SubMeshInfo.MinY = Mathf.Min(m_SubMeshInfo.MinY, z); //yz颠倒
-                        m_DataSet.AddVertex(new Vector3(ParseFloat(p[1]), z, ParseFloat(p[2])));
+                        Vector3 vertex = new Vector3(ParseFloat(p[1]), ParseFloat(p[3]), ParseFloat(p[2])); //yz颠倒
+                        m_SubMeshInfo.BigCoordinateDelta = ParseBigCoordinateDelta(ref vertex);
+                        m_SubMeshInfo.MinY = Mathf.Min(m_SubMeshInfo.MinY, vertex.y);
+                        m_DataSet.AddVertex(vertex);
                         break;
                     case "vt":
                         m_DataSet.AddUV(new Vector2(ParseFloat(p[1]), ParseFloat(p[2])));
@@ -392,6 +393,19 @@ namespace ObjLoaderLY
         private float ParseFloat(string floatString)
         {
             return float.Parse(floatString, CultureInfo.InvariantCulture.NumberFormat);
+        }
+
+        private Vector3 ParseBigCoordinateDelta(ref Vector3 origonalVertex)
+        {
+            Vector3 BigCoordinateDelta = Vector3.zero;
+            if (origonalVertex.x > 100000)
+                BigCoordinateDelta.x = (int)origonalVertex.x / 100000 * 100000;
+            if (origonalVertex.y > 100000)
+                BigCoordinateDelta.y = (int)origonalVertex.y / 100000 * 100000;
+            if (origonalVertex.z > 100000)
+                BigCoordinateDelta.z = (int)origonalVertex.z / 100000 * 100000;
+            origonalVertex -= BigCoordinateDelta;
+            return BigCoordinateDelta;
         }
 
         private void GetFaceIndicesByOneFaceLine(FaceIndices[] faces, string[] p, bool isFaceIndexPlus)

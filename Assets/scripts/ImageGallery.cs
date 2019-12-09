@@ -48,6 +48,7 @@ public class ImageGallery : Singleton<ImageGallery>
         newImage.transform.localScale = Vector3.one;
         string imageUrl = fileInfo.DirectoryName + "/thumb/" + fileInfo.Name;
         newImage.GetComponent<ImageGalleryTexture>().InitContent(imageUrl, lineIndexList, imageInfo.Index_UVs, siblingIndex);
+        //newImage.GetComponentInChildren<Text>().text = imageInfo.DirectionDot.ToString();
     }
 
     public void SwitchToNextImage()
