@@ -133,9 +133,7 @@ public static class Utills
     public delegate void SetTexture(Texture2D texture);
     public static IEnumerator DownloadTexture(string imageUrl, SetTexture setTexture)
     {
-        imageUrl = UnityWebRequest.EscapeURL(imageUrl);//转义特殊字符，UrlEncode函数可达到同样效果
-        //imageUrl = UrlEncode(imageUrl);
-        using (UnityWebRequest www = UnityWebRequestTexture.GetTexture("file:///" + imageUrl))
+        using (UnityWebRequest www = UnityWebRequestTexture.GetTexture(EscapeOrigonURL(imageUrl)))
         {
             yield return www.SendWebRequest();
             if (www.isNetworkError)
@@ -147,6 +145,29 @@ public static class Utills
                 setTexture(DownloadHandlerTexture.GetContent(www));
             }
         }
+    }
+
+    public static IEnumerator DownloadTexture(string imagePath, int index)
+    {
+        using (UnityWebRequest www = UnityWebRequestTexture.GetTexture(EscapeOrigonURL(imagePath)))
+        {
+            yield return www.SendWebRequest();
+            if (www.isNetworkError)
+            {
+                UnityEngine.Debug.Log(www.error);
+            }
+            else
+            {
+                ObliqueMapTreeView.CurrentGameObject.GetComponentInChildren<MeshRenderer>().sharedMaterials[index].mainTexture = DownloadHandlerTexture.GetContent(www);
+            }
+        }
+    }
+
+    public static string EscapeOrigonURL(string originURL)
+    {
+        originURL = UnityWebRequest.EscapeURL(originURL);//转义特殊字符，UrlEncode函数可达到同样效果
+        originURL = "file:///" + originURL;
+        return originURL;
     }
 
     private readonly static string reservedCharacters = "!*'();:@&=+$,/?%#[]";

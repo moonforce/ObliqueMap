@@ -229,7 +229,7 @@ namespace ObjLoaderLY
         private IEnumerator LoadMaterialTexture(string texPath)
         {
             m_LoadedTexture = null;
-            using (UnityWebRequest uwr = UnityWebRequestTexture.GetTexture(texPath))
+            using (UnityWebRequest uwr = UnityWebRequestTexture.GetTexture(Utills.EscapeOrigonURL(texPath)))
             {
                 yield return uwr.SendWebRequest();
 

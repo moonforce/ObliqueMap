@@ -250,20 +250,4 @@ public class ContextMenuHandler : Singleton<ContextMenuHandler>
             ObliqueMapTreeView.DeleteSingleNode(m_SelectedComponent.Node);
         }
     }
-
-    public static IEnumerator DownloadTexture(string imagePath, int index)
-    {
-        using (UnityWebRequest www = UnityWebRequestTexture.GetTexture(imagePath))
-        {
-            yield return www.SendWebRequest();
-            if (www.isNetworkError)
-            {
-                UnityEngine.Debug.Log(www.error);
-            }
-            else
-            {
-                ObliqueMapTreeView.CurrentGameObject.GetComponentInChildren<MeshRenderer>().sharedMaterials[index].mainTexture = DownloadHandlerTexture.GetContent(www);
-            }
-        }
-    }
 }

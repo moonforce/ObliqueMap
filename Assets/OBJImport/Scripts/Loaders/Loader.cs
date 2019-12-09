@@ -520,7 +520,7 @@ namespace AsImpL
             loadedTexture = null;
             string texPath = GetTextureUrl(basePath, path);
 #if UNITY_2018_3_OR_NEWER
-            using (UnityWebRequest uwr = UnityWebRequestTexture.GetTexture(texPath))
+            using (UnityWebRequest uwr = UnityWebRequestTexture.GetTexture(Utills.EscapeOrigonURL(texPath)))
             {
                 yield return uwr.SendWebRequest();
 
