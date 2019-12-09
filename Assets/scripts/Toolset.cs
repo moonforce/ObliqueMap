@@ -101,7 +101,7 @@ public class Toolset : MonoBehaviour
                 if (!subMeshVertices.ContainsKey(index))
                 {
                     //注意y/z的互换
-                    subMeshVertices.Add(index, new Vector3(allVertices[index].x + 0, allVertices[index].z + 0, allVertices[index].y));
+                    subMeshVertices.Add(index, new Vector3(allVertices[index].x + subMeshInfo.BigCoordinateDelta.x, allVertices[index].z + subMeshInfo.BigCoordinateDelta.z, allVertices[index].y + subMeshInfo.BigCoordinateDelta.y));
                 }
             }
             Vector3 faceNormal = new Vector3(mesh.normals[indecies[0]].x, mesh.normals[indecies[0]].y, mesh.normals[indecies[0]].z);
