@@ -616,7 +616,11 @@ public class ProjectCtrl : Singleton<ProjectCtrl>
                         uniqueVertexes.Add(vertex, numUv);
                     }
                     string[] vertexElements = vertex.Split('/');
-                    newFace += (int.Parse(vertexElements[0]) + numVertex + 1).ToString() + '/' + uniqueVertexes[vertex].ToString() + '/' + (int.Parse(vertexElements[2]) + numNormal + 1).ToString() + ' ';
+                    bool isFaceIndexPlus = (int.Parse(vertexElements[0]) >= 0);
+                    if (!isFaceIndexPlus)
+                        newFace += (int.Parse(vertexElements[0]) + numVertex + 1).ToString() + '/' + uniqueVertexes[vertex].ToString() + '/' + (int.Parse(vertexElements[2]) + numNormal + 1).ToString() + ' ';
+                    else
+                        newFace += vertexElements[0] + '/' + uniqueVertexes[vertex].ToString() + '/' + vertexElements[2] + ' ';
                 }
                 faces.Add(newFace);
             }
