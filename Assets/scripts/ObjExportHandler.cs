@@ -10,19 +10,18 @@ public class ObjExportHandler
     public static string DefaultMatName = "default185617";
     public static string ExportSuffix = "";
 
-    public static void Export(MeshFilter mf, string exportPath)
+    public static void Export(MeshFilter mf, bool AddOffset)
     {
         SubMeshInfo subMeshInfo = mf.transform.GetComponent<SubMeshInfo>();
-        if (string.IsNullOrEmpty(exportPath))
-        {
-            exportPath = subMeshInfo.FilePath;
-        }
-        HashSet<string> materialCache = new HashSet<string>();
-        FileInfo exportFileInfo = new FileInfo(exportPath);
-        string baseFileName = Path.GetFileNameWithoutExtension(exportPath);
-        if (!Directory.Exists(exportFileInfo.DirectoryName))
-            Directory.CreateDirectory(exportFileInfo.DirectoryName);
+        string baseFileName = Path.GetFileNameWithoutExtension(subMeshInfo.FilePath);
+        string baseDirectoryName = Path.GetDirectoryName(subMeshInfo.FilePath);
+        string exportDirectoryName = baseDirectoryName;
+        if (AddOffset)
+            exportDirectoryName += @"\Output";
+        if (!Directory.Exists(exportDirectoryName))
+            Directory.CreateDirectory(exportDirectoryName);
 
+        HashSet<string> materialCache = new HashSet<string>();     
         StringBuilder sb = new StringBuilder();
         StringBuilder sbMaterials = new StringBuilder();
         sb.AppendLine(ProjectCtrl.Instance.CompleteUvCommentLine);
@@ -37,6 +36,10 @@ public class ObjExportHandler
                 continue;
             if (!materialCache.Contains(m.name))
             {
+                if (AddOffset)
+                {
+                    File.Copy(baseDirectoryName + @"\" + m.name, exportDirectoryName + @"\" + m.name);
+                }
                 materialCache.Add(m.name);
                 sbMaterials.Append(MaterialToString(m));
                 sbMaterials.AppendLine();
@@ -47,11 +50,11 @@ public class ObjExportHandler
         string loadedText;
         if (!subMeshInfo.IsCompleteUvModel)
         {
-            loadedText = File.ReadAllText(exportFileInfo.Directory.FullName + "/CompleteUvModel/" + baseFileName + ".obj");
+            loadedText = File.ReadAllText(baseDirectoryName + @"\CompleteUvModel\" + baseFileName + ".obj");
         }
         else
         {
-            loadedText = File.ReadAllText(exportPath);
+            loadedText = File.ReadAllText(subMeshInfo.FilePath);
         }
         string[] lines = loadedText.Split("\n".ToCharArray());
         char[] separators = new char[] { ' ', '\t' };
@@ -72,8 +75,16 @@ public class ObjExportHandler
 
             switch (p[0])
             {
-                case "v":
-                    sb.AppendLine(line);
+                case "v":                    
+                    if (!AddOffset)
+                    {
+                        sb.AppendLine(line);
+                    }
+                    else
+                    {
+                        string vLine = "v " + (float.Parse(p[1]) - SettingsPanelCtrl.Instance.DeltaX).ToString() + ' ' + (float.Parse(p[2]) - SettingsPanelCtrl.Instance.DeltaY).ToString() + ' ' + p[3];
+                        sb.AppendLine(vLine);
+                    }
                     break;
                 case "vn":
                     sb.AppendLine(line);
@@ -105,8 +116,8 @@ public class ObjExportHandler
             }
             sb.AppendLine("f " + newFace);
         }
-        File.WriteAllText(exportFileInfo.Directory.FullName + "/" + baseFileName + ExportSuffix + ".obj", sb.ToString());
-        File.WriteAllText(exportFileInfo.Directory.FullName + "/" + baseFileName + ExportSuffix + ".mtl", sbMaterials.ToString());
+        File.WriteAllText(exportDirectoryName + @"\" + baseFileName + ExportSuffix + ".obj", sb.ToString());
+        File.WriteAllText(exportDirectoryName + @"\" + baseFileName + ExportSuffix + ".mtl", sbMaterials.ToString());
     }
 
     private static string MaterialToString(Material m)

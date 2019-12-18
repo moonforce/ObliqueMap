@@ -143,10 +143,11 @@ public class ContextMenuHandler : Singleton<ContextMenuHandler>
         {
             items[4].Command = "ReplaceModel";
             items[5].Command = "OutputModel";
+            items[6].Command = "OutputModelAddOffset";
         }
         if (ProjectStage.Instance.FaceEditting)
         {
-            items[6].Command = "Cancel";
+            items[7].Command = "Cancel";
         }
         // 可以PS和刷新非选中面的方法
         //int clickedSubmeshIndex = MeshAnaliser.Instance.GetClickedSubmeshIndex();
@@ -206,7 +207,11 @@ public class ContextMenuHandler : Singleton<ContextMenuHandler>
         }
         else if (cmd == "OutputModel")
         {
-            Shortcuts.Instance.OutputModel();
+            Shortcuts.Instance.OutputModel(false);
+        }
+        else if (cmd == "OutputModelAddOffset")
+        {
+            Shortcuts.Instance.OutputModel(true);
         }
         else if (cmd == "Cancel")
         {

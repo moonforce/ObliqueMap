@@ -64,7 +64,7 @@ public class Toolset : MonoBehaviour
         ProjectCtrl.Instance.ModifyProjectPath();
     }
 
-    public void AutoMap()
+    public void AutoMap(bool AddOffset)
     {
         MeshAnaliser.Instance.ResetChoice();
         List<MeshFilter> meshFilters = ProjectCtrl.Instance.ModelContainer.GetComponentsInChildren<MeshFilter>(true).ToList();
@@ -73,10 +73,10 @@ public class Toolset : MonoBehaviour
             return;
         ProgressbarCtrl.Instance.Show("正在自动贴图……");
         ProgressbarCtrl.Instance.ResetMaxCount(meshFilters.Count);
-        StartCoroutine(AutoMapMeshs(meshFilters));
+        StartCoroutine(AutoMapMeshs(meshFilters, AddOffset));
     }
 
-    IEnumerator AutoMapMeshs(List<MeshFilter> meshFilters)
+    IEnumerator AutoMapMeshs(List<MeshFilter> meshFilters, bool AddOffset)
     {
         yield return null; //为了显示进度条而延迟一帧
         foreach (MeshFilter meshFilter in meshFilters)
@@ -84,7 +84,7 @@ public class Toolset : MonoBehaviour
             Mesh mesh = Utills.GetMeshOfMeshFilter(meshFilter);
             SubMeshInfo subMeshInfo = meshFilter.GetComponent<SubMeshInfo>();
             yield return StartCoroutine(AutoMapMesh(mesh, subMeshInfo));
-            ObjExportHandler.Export(meshFilter, null);
+            ObjExportHandler.Export(meshFilter, AddOffset);
             ProgressbarCtrl.Instance.ProgressPlusPlus();
         }
     }

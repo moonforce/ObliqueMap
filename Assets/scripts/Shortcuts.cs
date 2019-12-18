@@ -63,11 +63,18 @@ public class Shortcuts : Singleton<Shortcuts>
                 RefreshTexture();
             }
         }
-        else if (Input.GetKeyDown(OutputModelKey))
+        else if (Input.GetKeyDown(OutputModelKey) && !Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.RightShift))
         {
-            if (ProjectStage.Instance.FaceEditting)
+            if (ObliqueMapTreeView.CurrentGameObject)
             {
-                OutputModel();
+                OutputModel(false);
+            }
+        }
+        else if (Input.GetKeyDown(OutputModelKey) && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+        {
+            if (ObliqueMapTreeView.CurrentGameObject)
+            {
+                OutputModel(true);
             }
         }
         else if (Input.GetKeyDown(SwitchImageKey))
@@ -164,9 +171,9 @@ public class Shortcuts : Singleton<Shortcuts>
         OrbitCamera.Instance.ReplaceModel();
     }
 
-    public void OutputModel()
+    public void OutputModel(bool AddOffset)
     {
-        ObjExportHandler.Export(ObliqueMapTreeView.CurrentGameObject.GetComponent<MeshFilter>(), null);
+        ObjExportHandler.Export(ObliqueMapTreeView.CurrentGameObject.GetComponent<MeshFilter>(), AddOffset);
     }
 
     public void Cancel()
