@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using System.IO;
 using System;
+using TMPro;
 
 public class ImageGallery : Singleton<ImageGallery>
 {
@@ -48,7 +49,7 @@ public class ImageGallery : Singleton<ImageGallery>
         newImage.transform.localScale = Vector3.one;
         string imageUrl = fileInfo.DirectoryName + "/thumb/" + fileInfo.Name;
         newImage.GetComponent<ImageGalleryTexture>().InitContent(imageUrl, lineIndexList, imageInfo.Index_UVs, siblingIndex);
-        //newImage.GetComponentInChildren<Text>().text = imageInfo.DirectionDot.ToString();
+        newImage.GetComponentInChildren<TextMeshProUGUI>().text = imageInfo.File.Name.Substring(0, imageInfo.File.Name.Length - 4);
     }
 
     public void SwitchToNextImage()
