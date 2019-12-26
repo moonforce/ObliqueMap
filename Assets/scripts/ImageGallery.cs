@@ -50,6 +50,7 @@ public class ImageGallery : Singleton<ImageGallery>
         string imageUrl = fileInfo.DirectoryName + "/thumb/" + fileInfo.Name;
         newImage.GetComponent<ImageGalleryTexture>().InitContent(imageUrl, lineIndexList, imageInfo.Index_UVs, siblingIndex);
         newImage.GetComponentInChildren<TextMeshProUGUI>().text = imageInfo.File.Name.Substring(0, imageInfo.File.Name.Length - 4);
+        newImage.GetComponentInChildren<TextMeshProUGUI>().transform.SetAsLastSibling();
     }
 
     public void SwitchToNextImage()
