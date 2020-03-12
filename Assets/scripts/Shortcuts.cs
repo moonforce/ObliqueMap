@@ -142,6 +142,7 @@ public class Shortcuts : Singleton<Shortcuts>
                 return;
             }
             Process process = new Process();
+            process.StartInfo.Verb = "runas";
             process.StartInfo.FileName = SettingsPanelCtrl.Instance.PhotoshopPath;
             process.StartInfo.Arguments = clickedImagePath;
             process.Start();

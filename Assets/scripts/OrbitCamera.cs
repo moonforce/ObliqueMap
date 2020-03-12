@@ -77,6 +77,8 @@ public class OrbitCamera : Singleton<OrbitCamera>
         grid.transform.SetParent(targetGameObject.transform);
         grid.transform.localPosition = new Vector3(center.x, targetGameObject.GetComponent<SubMeshInfo>().MinY, center.z);
         grid.transform.localScale = new Vector3(magnitude / 5, 1, magnitude / 5);
+
+        GetComponent<Camera>().farClipPlane = distanceMax * 2f;
     }
 
     public void ResetGrid()
