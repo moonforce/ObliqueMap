@@ -87,6 +87,7 @@ public class Toolset : MonoBehaviour
             ObjExportHandler.Export(meshFilter, AddOffset);
             ProgressbarCtrl.Instance.ProgressPlusPlus();
         }
+        MessageBoxCtrl.Instance.Show("成功");
     }
 
     IEnumerator AutoMapMesh(Mesh mesh, SubMeshInfo subMeshInfo)

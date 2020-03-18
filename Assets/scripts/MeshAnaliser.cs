@@ -112,7 +112,7 @@ public class MeshAnaliser : Singleton<MeshAnaliser>
         for (int i = imageInfos.Count - 1; i >= 0; i--)
         {
             //路径不同
-            string path = ProjectCtrl.Instance.GetObliqueImageList().Find(o => Path.GetFileName(o) == imageInfos[i].File.Name);
+            string path = ProjectCtrl.Instance.GetObliqueImageList().Find(o => Path.GetFileNameWithoutExtension(o) == Path.GetFileNameWithoutExtension(imageInfos[i].File.Name));
             if (path == null)
                 imageInfos.Remove(imageInfos[i]);
             else
