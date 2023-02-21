@@ -1,0 +1,13 @@
+{
+    "name": "UIWidgets.Editor",
+    "references": [
+        "UIWidgets",
+        "Unity.TextMeshPro"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}

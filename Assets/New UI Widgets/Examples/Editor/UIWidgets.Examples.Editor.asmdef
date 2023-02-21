@@ -1,0 +1,15 @@
+{
+    "name": "UIWidgets.Examples.Editor",
+    "references": [
+        "UIWidgets.Editor",
+        "UIWidgets.Examples",
+        "UIWidgets",
+        "Unity.TextMeshPro"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}
