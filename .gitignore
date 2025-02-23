@@ -82,3 +82,4 @@ crashlytics-build.properties
 /Assets/ThirdParty/GPUInstancer/Resources/Settings/GPUIShaderVariantCollection.shadervariants.meta
 .idea/
 /LocalDataDirectory
+/Assets/OpenCVForUnity
